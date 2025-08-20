@@ -135,9 +135,9 @@ Static Procedure fGerarxml()
    oXml:fCria_AddNfref()
 
    *** Emitente
-   oXml:cXnomee  := [Empresa ficticia Ltda Me]
+   oXml:cXnomee  := [Empresa fictícia Ltda Me]
    oXml:cXfant   := [Mentira e Mentirinhas]
-   oXml:cXlgre   := [Rua do Sossego]
+   oXml:cXlgre   := [Rua do Sossegão]
    oXml:cNroe    := [sn]
    oXml:cXBairroe:= [Centro]
    oXml:cXmune   := [São Paulo]   // com ou sem acentuação
@@ -168,7 +168,6 @@ Static Procedure fGerarxml()
 
    oXml:cXlgrr    := oXml:cXlgrd  // se deseja que seja incluído a tag de retirada retirar e colocar as demais tags do local de retirada
    oXml:cXlgrg    := oXml:cXlgrd  // se deseja que seja incluído a tag de entrega retirar e colocar as demais tags do local de entrega
-
 
    *** teste para nota para exterior / trocar por este valor
    * oXml:cIdestrangeiro:= [20250707]
@@ -202,7 +201,7 @@ Static Procedure fGerarxml()
        oXml:cUcom    := [UN]
        oXml:nQcom    := 1
        oXml:nVuncom  := 4.77
-       oXml:nVprod   := 4.77
+*      oXml:nVprod   := 4.77  // se não informar vai calcular automaticamente
        oXml:nVtottrib:= 4.77
        oXml:cCstIcms:= [500]
        oXml:cOrig   := [0]
@@ -262,9 +261,6 @@ Static Procedure fGerarxml()
        Endif
    Next i
 
-   oXml:nVprodt      := 9.54
-   oXml:nVnf         := 9.54
-   oXml:nVtottrib    := 9.54
 *****************
 
    // Reforma Tributária  - RTC
@@ -274,34 +270,34 @@ Static Procedure fGerarxml()
 
    *** Transportadora
    oXml:cModFrete:= [9]
-*   oXml:cXnomet  := 
-*   oXml:cCnpjt   := 
-*   oXml:cIet     := 
-*   oXml:cXEndert := 
-*   oXml:cXmunt   := 
-*   oXml:cUft     := 
-*   oXml:cPlaca   := 
-*   oXml:cUfplacat:= 
-*   oXml:cRntc    := 
-*   oXml:nQvol    := 
-*   oXml:cEsp     := 
-*   oXml:cMarca   := 
-*   oXml:cNvol    := 
-*   oXml:nPesol   := 
-*   oXml:nPesob   := 
+*  oXml:cXnomet  := 
+*  oXml:cCnpjt   := 
+*  oXml:cIet     := 
+*  oXml:cXEndert := 
+*  oXml:cXmunt   := 
+*  oXml:cUft     := 
+*  oXml:cPlaca   := 
+*  oXml:cUfplacat:= 
+*  oXml:cRntc    := 
+*  oXml:nQvol    := 
+*  oXml:cEsp     := 
+*  oXml:cMarca   := 
+*  oXml:cNvol    := 
+*  oXml:nPesol   := 
+*  oXml:nPesob   := 
 
    // teste para nota para exterior / trocar por este valor
-   * oXml:cModFrete:= [1]
-   * oXml:cXnomet  := [BRASIL TRANSPORTES LTDA]
-   * oXml:cCnpjt   := [13520755000169]
-   * oXml:cIet     := [442131310119]
-   * oXml:cXEndert := [Rua do sossego]
-   * oXml:cXmunt   := [MARÍLIA]
-   * oXml:cUft     := [SP]
-   * oXml:nQvol    := 7
-   * oXml:cEsp     := [PALETES]
-   * oXml:nPesol   := 464.81
-   * oXml:nPesob   := 816.90
+*  oXml:cModFrete:= [1]
+*  oXml:cXnomet  := [BRASIL TRANSPORTES LTDA]
+*  oXml:cCnpjt   := [13.520.ABC/0001-69]
+*  oXml:cIet     := [442131310119]
+*  oXml:cXEndert := [Rua do sossego]
+*  oXml:cXmunt   := [MARÍLIA]
+*  oXml:cUft     := [SP]
+*  oXml:nQvol    := 7
+*  oXml:cEsp     := [PALETES]
+*  oXml:nPesol   := 464.81
+*  oXml:nPesob   := 816.90
 
    oXml:fCria_Transportadora() // criando a tag da transportadora
 

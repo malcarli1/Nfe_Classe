@@ -309,8 +309,7 @@ CLASS Malc_GeraXml
    VAR nMonoAliq             AS Num       INIT 0
    VAR nVprodt               AS Num       INIT 0
    VAR nVFretet              AS Num       INIT 0
-   VAR nVseg                 AS Num       INIT 0
-   VAR nDesct                AS Num       INIT 0
+   VAR nVDesc_t              AS Num       INIT 0
    VAR nVipidevol            AS Num       INIT 0
    VAR nVpist                AS Num       INIT 0
    VAR nVCofinst             AS Num       INIT 0
@@ -891,9 +890,16 @@ METHOD fCria_Produto()
                  ::cXml+= XmlTag( "uCom"     , Left(::cUcom, 6))
                  ::cXml+= XmlTag( "qCom"     , ::nQcom, 4)
                  ::cXml+= XmlTag( "vUnCom"   , ::nVuncom, 10)
-                 ::cXml+= XmlTag( "vProd"    , ::nVprod)
 
-		         If !Empty(::cEantrib)
+                 If ::nVprod == 0
+                    ::cXml+= XmlTag( "vProd" , Round(::nQcom * ::nVuncom, 2))
+                 Else
+                    ::cXml+= XmlTag( "vProd" , ::nVprod)
+                 Endif
+
+                 ::nVprodt+= ::nVprod      // já acumula o valor dos produtos para os totais
+
+		 If !Empty(::cEantrib)
                     ::cXml+= XmlTag( "cEANTrib" , Left(::cEantrib, 14))
                  Else
                     ::cXml+= XmlTag( "cEANTrib" , [SEM GTIN])
@@ -905,18 +911,22 @@ METHOD fCria_Produto()
 
                  If !Empty(::nVfrete)
                     ::cXml+= XmlTag( "vFrete", ::nVfrete)
+                    ::nVFretet+= ::nVfrete // já acumula o valor dos fretes para os totais
                  Endif 
 
                  If !Empty(::nVseg)
                     ::cXml+= XmlTag( "vSeg"  , ::nVseg)
+                    ::nVseg_t+= ::nVseg    // já acumula o valor dos seguros para os totais
                  Endif 
 
                  If !Empty(::nVdesc)
                     ::cXml+= XmlTag( "vDesc" , ::nVdesc)
+                    ::nVDesc_t+= ::nVdesc  // já acumula o valor dos descontos para os totais
                  Endif 
 
                  If !Empty(::nVoutro)
                     ::cXml+= XmlTag( "vOutro" , ::nVoutro)
+                    ::nVOutrot+= ::nVoutro // já acumula o valor dos descontos para os totais
                  Endif 
  
                  ::cXml+= XmlTag( "indTot", Iif(!(::cIndtot $ [0_1]), [0], Left(::cIndtot, 1)))                                  // Indica se valor do Item (vProd) entra no valor total da NF-e (vProd). 0=Valor do item (vProd) não compõe o valor total da NF-e 1=Valor do item (vProd) compõe o valor total da NF-e (vProd) (v2.0)
@@ -943,6 +953,7 @@ METHOD fCria_Produto()
           ::cXml+= "<imposto>"                                                                                                   // BLOCO M - IMPOSTOS
                  If ::nVtottrib > 0 .and. SubStr(::cCfOp, 2, 3) # [010]                                                          // lei transparência
                     ::cXml+= XmlTag("vTotTrib", ::nVtottrib)
+                    ::nVtottribt+= ::nVtottrib   // já acumula o valor dos tributos para os totais
                  Endif 
 
                  ::fCria_ProdutoIcms()
@@ -1287,7 +1298,7 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
              ::cXml+= XmlTag( "cClassTrib", Left(::cCclasstrib, 6))
                     ::cXml+= "<gIBSCBS>"
                               If ::nVbcibs == 0
-                                  ::nVbcibs:= ::nVprodt + ::nVServs + ::nVFretet + ::nVSeg + ::nVOutrot + ::nVii - ::nDesct - ::nVpist - ::nVCofinst - ::nVicms - ::nVicmsufdest - ::nVfcp - ::nVfcpufdest - Round(::nMonoBas * ::nMonoAliq, 2) - ::nVissqn + ::nVisistot
+                                  ::nVbcibs:= ::nVprodt + ::nVServs + ::nVFretet + ::nVSeg_t + ::nVOutrot + ::nVii - ::nVDesc_t - ::nVpist - ::nVCofinst - ::nVicms - ::nVicmsufdest - ::nVfcp - ::nVfcpufdest - Round(::nMonoBas * ::nMonoAliq, 2) - ::nVissqn + ::nVisistot
                               Endif
 
                               ::cXml+= XmlTag( "vBC" , ::nVbcibs)
@@ -1502,14 +1513,24 @@ METHOD fCria_Totais()
              ::cXml+= XmlTag( "vBC"          , ::nVbc_t)
              ::cXml+= XmlTag( "vICMS"        , ::nVicms_t)
              ::cXml+= XmlTag( "vICMSDeson"   , ::nVicmsdeson_t)
-             ::cXml+= XmlTag( "vFCPUFDest"   , ::nVfcpufdest_t)                                                                    // Complementa o Cálculo com a Diferença de ICMS
-             ::cXml+= XmlTag( "vICMSUFDest"  , ::nVicmsufdest_t)                                                                   // Complementa o Cálculo com a Diferença de ICMS
-             ::cXml+= XmlTag( "vICMSUFRemet" , ::nVicmsufremet_t)                                                                  // Complementa o Cálculo com a Diferença de ICMS
-             ::cXml+= XmlTag( "vFCP"         , ::nVfcp_t)                                                                          // Campo referente a FCP Para versão 4.0
+
+             If !Empty(::nVfcpufdest_t)
+                ::cXml+= XmlTag( "vFCPUFDest"  , ::nVfcpufdest_t)                                                                 // Complementa o Cálculo com a Diferença de ICMS
+             Endif
+
+             If !Empty(::nVicmsufdest_t)
+                ::cXml+= XmlTag( "vICMSUFDest" , ::nVicmsufdest_t)                                                                // Complementa o Cálculo com a Diferença de ICMS
+             Endif
+
+             If !Empty(::nVicmsufremet_t)
+                ::cXml+= XmlTag( "vICMSUFRemet", ::nVicmsufremet_t)                                                               // Complementa o Cálculo com a Diferença de ICMS
+             Endif
+
+             ::cXml+= XmlTag( "vFCP"         , ::nVfcp_t)                                                                         // Campo referente a FCP Para versão 4.0
              ::cXml+= XmlTag( "vBCST"        , ::nVbcST_t)
              ::cXml+= XmlTag( "vST"          , ::nVst_t)
-             ::cXml+= XmlTag( "vFCPST"       , ::nVfcpst_t)                                                                        // Campo referente a FCP Para versão 4.0
-             ::cXml+= XmlTag( "vFCPSTRet"    , ::nVfcpstret_t)                                                                     // Campo referente a FCP Para versão 4.0
+             ::cXml+= XmlTag( "vFCPST"       , ::nVfcpst_t)                                                                       // Campo referente a FCP Para versão 4.0
+             ::cXml+= XmlTag( "vFCPSTRet"    , ::nVfcpstret_t)                                                                    // Campo referente a FCP Para versão 4.0
 
              If ::nMonoBas # 0
                 ::cXml+= XmlTag( "qBCMonoRet"   , ::nMonoBas)
@@ -1519,7 +1540,7 @@ METHOD fCria_Totais()
              ::cXml+= XmlTag( "vProd"        , ::nVprodt)                                                                        // If(::cFinnfe == [1], 0, ::nVprodt))
              ::cXml+= XmlTag( "vFrete"       , ::nVFretet)
              ::cXml+= XmlTag( "vSeg"         , ::nVSeg_t)
-             ::cXml+= XmlTag( "vDesc"        , ::nDesct)
+             ::cXml+= XmlTag( "vDesc"        , ::nVDesc_t)
              ::cXml+= XmlTag( "vII"          , ::nVii_t)
              ::cXml+= XmlTag( "vIPI"         , ::nVipi_t)
              ::cXml+= XmlTag( "vIPIDevol"    , ::nVipidevol_t)        
@@ -1528,31 +1549,18 @@ METHOD fCria_Totais()
              ::cXml+= XmlTag( "vOutro"       , ::nVOutrot)
          
              If ::nVnf == 0
-                ::cXml+= XmlTag( "vNF"       , ::nVprodt - ::nDesct - ::nVicmsdeson_t + ::nVst_t + ::nVfcpst_t + ::nVFretet + ::nVSeg_t + ::nVOutrot + ::nVii_t + ::nVipi_t + ::nVipidevol_t)
+                ::cXml+= XmlTag( "vNF"       , ::nVprodt - ::nVDesc_t - ::nVicmsdeson_t + ::nVst_t + ::nVfcpst_t + ::nVFretet + ::nVSeg_t + ::nVOutrot + ::nVii_t + ::nVipi_t + ::nVipidevol_t)
 
                 If ::cTpOp == [2]  // Exceção 1: Faturamento direto de veículos novos: Se informada operação de Faturamento Direto para veículos novos (tpOp = 2, id:J02): 
-                   ::cXml+= XmlTag( "vNF"    , ::nVprodt - ::nDesct - ::nVicmsdeson_t + ::nVFretet + ::nVSeg_t + ::nVOutrot + ::nVii_t + ::nVipi_t)
+                   ::cXml+= XmlTag( "vNF"    , ::nVprodt - ::nVDesc_t - ::nVicmsdeson_t + ::nVFretet + ::nVSeg_t + ::nVOutrot + ::nVii_t + ::nVipi_t)
                 Endif
              Else
                ::cXml+= XmlTag( "vNF"        , ::nVnf)
              Endif
 
-             ::cXml+= XmlTag( "vTotTrib"     , ::nVtottribt)
-
-/* ::nVnf:= 
-  (+) vProd (id:W07) 
-  (-) vDesc (id:W10) 
-  (-) vICMSDeson (id:W04a) 
-  (+) vST (id:W06) 
-  (+) vFCPST (id:W06a) 
-  (+) vFrete (id:W08) 
-  (+) vSeg (id:W09) 
-  (+) vOutro (id:W15) 
-  (+) vII (id:W11) 
-  (+) vIPI (id:W12) 
-  (+) vIPIDevol (id: W12a) 
-  (+) vServ (id:W18) (*3) (NT 2011/005) não criamos este grupo
-*/
+             If !Empty(::nVtottribt)
+                ::cXml+= XmlTag( "vTotTrib"  , ::nVtottribt)
+             Endif
         ::cXml+= "</ICMSTot>"
    ::cXml+= "</total>"
 
