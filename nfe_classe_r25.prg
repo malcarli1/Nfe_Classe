@@ -1,465 +1,470 @@
 /*****************************************************************************
- * SISTEMA  : TCONTROL                                                       *
+ * SISTEMA  : GERAL                                                          *
  * PROGRAMA : NFE_CLASSE.PRG   		                                     *
  * OBJETIVO : CLASSE PARA GERAÇÃO DE XML DE DFE'S - NFE(55) E NFCE(65)       *
  * AUTOR    : Marcelo Antonio Lázzaro Carli                                  *
  * ALTERADO : Rubens Aluotto                                                 *
  *          : Marcelo de Paula                                               *
  *          : Marcelo Brigatti                                               *
+ *          : Maurílio Franchin Júnior                                       *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 18.08.2025                                                     *
+ * ULT. ALT.: 20.08.2025                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 
+* AS Num       INIT 0 pode conter decimais
+* AS Int ou AS Integer não contém decimais 4.5 vai ser 4
+
 CLASS Malc_GeraXml
    // Configurações iniciais básicas
-   VAR cXml                  INIT []
-   VAR cUf                   INIT [35]                                         // Grupo B // SP = 35
-   VAR cNf                   INIT []                                           // Grupo B
-   VAR cCnpj                 INIT []                                           // Cnpj/Cpf Emitente
-   VAR cAmbiente             INIT [2]                                          // Ambiente de Homologação 
-   VAR cSerie                INIT [1]
-   VAR cModelo               INIT [55]                                         // 55 Nfe ou 65 nfce
-   VAR cNrdoc                INIT []
-   VAR cVersao               INIT [4.00]                                       // Grupo A
-   VAR cId                   INIT []                                           // Grupo A
-   VAR cCertNomecer          INIT []                                           // Nome do certificado retornado
-   VAR cCertEmissor          INIT []                                           // Nome do Emissor do certificado retornado
-   VAR dCertDataini          INIT CToD( [] )                                   // Data Inicial de Validade do certificado retornado
-   VAR dCertDatafim          INIT CToD( [] )                                   // Data Final de Validade do certificado retornado
-   VAR cCertImprDig          INIT []                                           // Impressão Digital do certificado retornado
-   VAR cCertSerial           INIT []                                           // Número Serial do certificado retornado
-   VAR nCertVersao           INIT 0                                            // Versão do certificado retornado
-   VAR lCertInstall          INIT .F.                                          // Verifica se o Certificado está Instalado no Repositório do Windows
-   VAR lCertVencido          INIT .F.                                          // Verifica se o Certificado está Vencido
+   VAR cXml                  AS Character INIT [] 
+   VAR cUf                   AS Character INIT [35]                            // Grupo B // SP = 35
+   VAR cNf                   AS Character INIT []                              // Grupo B
+   VAR cCnpj                 AS Character INIT []                              // Cnpj/Cpf Emitente
+   VAR cAmbiente             AS Character INIT [2]                             // Ambiente de Homologação 
+   VAR cSerie                AS Character INIT [1]
+   VAR cModelo               AS Character INIT [55]                            // 55 Nfe ou 65 nfce
+   VAR cNrdoc                AS Character INIT [] 
+   VAR cVersao               AS Character INIT [4.00]                          // Grupo A
+   VAR cId                   AS Character INIT []                              // Grupo A
+   VAR cCertNomecer          AS Character INIT []                              // Nome do certificado retornado
+   VAR cCertEmissor          AS Character INIT []                              // Nome do Emissor do certificado retornado
+   VAR dCertDataini          AS Date      INIT CToD( [] )                      // Data Inicial de Validade do certificado retornado
+   VAR dCertDatafim          AS Date      INIT CToD( [] )                      // Data Final de Validade do certificado retornado
+   VAR cCertImprDig          AS Character INIT []                              // Impressão Digital do certificado retornado
+   VAR cCertSerial           AS Character INIT []                              // Número Serial do certificado retornado
+   VAR nCertVersao           AS Num       INIT 0                               // Versão do certificado retornado
+   VAR lCertInstall          AS Logical   INIT .F.                             // Verifica se o Certificado está Instalado no Repositório do Windows
+   VAR lCertVencido          AS Logical   INIT .F.                             // Verifica se o Certificado está Vencido
 
    // Tag ide - Grupo B
-   VAR cNatop                INIT []
-   VAR cMunfg                INIT []
-   VAR dDataE                INIT Date()
-   VAR cTimeE                INIT Time()
-   VAR dDataS                INIT Date()
-   VAR cTimeS                INIT Time()
-   VAR cTpnf                 INIT [1]                                          // 0 - entrada, 1 - saída
-   VAR cIdest                INIT [1]                                          // 1 - Interna, 2 - Interestadual, 3 - Exterior
-   VAR cTpImp                INIT [1]                                          // Tipo de Impressão    1 - Retrato / 2 - Paisagem
-   VAR cTpEmis               INIT [1]                                          // Tipo de Emissão      1 - Normal  / 2 - Contingência FS-IA / 3 - (DESATIVADO) / 4 - Contingência EPEC / 5 - Contingência FS-DA / 6 - Contingência SVC-AN / 7 - Contingência SVC-RS / 9 - Contingência off-line da NFC-e 
-   VAR cFinnfe               INIT [1]                                          // 1 = NF-e normal; 2 = NF-e complementar; 3 = NF-e de ajuste; 4 = Devolução de mercadoria.
-   VAR cIndfinal             INIT [1]                                          // Indica operação com consumidor final (0 - Não ; 1 - Consumidor Final)
-   VAR cIndpres              INIT [1]                                          // Indicador de Presença do comprador no estabelecimento comercial no momento da operação.
-   VAR cIndintermed          INIT [0]
-   VAR cProcemi              INIT [0]                                          // 0 - emissão de NF-e com aplicativo do contribuinte
-   VAR cVerproc              INIT [4.00_B30]
-   VAR dDhCont               INIT []                                           // Data-hora contingência       FSDA - tpEmis = 5
-   VAR cxJust                INIT []                                           // Justificativa contingência   FSDA - tpEmis = 5
-   VAR cRefnfe               INIT []                                           // Grupo BA
-   VAR cCepe                 INIT []  
-   VAR cTpnfdebito           INIT []                                           // Reforma tributária
-   VAR cTpnfcredito          INIT []                                           // Reforma tributária
-   VAR cTpentegov            INIT []                                           // Reforma tributária
-   VAR nPredutor             INIT 0                                            // Reforma tributária 
-   VAR nTpOperGov            INIT 0
+   VAR cNatop                AS Character INIT [] 
+   VAR cMunfg                AS Character INIT [] 
+   VAR dDataE                AS Date      INIT Date()
+   VAR cTimeE                AS Character INIT Time()
+   VAR dDataS                AS Date      INIT Date()
+   VAR cTimeS                AS Character INIT Time()
+   VAR cTpnf                 AS Character INIT [1]                              // 0 - entrada, 1 - saída
+   VAR cIdest                AS Character INIT [1]                              // 1 - Interna, 2 - Interestadual, 3 - Exterior
+   VAR cTpImp                AS Character INIT [1]                              // Tipo de Impressão    1 - Retrato / 2 - Paisagem
+   VAR cTpEmis               AS Character INIT [1]                              // Tipo de Emissão      1 - Normal  / 2 - Contingência FS-IA / 3 - (DESATIVADO) / 4 - Contingência EPEC / 5 - Contingência FS-DA / 6 - Contingência SVC-AN / 7 - Contingência SVC-RS / 9 - Contingência off-line da NFC-e 
+   VAR cFinnfe               AS Character INIT [1]                              // 1 = NF-e normal; 2 = NF-e complementar; 3 = NF-e de ajuste; 4 = Devolução de mercadoria.
+   VAR cIndfinal             AS Character INIT [1]                              // Indica operação com consumidor final (0 - Não ; 1 - Consumidor Final)
+   VAR cIndpres              AS Character INIT [1]                              // Indicador de Presença do comprador no estabelecimento comercial no momento da operação.
+   VAR cIndintermed          AS Character INIT [0]
+   VAR cProcemi              AS Character INIT [0]                              // 0 - emissão de NF-e com aplicativo do contribuinte
+   VAR cVerproc              AS Character INIT [4.00_B30]
+   VAR dDhCont               AS Character INIT []                               // Data-hora contingência       FSDA - tpEmis = 5
+   VAR cxJust                AS Character INIT []                               // Justificativa contingência   FSDA - tpEmis = 5
+   VAR cRefnfe               AS Character INIT []                               // Grupo BA
+   VAR cCepe                 AS Character INIT []  
+   VAR cTpnfdebito           AS Character INIT []                               // Reforma tributária
+   VAR cTpnfcredito          AS Character INIT []                               // Reforma tributária
+   VAR cTpentegov            AS Character INIT []                               // Reforma tributária
+   VAR nPredutor             AS Num       INIT 0                                // Reforma tributária 
+   VAR nTpOperGov            AS Num       INIT 0
  
    // Tag emit - Grupo C
-   VAR cXnomee               INIT []
-   VAR cXfant                INIT []
-   VAR cXlgre                INIT []
-   VAR cNroe                 INIT []
-   VAR cXcple                INIT []
-   VAR cXBairroe             INIT []
-   VAR cXmune                INIT []
-   VAR cUfe                  INIT []
-   VAR cCepe                 INIT []
-   VAR cPais                 INIT [1058]
-   VAR cXpaise               INIT [BRASIL]
-   VAR cFonee                INIT []
-   VAR cIee                  INIT []
-   VAR cIme                  INIT []
-   VAR cCnaee                INIT []
-   VAR cCrt                  INIT []
+   VAR cXnomee               AS Character INIT []
+   VAR cXfant                AS Character INIT []
+   VAR cXlgre                AS Character INIT []  
+   VAR cNroe                 AS Character INIT []  
+   VAR cXcple                AS Character INIT []  
+   VAR cXBairroe             AS Character INIT []  
+   VAR cXmune                AS Character INIT []  
+   VAR cUfe                  AS Character INIT []  
+   VAR cCepe                 AS Character INIT []  
+   VAR cPais                 AS Character INIT [1058]
+   VAR cXpaise               AS Character INIT [BRASIL]
+   VAR cFonee                AS Character INIT []  
+   VAR cIee                  AS Character INIT []  
+   VAR cIme                  AS Character INIT []  
+   VAR cCnaee                AS Character INIT []  
+   VAR cCrt                  AS Character INIT []  
   
    // Tag dest - Grupo E
-   VAR cCnpjd                INIT []
-   VAR cXnomed               INIT []
-   VAR cXlgrd                INIT []
-   VAR cXcpld                INIT []
-   VAR cNrod                 INIT []
-   VAR cXBairrod             INIT []
-   VAR cCmund                INIT []
-   VAR cXmund                INIT []
-   VAR cUfd                  INIT []
-   VAR cCepd                 INIT []
-   VAR cPaisd                INIT [1058]
-   VAR cXpaisd               INIT [BRASIL]
-   VAR cFoned                INIT []
-   VAR cIndiedest            INIT [1]
-   VAR cIed                  INIT []
-   VAR cEmaild               INIT []
-   VAR cAutxml               INIT []
-   VAR cIdestrangeiro        INIT []
+   VAR cCnpjd                AS Character INIT []  
+   VAR cXnomed               AS Character INIT []  
+   VAR cXlgrd                AS Character INIT []  
+   VAR cXcpld                AS Character INIT []  
+   VAR cNrod                 AS Character INIT []  
+   VAR cXBairrod             AS Character INIT []  
+   VAR cCmund                AS Character INIT []  
+   VAR cXmund                AS Character INIT []  
+   VAR cUfd                  AS Character INIT []  
+   VAR cCepd                 AS Character INIT []  
+   VAR cPaisd                AS Character INIT [1058]
+   VAR cXpaisd               AS Character INIT [BRASIL]
+   VAR cFoned                AS Character INIT []  
+   VAR cIndiedest            AS Character INIT [1]
+   VAR cIed                  AS Character INIT []  
+   VAR cEmaild               AS Character INIT []  
+   VAR cAutxml               AS Character INIT []  
+   VAR cIdestrangeiro        AS Character INIT []  
 
    // Tag retirada - Grupo F
-   VAR cCnpjr                INIT []
-   VAR cXnomer               INIT []
-   VAR cXfantr               INIT []
-   VAR cXlgrr                INIT []
-   VAR cXcplr                INIT []
-   VAR cNror                 INIT []
-   VAR cXBairror             INIT []
-   VAR cCmunr                INIT []
-   VAR cXmunr                INIT []
-   VAR cUfr                  INIT []
-   VAR cCepr                 INIT []
-   VAR cPaisr                INIT [1058]
-   VAR cXpaisr               INIT [BRASIL]
-   VAR cFoner                INIT []
-   VAR cEmailr               INIT []
-   VAR cIer                  INIT []
+   VAR cCnpjr                AS Character INIT []  
+   VAR cXnomer               AS Character INIT []  
+   VAR cXfantr               AS Character INIT []  
+   VAR cXlgrr                AS Character INIT []  
+   VAR cXcplr                AS Character INIT []  
+   VAR cNror                 AS Character INIT []  
+   VAR cXBairror             AS Character INIT [] 
+   VAR cCmunr                AS Character INIT [] 
+   VAR cXmunr                AS Character INIT [] 
+   VAR cUfr                  AS Character INIT [] 
+   VAR cCepr                 AS Character INIT [] 
+   VAR cPaisr                AS Character INIT [1058]
+   VAR cXpaisr               AS Character INIT [BRASIL]
+   VAR cFoner                AS Character INIT [] 
+   VAR cEmailr               AS Character INIT [] 
+   VAR cIer                  AS Character INIT [] 
 
    // Tag entrega - Grupo G
-   VAR cCnpjg                INIT []
-   VAR cXnomeg               INIT []
-   VAR cXfantg               INIT []
-   VAR cXlgrg                INIT []
-   VAR cXcplg                INIT []
-   VAR cNrog                 INIT []
-   VAR cXBairrog             INIT []
-   VAR cCmung                INIT []
-   VAR cXmung                INIT []
-   VAR cUfg                  INIT []
-   VAR cCepg                 INIT []
-   VAR cPaisg                INIT [1058]
-   VAR cXpaisg               INIT [BRASIL]
-   VAR cFoneg                INIT []
-   VAR cEmailg               INIT []
-   VAR cIeg                  INIT []
+   VAR cCnpjg                AS Character INIT [] 
+   VAR cXnomeg               AS Character INIT [] 
+   VAR cXfantg               AS Character INIT [] 
+   VAR cXlgrg                AS Character INIT [] 
+   VAR cXcplg                AS Character INIT [] 
+   VAR cNrog                 AS Character INIT [] 
+   VAR cXBairrog             AS Character INIT [] 
+   VAR cCmung                AS Character INIT [] 
+   VAR cXmung                AS Character INIT [] 
+   VAR cUfg                  AS Character INIT [] 
+   VAR cCepg                 AS Character INIT [] 
+   VAR cPaisg                AS Character INIT [1058]
+   VAR cXpaisg               AS Character INIT [BRASIL]
+   VAR cFoneg                AS Character INIT [] 
+   VAR cEmailg               AS Character INIT [] 
+   VAR cIeg                  AS Character INIT [] 
 
    // Tag prod - Grupo I - Produtos e Serviços da NFe
-   VAR nItem                 INIT 1
-   VAR cProd                 INIT []
-   VAR cEan                  INIT []
-   VAR cEantrib              INIT []
-   VAR cXprod                INIT []
-   VAR cNcm                  INIT []
-   VAR cCest                 INIT []
-   VAR cCfOp                 INIT []
-   VAR cUcom                 INIT [UN]
-   VAR nQcom                 INIT 0
-   VAR nVuncom               INIT 0
-   VAR nVprod                INIT 0
-   VAR nVfrete               INIT 0
-   VAR nVseg                 INIT 0
-   VAR nVdesc                INIT 0                                                                    
-   VAR nVoutro               INIT 0
-   VAR cIndtot               INIT [1]                                                  
-   VAR cInfadprod            INIT []                                           // Grupo V
-   VAR cXped                 INIT []                                           // Grupo I05
-   VAR nNitemped             INIT 0                                            // Grupo I05
-   VAR cNfci                 INIT []                                           // Grupo I07
+   VAR nItem                 AS Num       INIT 1
+   VAR cProd                 AS Character INIT [] 
+   VAR cEan                  AS Character INIT [] 
+   VAR cEantrib              AS Character INIT [] 
+   VAR cXprod                AS Character INIT [] 
+   VAR cNcm                  AS Character INIT [] 
+   VAR cCest                 AS Character INIT [] 
+   VAR cCfOp                 AS Character INIT [] 
+   VAR cUcom                 AS Character INIT [UN]
+   VAR nQcom                 AS Num       INIT 0
+   VAR nVuncom               AS Num       INIT 0
+   VAR nVprod                AS Num       INIT 0
+   VAR nVfrete               AS Num       INIT 0
+   VAR nVseg                 AS Num       INIT 0
+   VAR nVdesc                AS Num       INIT 0                                                                    
+   VAR nVoutro               AS Num       INIT 0
+   VAR cIndtot               AS Character INIT [1]                                                  
+   VAR cInfadprod            AS Character INIT []                               // Grupo V
+   VAR cXped                 AS Character INIT []                               // Grupo I05
+   VAR nNitemped             AS Num       INIT 0                                            // Grupo I05
+   VAR cNfci                 AS Character INIT []                               // Grupo I07
 
    // TAG DI - Grupo I01 - Configuracoes para IMPORTACAO CFOP com início "3"   // Colaboração Rubens Aluotto - 16/06/2025
-   VAR cNdi                  INIT []
-   VAR dDdi                  INIT Ctod([])
-   VAR cXlocdesemb           INIT []
-   VAR cUfdesemb             INIT []
-   VAR dDdesemb              INIT Ctod([])
-   VAR nTpviatransp          INIT 0
-   VAR nVafrmm               INIT 0
-   VAR nTpintermedio         INIT 0
-   VAR cCnpja                INIT []
-   VAR cUfterceiro           INIT []
-   VAR cCexportador          INIT []
+   VAR cNdi                  AS Character INIT [] 
+   VAR dDdi                  AS Date      INIT CToD( [] )
+   VAR cXlocdesemb           AS Character INIT [] 
+   VAR cUfdesemb             AS Character INIT [] 
+   VAR dDdesemb              AS Date      INIT CToD( [] )
+   VAR nTpviatransp          AS Num       INIT 0
+   VAR nVafrmm               AS Num       INIT 0
+   VAR nTpintermedio         AS Num       INIT 0
+   VAR cCnpja                AS Character INIT [] 
+   VAR cUfterceiro           AS Character INIT [] 
+   VAR cCexportador          AS Character INIT [] 
 
    // TAG adi - Grupo I01 - Grupo de Adições (SubGrupo da TAG DI) 
-   VAR nNadicao              INIT 0                                           // Número da Adição 
-   VAR nNseqadic             INIT 0                                           // Número sequencial do ítem dentro da Adição
-   VAR cCfabricante          INIT []                                          // Código do fabricante estrangeiro, usado nos sistemas internos de informação do emitente da NF-e 
-   VAR nVdescdi              INIT 0                                           // Valor do desconto do item da DI – Adição
-   VAR cNdraw                INIT []                                          // Número do ato concessório de Drawback (O número do Ato Concessório de Suspensão deve ser preenchido com 11 dígitos (AAAANNNNNND)
-   VAR nNre                  INIT 0                                           // Número do Registro de Exportação
-   VAR cChnfe                INIT []                                          // Chave de Acesso da NF-e recebida para exportação NF-e recebida com fim específico de exportação. No caso de operação com CFOP 3.503, informar a chave de acesso da NF-e que efetivou a exportação 
-   VAR nQexport              INIT 0                                           // Quantidade do item realmente exportado A unidade de medida desta quantidade é a unidade de comercialização deste item. No caso de operação com CFOP 3.503, informar a quantidade de mercadoria devolvida
+   VAR nNadicao              AS Num       INIT 0                                           // Número da Adição 
+   VAR nNseqadic             AS Num       INIT 0                                           // Número sequencial do ítem dentro da Adição
+   VAR cCfabricante          AS Character INIT []                                      // Código do fabricante estrangeiro, usado nos sistemas internos de informação do emitente da NF-e 
+   VAR nVdescdi              AS Num       INIT 0                                           // Valor do desconto do item da DI – Adição
+   VAR cNdraw                AS Character INIT []                                      // Número do ato concessório de Drawback (O número do Ato Concessório de Suspensão deve ser preenchido com 11 dígitos (AAAANNNNNND)
+   VAR nNre                  AS Num       INIT 0                                           // Número do Registro de Exportação
+   VAR cChnfe                AS Character INIT []                                      // Chave de Acesso da NF-e recebida para exportação NF-e recebida com fim específico de exportação. No caso de operação com CFOP 3.503, informar a chave de acesso da NF-e que efetivou a exportação 
+   VAR nQexport              AS Num       INIT 0                                           // Quantidade do item realmente exportado A unidade de medida desta quantidade é a unidade de comercialização deste item. No caso de operação com CFOP 3.503, informar a quantidade de mercadoria devolvida
 
    // Grupo JA. Detalhamento Específico de Veículos novos
-   VAR cTpOp                 INIT []
-   VAR cChassi               INIT []
-   VAR cCor                  INIT []
-   VAR cXcor                 INIT []
-   VAR cPot                  INIT []             
-   VAR cCilin                INIT []
-   VAR nPesolvei             INIT 0                                             
-   VAR nPesobvei             INIT 0 
-   VAR cNserie               INIT []
-   VAR cTpcomb               INIT []                                           
-   VAR cNmotor               INIT []
-   VAR nCmt                  INIT []
-   VAR cDist                 INIT []
-   VAR cAnomod               INIT []
-   VAR cAnofab               INIT []
-   VAR cTpveic               INIT []
-   VAR cEspveic              INIT []
-   VAR cVin                  INIT []
-   VAR cCondveic             INIT []
-   VAR cCmod                 INIT []                                                 
-   VAR cCordenatran          INIT []
-   VAR cLota                 INIT []
-   VAR cTprest               INIT []
+   VAR cTpOp                 AS Character INIT [] 
+   VAR cChassi               AS Character INIT [] 
+   VAR cCor                  AS Character INIT [] 
+   VAR cXcor                 AS Character INIT [] 
+   VAR cPot                  AS Character INIT []              
+   VAR cCilin                AS Character INIT [] 
+   VAR nPesolvei             AS Num       INIT 0                                             
+   VAR nPesobvei             AS Num       INIT 0 
+   VAR cNserie               AS Character INIT [] 
+   VAR cTpcomb               AS Character INIT []                                            
+   VAR cNmotor               AS Character INIT [] 
+   VAR nCmt                  AS Character INIT [] 
+   VAR cDist                 AS Character INIT [] 
+   VAR cAnomod               AS Character INIT [] 
+   VAR cAnofab               AS Character INIT [] 
+   VAR cTpveic               AS Character INIT [] 
+   VAR cEspveic              AS Character INIT [] 
+   VAR cVin                  AS Character INIT [] 
+   VAR cCondveic             AS Character INIT [] 
+   VAR cCmod                 AS Character INIT []                                                  
+   VAR cCordenatran          AS Character INIT [] 
+   VAR cLota                 AS Character INIT [] 
+   VAR cTprest               AS Character INIT [] 
 
    // Tag med - Grupo K. Detalhamento Específico de Medicamento e de matérias-primas farmacêuticas
-   VAR cProdanvisa           INIT []
-   VAR cXmotivoisencao       INIT []
-   VAR nVpmc                 INIT 0
+   VAR cProdanvisa           AS Character INIT [] 
+   VAR cXmotivoisencao       AS Character INIT [] 
+   VAR nVpmc                 AS Num       INIT 0
 
    // Tag arma - Grupo L. Detalhamento Específico de Armamentos
-   VAR cTparma               INIT []
-   VAR cNserie_a             INIT []
-   VAR cNcano                INIT []
-   VAR cDescr_a              INIT []
+   VAR cTparma               AS Character INIT [] 
+   VAR cNserie_a             AS Character INIT [] 
+   VAR cNcano                AS Character INIT [] 
+   VAR cDescr_a              AS Character INIT [] 
 
    // Tag comb - Grupo LA - Combustíveis
-   VAR cCprodanp             INIT []                                           // Código de produto da ANP
-   VAR cDescanp              INIT []                                           // Descrição do produto conforme ANP
-   VAR nQtemp                INIT 0                                            // Quantidade de combustível faturada à temperatura ambiente.
-   VAR nQbcprod              INIT 0                                            // Informar a BC da CIDE em quantidade
-   VAR nValiqprod            INIT 0                                            // Informar o valor da alíquota em reais da CIDE
-   VAR nVcide                INIT 0                                            // Informar o valor da CIDE
+   VAR cCprodanp             AS Character INIT []                               // Código de produto da ANP
+   VAR cDescanp              AS Character INIT []                               // Descrição do produto conforme ANP
+   VAR nQtemp                AS Num       INIT 0                                            // Quantidade de combustível faturada à temperatura ambiente.
+   VAR nQbcprod              AS Num       INIT 0                                            // Informar a BC da CIDE em quantidade
+   VAR nValiqprod            AS Num       INIT 0                                            // Informar o valor da alíquota em reais da CIDE
+   VAR nVcide                AS Num       INIT 0                                            // Informar o valor da CIDE
 
    // Tag Icms - Grupo N
-   VAR cOrig                 INIT [0]
-   VAR cCsticms              INIT []
-   VAR nModbc                INIT 3
-   VAR nVbc                  INIT 0
-   VAR nPicms                INIT 0
-   VAR nVlicms               INIT 0
-   VAR nModbcst              INIT 3
-   VAR nPmvast               INIT 0
-   VAR nPredbcst             INIT 0
-   VAR nVbcst                INIT 0
-   VAR nPicmst               INIT 0
-   VAR nVicmsst              INIT 0
-   VAR nPredbc               INIT 0
-   VAR nPcredsn              INIT 0
-   VAR nVcredicmssn          INIT 0
+   VAR cOrig                 AS Character INIT [0]
+   VAR cCsticms              AS Character INIT [] 
+   VAR nModbc                AS Num       INIT 3
+   VAR nVbc                  AS Num       INIT 0
+   VAR nPicms                AS Num       INIT 0
+   VAR nVlicms               AS Num       INIT 0
+   VAR nModbcst              AS Num       INIT 3
+   VAR nPmvast               AS Num       INIT 0
+   VAR nPredbcst             AS Num       INIT 0
+   VAR nVbcst                AS Num       INIT 0
+   VAR nPicmst               AS Num       INIT 0
+   VAR nVicmsst              AS Num       INIT 0
+   VAR nPredbc               AS Num       INIT 0
+   VAR nPcredsn              AS Num       INIT 0
+   VAR nVcredicmssn          AS Num       INIT 0
 
    // Tag Grupo NA. ICMS para a UF de destino                                  // Marcelo Brigatti
-   VAR nVbcufdest            INIT 0
-   VAR nVbcfcpufdest         INIT 0
-   VAR nPfcpufdest           INIT 0
-   VAR nPicmsufdest          INIT 0
-   VAR nPicmsinter           INIT 0
-   VAR nPicmsinterpart       INIT 0
-   VAR nVfcpufdest           INIT 0
-   VAR nVicmsufdest          INIT 0
-   VAR nVicmsufremet         INIT 0
+   VAR nVbcufdest            AS Num       INIT 0
+   VAR nVbcfcpufdest         AS Num       INIT 0
+   VAR nPfcpufdest           AS Num       INIT 0
+   VAR nPicmsufdest          AS Num       INIT 0
+   VAR nPicmsinter           AS Num       INIT 0
+   VAR nPicmsinterpart       AS Num       INIT 0
+   VAR nVfcpufdest           AS Num       INIT 0
+   VAR nVicmsufdest          AS Num       INIT 0
+   VAR nVicmsufremet         AS Num       INIT 0
 
    // Tag Ipi - Grupo O
-   VAR cCEnq                 INIT [999]
-   VAR cCstipi               INIT [53]
-   VAR cCstipint             INIT []
-   VAR nVipi                 INIT 0
-   VAR nVbcipi               INIT 0
-   VAR nPipi                 INIT 0
+   VAR cCEnq                 AS Character INIT [999]
+   VAR cCstipi               AS Character INIT [53]
+   VAR cCstipint             AS Character INIT [] 
+   VAR nVipi                 AS Num       INIT 0
+   VAR nVbcipi               AS Num       INIT 0
+   VAR nPipi                 AS Num       INIT 0
 
    // Imposto de Importação 
    // TAG II - Grupo P - Grupo Imposto de Importação                           // (Informar apenas quando o item for sujeito ao II) 
-   VAR nVbci                 INIT 0                                            // Valor BC do Imposto de Importação
-   VAR nVdespadu             INIT 0                                            // Valor despesas aduaneiras
-   VAR nVii                  INIT 0                                            // Valor Imposto de Importação
-   VAR nViof                 INIT 0                                            // Valor Imposto sobre Operações Financeiras 
+   VAR nVbci                 AS Num       INIT 0                                            // Valor BC do Imposto de Importação
+   VAR nVdespadu             AS Num       INIT 0                                            // Valor despesas aduaneiras
+   VAR nVii                  AS Num       INIT 0                                            // Valor Imposto de Importação
+   VAR nViof                 AS Num       INIT 0                                            // Valor Imposto sobre Operações Financeiras 
 
    // Tag Pis/Cofins - Grupo Q e S
-   VAR cCstPis               INIT []                                           // (01, 02) CSTs do PIS são mutuamente exclusivas só pode existir um tipo
-   VAR cCstPisqtd            INIT []                                           // (03)
-   VAR cCstPisnt             INIT []                                           // (04, 05, 06, 07, 08, 09)
-   VAR cCstPisoutro          INIT []                                           // (49, 50, 51, 52, 53, 54, 55, 56, 60, 61, 62, 63, 64, 65, 66, 67, 70, 71, 72, 73, 74, 75, 98, 99)
-   VAR cCstCofins            INIT []                                           // (01, 02) CSTs do Cofins são mutuamente exclusivas só pode existir um tipo                 
-   VAR cCstCofinsqtd         INIT []                                           // (03)                                                                                            
-   VAR cCstCofinsnt          INIT []                                           // (04, 05, 06, 07, 08, 09)                                                                        
-   VAR cCstCofinsoutro       INIT []                                           // (49, 50, 51, 52, 53, 54, 55, 56, 60, 61, 62, 63, 64, 65, 66, 67, 70, 71, 72, 73, 74, 75, 98, 99)
-   VAR nBcPis                INIT 0
-   VAR nAlPis                INIT 0
-   VAR nBcCofins             INIT 0
-   VAR nAlCofins             INIT 0
+   VAR cCstPis               AS Character INIT []                               // (01, 02) CSTs do PIS são mutuamente exclusivas só pode existir um tipo
+   VAR cCstPisqtd            AS Character INIT []                               // (03)
+   VAR cCstPisnt             AS Character INIT []                               // (04, 05, 06, 07, 08, 09)
+   VAR cCstPisoutro          AS Character INIT []                               // (49, 50, 51, 52, 53, 54, 55, 56, 60, 61, 62, 63, 64, 65, 66, 67, 70, 71, 72, 73, 74, 75, 98, 99)
+   VAR cCstCofins            AS Character INIT []                               // (01, 02) CSTs do Cofins são mutuamente exclusivas só pode existir um tipo                 
+   VAR cCstCofinsqtd         AS Character INIT []                               // (03)                                                                                            
+   VAR cCstCofinsnt          AS Character INIT []                               // (04, 05, 06, 07, 08, 09)                                                                        
+   VAR cCstCofinsoutro       AS Character INIT []                               // (49, 50, 51, 52, 53, 54, 55, 56, 60, 61, 62, 63, 64, 65, 66, 67, 70, 71, 72, 73, 74, 75, 98, 99)
+   VAR nBcPis                AS Num       INIT 0
+   VAR nAlPis                AS Num       INIT 0
+   VAR nBcCofins             AS Num       INIT 0
+   VAR nAlCofins             AS Num       INIT 0
 
    // Tag total - Grupo W - Total da NFe
-   VAR nVicms                INIT 0
-   VAR nVbc_t                INIT 0
-   VAR nVicms_t              INIT 0
-   VAR nVicmsdeson_t         INIT 0
-   VAR nVfcpufdest_t         INIT 0
-   VAR nVicmsufdest_t        INIT 0
-   VAR nVicmsufremet_t       INIT 0
-   VAR nVfcp_t               INIT 0
-   VAR nVbcST_t              INIT 0
-   VAR nVst_t                INIT 0
-   VAR nVfcpst_t             INIT 0
-   VAR nVfcpstret_t          INIT 0
-   VAR nVSeg_t               INIT 0
-   VAR nVii_t                INIT 0
-   VAR nVipi_t               INIT 0
-   VAR nVipidevol_t          INIT 0       
-   VAR nVpist_t              INIT 0
-   VAR nVCofins_t            INIT 0
-   VAR nMonoBas              INIT 0
-   VAR nMonoAliq             INIT 0
-   VAR nVprodt               INIT 0
-   VAR nVFretet              INIT 0
-   VAR nVseg                 INIT 0
-   VAR nDesct                INIT 0
-   VAR nVipidevol            INIT 0
-   VAR nVpist                INIT 0
-   VAR nVCofinst             INIT 0
-   VAR nVOutrot              INIT 0
-   VAR nVnf                  INIT 0
-   VAR nVtottrib             INIT 0                                            // Grupo M
-   VAR nVtottribt            INIT 0                                            // Grupo Totais
-   VAR lVtottrib             INIT .T.                                          // Variável para permitir ou não informar os valores dos tributos na informação adicional dos itens 
+   VAR nVicms                AS Num       INIT 0
+   VAR nVbc_t                AS Num       INIT 0
+   VAR nVicms_t              AS Num       INIT 0
+   VAR nVicmsdeson_t         AS Num       INIT 0
+   VAR nVfcpufdest_t         AS Num       INIT 0
+   VAR nVicmsufdest_t        AS Num       INIT 0
+   VAR nVicmsufremet_t       AS Num       INIT 0
+   VAR nVfcp_t               AS Num       INIT 0
+   VAR nVbcST_t              AS Num       INIT 0
+   VAR nVst_t                AS Num       INIT 0
+   VAR nVfcpst_t             AS Num       INIT 0
+   VAR nVfcpstret_t          AS Num       INIT 0
+   VAR nVSeg_t               AS Num       INIT 0
+   VAR nVii_t                AS Num       INIT 0
+   VAR nVipi_t               AS Num       INIT 0
+   VAR nVipidevol_t          AS Num       INIT 0       
+   VAR nVpis_t               AS Num       INIT 0
+   VAR nVpist_t              AS Num       INIT 0
+   VAR nVCofins_t            AS Num       INIT 0
+   VAR nMonoBas              AS Num       INIT 0
+   VAR nMonoAliq             AS Num       INIT 0
+   VAR nVprodt               AS Num       INIT 0
+   VAR nVFretet              AS Num       INIT 0
+   VAR nVseg                 AS Num       INIT 0
+   VAR nDesct                AS Num       INIT 0
+   VAR nVipidevol            AS Num       INIT 0
+   VAR nVpist                AS Num       INIT 0
+   VAR nVCofinst             AS Num       INIT 0
+   VAR nVOutrot              AS Num       INIT 0
+   VAR nVnf                  AS Num       INIT 0
+   VAR nVtottrib             AS Num       INIT 0                                            // Grupo M
+   VAR nVtottribt            AS Num       INIT 0                                            // Grupo Totais
+   VAR lVtottrib             AS Logical   INIT .T.                                          // Variável para permitir ou não informar os valores dos tributos na informação adicional dos itens 
 
    // Tag transp - Grupo X
-   VAR cModFrete             INIT []
-   VAR cXnomet               INIT []
-   VAR cCnpjt                INIT []
-   VAR cIet                  INIT []
-   VAR cXEndert              INIT []
-   VAR cXmunt                INIT []
-   VAR cUft                  INIT []
-   VAR cPlaca                INIT []
-   VAR cUfplacat             INIT []
-   VAR cRntc                 INIT []
-   VAR nQvol                 INIT 0
-   VAR cEsp                  INIT []
-   VAR cMarca                INIT []
-   VAR cNvol                 INIT []
-   VAR nPesol                INIT 0
-   VAR nPesob                INIT 0
+   VAR cModFrete             AS Character INIT [] 
+   VAR cXnomet               AS Character INIT [] 
+   VAR cCnpjt                AS Character INIT [] 
+   VAR cIet                  AS Character INIT [] 
+   VAR cXEndert              AS Character INIT [] 
+   VAR cXmunt                AS Character INIT [] 
+   VAR cUft                  AS Character INIT [] 
+   VAR cPlaca                AS Character INIT [] 
+   VAR cUfplacat             AS Character INIT [] 
+   VAR cRntc                 AS Character INIT [] 
+   VAR nQvol                 AS Num       INIT 0
+   VAR cEsp                  AS Character INIT [] 
+   VAR cMarca                AS Character INIT [] 
+   VAR cNvol                 AS Character INIT [] 
+   VAR nPesol                AS Num       INIT 0
+   VAR nPesob                AS Num       INIT 0
 
    // Tag cobr - Grupo Y - SubGrupos fat, dup
-   VAR cNfat                 INIT []
-   VAR nVorigp               INIT 0
-   VAR nVdescp               INIT 0
-   VAR nVliqup               INIT 0
-   VAR cNDup                 INIT []
-   VAR dDvencp               INIT Ctod([])
-   VAR nVdup                 INIT 0
+   VAR cNfat                 AS Character INIT [] 
+   VAR nVorigp               AS Num       INIT 0
+   VAR nVdescp               AS Num       INIT 0
+   VAR nVliqup               AS Num       INIT 0
+   VAR cNDup                 AS Character INIT [] 
+   VAR dDvencp               AS Date      INIT CToD( [] )
+   VAR nVdup                 AS Num       INIT 0
 
    // Tag Pag - Grupo YA. Informações de Pagamento
-   VAR cIndPag               INIT [0]
-   VAR cTpag                 INIT []
-   VAR cXpag                 INIT []
-   VAR nVpag                 INIT 0
-   VAR nVtroco               INIT 0
-   VAR nTpintegra            INIT 0                                            // 1=Pagamento integrado com o sistema de automação da empresa (Ex.: equipamento TEF, Comércio Eletrônico) | 2= Pagamento não integrado com o sistema de automação da empresa 
-   VAR cCnpjpag              INIT []
-   VAR cTband                INIT []
-   VAR cAut                  INIT []
+   VAR cIndPag               AS Character INIT [0]
+   VAR cTpag                 AS Character INIT [] 
+   VAR cXpag                 AS Character INIT [] 
+   VAR nVpag                 AS Num       INIT 0
+   VAR nVtroco               AS Num       INIT 0
+   VAR nTpintegra            AS Num       INIT 0                                            // 1=Pagamento integrado com o sistema de automação da empresa (Ex.: equipamento TEF, Comércio Eletrônico) | 2= Pagamento não integrado com o sistema de automação da empresa 
+   VAR cCnpjpag              AS Character INIT [] 
+   VAR cTband                AS Character INIT [] 
+   VAR cAut                  AS Character INIT [] 
 
    // Tag infAdic - Grupo Z - informações Fisco / Complementar
-   VAR lComplementar         INIT .F.
-   VAR nVIcmsSufDest         INIT 0
-   VAR nVIcmsSufRemet        INIT 0
-   VAR nVpis                 INIT 0
-   VAR nVcofins              INIT 0
-   VAR cCodDest              INIT []
-   VAR cInfcpl               INIT []                                           // Grupo Z - infCpl
-   VAR cInfFisc              INIT []                                           // Grupo Z - infAdFisco
+   VAR lComplementar         AS Logical   INIT .F.
+   VAR nVIcmsSufDest         AS Num       INIT 0
+   VAR nVIcmsSufRemet        AS Num       INIT 0
+   VAR nVpis                 AS Num       INIT 0
+   VAR nVcofins              AS Num       INIT 0
+   VAR cCodDest              AS Character INIT [] 
+   VAR cInfcpl               AS Character INIT []                               // Grupo Z - infCpl
+   VAR cInfFisc              AS Character INIT []                               // Grupo Z - infAdFisco
 
    // TAG exporta - Grupo ZA - Configuracoes para EXPORTACAO CFOP com início "7" // Colaboração Rubens Aluotto - 16/06/2025
-   VAR cUfSaidapais          INIT []
-   VAR cXlocexporta          INIT []
-   VAR cXlocdespacho         INIT []
+   VAR cUfSaidapais          AS Character INIT [] 
+   VAR cXlocexporta          AS Character INIT [] 
+   VAR cXlocdespacho         AS Character INIT [] 
 
    // Tag infRespTec - Grupo ZD - responsável técnico
-   VAR cRespcnpj             INIT []
-   VAR cRespNome             INIT []
-   VAR cRespemail            INIT []
-   VAR cRespfone             INIT []
+   VAR cRespcnpj             AS Character INIT [] 
+   VAR cRespNome             AS Character INIT [] 
+   VAR cRespemail            AS Character INIT [] 
+   VAR cRespfone             AS Character INIT [] 
 
    // TAG is - Reforma tributária
-   VAR cClasstribiS          INIT []
-   VAR nVbcis                INIT 0
-   VAR nPisis                INIT 0
-   VAR nPisespec             INIT 0
-   VAR cUtrib_is             INIT []
-   VAR nQtrib_is             INIT 0
+   VAR cClasstribiS          AS Character INIT [] 
+   VAR nVbcis                AS Num       INIT 0
+   VAR nPisis                AS Num       INIT 0
+   VAR nPisespec             AS Num       INIT 0
+   VAR cUtrib_is             AS Character INIT [] 
+   VAR nQtrib_is             AS Num       INIT 0
 
    // TAG Ibscbs - Reforma tributária
-   VAR cCclasstrib           INIT []
-   VAR nVbcibs               INIT 0
-   VAR nPibsuf               INIT 0.1 // fixo para 2026 depois vai mudar
-   VAR nPdifgibuf            INIT 0
-   VAR nVdevtribgibuf        INIT 0
-   VAR nPredaliqgibuf        INIT 0
-   VAR nVibsuf               INIT 0
-   VAR nPibsmun              INIT 0
-   VAR nPifgibsmun           INIT 0
-   VAR nVcbop                INIT 0
-   VAR nVdevtribgibsmun      INIT 0
-   VAR nPredaliqibsmun       INIT 0
-   VAR nVibsmun              INIT 0
-   VAR nPcbs                 INIT 0.9 // fixo para 2026 depois vai mudar
-   VAR nPpDifgcbs            INIT 0
-   VAR nVcbsopgcbs           INIT 0
-   VAR nVdevtribgcbs         INIT 0
-   VAR nPredaliqgcbs         INIT 0
-   VAR nVcbs                 INIT 0
-   VAR cClasstribreg         INIT []
-   VAR nPaliqefetregibsuf    INIT 0
-   VAR nVtribregibsuf        INIT 0
-   VAR nPaliqefetregibsMun   INIT 0
-   VAR nVtribregibsMun       INIT 0
-   VAR nPaliqefetregcbs      INIT 0
-   VAR nVtribregcbs          INIT 0
-   VAR cCredPresgibs         INIT []
-   VAR nPcredpresgibs        INIT 0
-   VAR nVcredpresgibs        INIT 0
-   VAR cCredPrescbs          INIT []
-   VAR nPcredprescbs         INIT 0
-   VAR nVcredprescbs         INIT 0
-   VAR nVissqn               INIT 0
-   VAR nVServs               INIT 0
-   VAR nVfcp                 INIT 0
+   VAR cCclasstrib           AS Character INIT [] 
+   VAR nVbcibs               AS Num       INIT 0
+   VAR nPibsuf               AS Num       INIT 0.1 // fixo para 2026 depois vai mudar
+   VAR nPdifgibuf            AS Num       INIT 0
+   VAR nVdevtribgibuf        AS Num       INIT 0
+   VAR nPredaliqgibuf        AS Num       INIT 0
+   VAR nVibsuf               AS Num       INIT 0
+   VAR nPibsmun              AS Num       INIT 0
+   VAR nPifgibsmun           AS Num       INIT 0
+   VAR nVcbop                AS Num       INIT 0
+   VAR nVdevtribgibsmun      AS Num       INIT 0
+   VAR nPredaliqibsmun       AS Num       INIT 0
+   VAR nVibsmun              AS Num       INIT 0
+   VAR nPcbs                 AS Num       INIT 0.9 // fixo para 2026 depois vai mudar
+   VAR nPpDifgcbs            AS Num       INIT 0
+   VAR nVcbsopgcbs           AS Num       INIT 0
+   VAR nVdevtribgcbs         AS Num       INIT 0
+   VAR nPredaliqgcbs         AS Num       INIT 0
+   VAR nVcbs                 AS Num       INIT 0
+   VAR cClasstribreg         AS Character INIT [] 
+   VAR nPaliqefetregibsuf    AS Num       INIT 0
+   VAR nVtribregibsuf        AS Num       INIT 0
+   VAR nPaliqefetregibsMun   AS Num       INIT 0
+   VAR nVtribregibsMun       AS Num       INIT 0
+   VAR nPaliqefetregcbs      AS Num       INIT 0
+   VAR nVtribregcbs          AS Num       INIT 0
+   VAR cCredPresgibs         AS Character INIT [] 
+   VAR nPcredpresgibs        AS Num       INIT 0
+   VAR nVcredpresgibs        AS Num       INIT 0
+   VAR cCredPrescbs          AS Character INIT [] 
+   VAR nPcredprescbs         AS Num       INIT 0
+   VAR nVcredprescbs         AS Num       INIT 0
+   VAR nVissqn               AS Num       INIT 0
+   VAR nVServs               AS Num       INIT 0
+   VAR nVfcp                 AS Num       INIT 0
 
    // Tag ISTot - Reforma tributária
-   VAR nVisistot             INIT 0
-   VAR nVbcibscbs            INIT 0
-   VAR nVdifgibsuf           INIT 0
-   VAR nVdevtribgibsuf       INIT 0
-   VAR nVibsufgibsuf         INIT 0
-   VAR nVdDifgibsmun         INIT 0
-   VAR nVdevtribgibsmun      INIT 0
-   VAR nVibsmungibsmun       INIT 0
-   VAR nVibsgibs             INIT 0
-   VAR nVcredpresgibs        INIT 0
-   VAR nVcredprescondsusgibs INIT 0
-   VAR nVdifgcbs             INIT 0
-   VAR nVdevtribgcbs         INIT 0
-   VAR nVcbsgcbs             INIT 0
-   VAR nVcredpresgcbs        INIT 0
-   VAR nVcredprescondsusgcbs INIT 0
-   VAR nVnftot               INIT 0
+   VAR nVisistot             AS Num       INIT 0
+   VAR nVbcibscbs            AS Num       INIT 0
+   VAR nVdifgibsuf           AS Num       INIT 0
+   VAR nVdevtribgibsuf       AS Num       INIT 0
+   VAR nVibsufgibsuf         AS Num       INIT 0
+   VAR nVdDifgibsmun         AS Num       INIT 0
+   VAR nVdevtribgibsmun      AS Num       INIT 0
+   VAR nVibsmungibsmun       AS Num       INIT 0
+   VAR nVibsgibs             AS Num       INIT 0
+   VAR nVcredpresgibs        AS Num       INIT 0
+   VAR nVcredprescondsusgibs AS Num       INIT 0
+   VAR nVdifgcbs             AS Num       INIT 0
+   VAR nVdevtribgcbs         AS Num       INIT 0
+   VAR nVcbsgcbs             AS Num       INIT 0
+   VAR nVcredpresgcbs        AS Num       INIT 0
+   VAR nVcredprescondsusgcbs AS Num       INIT 0
+   VAR nVnftot               AS Num       INIT 0
 
    // Tag gIBSCBSMono  - Reforma tributária
-   VAR nQbcmono              INIT 0
-   VAR nAdremibs             INIT 0
-   VAR nAdremcbs             INIT 0
-   VAR nVibsmono             INIT 0
-   VAR nVcbsmono             INIT 0
-   VAR nQbcmonoreten         INIT 0
-   VAR nAdremibsreten        INIT 0
-   VAR nVibsmonoreten        INIT 0
-   VAR nAdremcbsreten        INIT 0
-   VAR nVcbsmonoreten        INIT 0
-   VAR nQbcmonoret           INIT 0
-   VAR nAdremibsret          INIT 0
-   VAR nVibsmonoret          INIT 0
-   VAR nAdremcbsret          INIT 0
-   VAR nVcbsmonoret          INIT 0
-   VAR nPdifibs              INIT 0 
-   VAR nVibsmonodif          INIT 0
-   VAR nPdifcbs              INIT 0
-   VAR nVcbsmonodif          INIT 0
-   VAR nVtotibsmonoItem      INIT 0
-   VAR nVtotcbsmonoItem      INIT 0
+   VAR nQbcmono              AS Num       INIT 0
+   VAR nAdremibs             AS Num       INIT 0
+   VAR nAdremcbs             AS Num       INIT 0
+   VAR nVibsmono             AS Num       INIT 0
+   VAR nVcbsmono             AS Num       INIT 0
+   VAR nQbcmonoreten         AS Num       INIT 0
+   VAR nAdremibsreten        AS Num       INIT 0
+   VAR nVibsmonoreten        AS Num       INIT 0
+   VAR nAdremcbsreten        AS Num       INIT 0
+   VAR nVcbsmonoreten        AS Num       INIT 0
+   VAR nQbcmonoret           AS Num       INIT 0
+   VAR nAdremibsret          AS Num       INIT 0
+   VAR nVibsmonoret          AS Num       INIT 0
+   VAR nAdremcbsret          AS Num       INIT 0
+   VAR nVcbsmonoret          AS Num       INIT 0
+   VAR nPdifibs              AS Num       INIT 0 
+   VAR nVibsmonodif          AS Num       INIT 0
+   VAR nPdifcbs              AS Num       INIT 0
+   VAR nVcbsmonodif          AS Num       INIT 0
+   VAR nVtotibsmonoItem      AS Num       INIT 0
+   VAR nVtotcbsmonoItem      AS Num       INIT 0
 
    METHOD fCria_Xml()          CONSTRUCTOR
    METHOD fCria_ChaveAcesso()
@@ -495,11 +500,11 @@ CLASS Malc_GeraXml
    METHOD fCria_Responsavel()
    METHOD fCria_Fechamento()
 
-   METHOD fCertificadopfx(cCertificadoArquivo, cCertificadoSenha)
+   METHOD fCertificadopfx()
 ENDCLASS
 
 * ---------------> Metodo para inicializar a criação do XML <----------------- *
-METHOD fCria_Xml() CLASS Malc_GeraXml
+METHOD fCria_Xml()
    ::fCria_ChaveAcesso()
 
    ::cXml+= '<NFe xmlns="http://www.portalfiscal.inf.br/nfe">'
@@ -507,7 +512,7 @@ METHOD fCria_Xml() CLASS Malc_GeraXml
 Return Self
 
 * --------------> Metodo para gerar a chave de acesso da NFe <---------------- *
-METHOD fCria_ChaveAcesso() CLASS Malc_GeraXml
+METHOD fCria_ChaveAcesso()
    Local cKey:= Alltrim(::cUf)
          cKey+= SubStr(Dtoc(Date()), 9, 2) + SubStr(Dtoc(Date()), 4, 2)
          cKey+= SoNumeroCnpj(::cCnpj)
@@ -518,7 +523,7 @@ METHOD fCria_ChaveAcesso() CLASS Malc_GeraXml
 Return (::cId:= cKey + CalculaDigito(cKey, [11]))
 
 * ------------> Metodo para gerar a tag de identificação da NFe <------------- *
-METHOD fCria_Ide() CLASS Malc_GeraXml
+METHOD fCria_Ide()
    ::cXml+= "<ide>"                                                                                                              // Início da TAG (ide)
           ::cXml+= XmlTag( "cUF"    , Left(::cUf, 2))                                                                            // UF do Emitente no caso SP = 35
           ::cXml+= XmlTag( "cNF"    , Padl(Alltrim(::cNrdoc), 8, [0]))                                                           // Controle da Nota ou número do pedido
@@ -597,7 +602,7 @@ METHOD fCria_Ide() CLASS Malc_GeraXml
 Return (Nil)
 
 * -----------------> Metodo para gerar as referências da NF <----------------- *
-METHOD fCria_AddNfref() CLASS Malc_GeraXml                                                                                       // Marcelo Brigatti
+METHOD fCria_AddNfref()                                                                                       // Marcelo Brigatti
    If !Empty(::cRefnfe) .and. ::cModelo == [55] .and. (::cFinnfe == [2] .or. ::cFinnfe == [4])
       If "</ide><NFref>" $ ::cXml
          ::cXml:= StrTran(::cXml, "</ide><NFref>", "<NFref>")
@@ -620,7 +625,7 @@ METHOD fCria_AddNfref() CLASS Malc_GeraXml                                      
 Return (Nil)
 
 * ------------------> Metodo para gerar a tag gCompragov <-------------------- *
-METHOD fCria_Compragov() CLASS Malc_GeraXml
+METHOD fCria_Compragov()
    If !Empty(::cTpentegov)
       ::cXml+= "<gCompraGov>"                                                                                                    
              ::cXml+= XmlTag( "tpEnteGov" , Iif(!(::cTpentegov $ [1_2_3_4]), [1], Left(::cTpentegov, 1)))                        // 1=União 2=Estado 3=Distrito Federal 4=Município
@@ -631,7 +636,7 @@ METHOD fCria_Compragov() CLASS Malc_GeraXml
 Return (Nil)
 
 * -----------------> Metodo para gerar a tag do emitente <-------------------- *
-METHOD fCria_Emitente() CLASS Malc_GeraXml
+METHOD fCria_Emitente()
    ::cXml+= "<emit>"                                                                                                             // Início da TAG (emit)
           ::cXml+= XmlTag( "CNPJ" , Left(SoNumeroCnpj(::cCnpj), 14))                                                             // CNPJ do Emitente
           ::cXml+= XmlTag( "xNome" , Left(fRetiraAcento(::cXnomee), 60))                                                         // Razão Social emitente
@@ -679,7 +684,7 @@ METHOD fCria_Emitente() CLASS Malc_GeraXml
 Return (Nil)
 
 * -----------------> Metodo para gerar a tag do destinatário <---------------- *
-METHOD fCria_Destinatario() CLASS Malc_GeraXml
+METHOD fCria_Destinatario()
    If !Empty(::cCnpjd)
       ::cXml+= "<dest>"
              If !Empty(::cCnpjd)
@@ -754,7 +759,7 @@ METHOD fCria_Destinatario() CLASS Malc_GeraXml
 Return (Nil)
 
 * ----------> Metodo para gerar a tag do // Contador Responsável <------------ *
-METHOD fCria_Autxml() CLASS Malc_GeraXml   // Marcelo Brigatti
+METHOD fCria_Autxml()   // Marcelo Brigatti
    If !Empty(::cAutxml)
       ::cXml+= '<autXML>'
          If Len(SoNumeroCnpj(::cAutxml)) < 14
@@ -767,7 +772,7 @@ METHOD fCria_Autxml() CLASS Malc_GeraXml   // Marcelo Brigatti
 Return (Nil)
 
 * ----------> Metodo para gerar a tag do endereço de retirada <--------------- *
-METHOD fCria_Retirada() CLASS Malc_GeraXml                                                                                       // Marcelo Brigatti
+METHOD fCria_Retirada()                                                                                       // Marcelo Brigatti
    If Alltrim(::cXlgrd) # Alltrim(::cXlgrr)  // Informar somente se diferente do endereço do remetente.                          // If !Empty(SoNumeroCnpj(::cCnpjr))  // Informar somente se diferente do endereço do remetente.                                  
       ::cXml+= "<retirada>"
              If Len(SoNumeroCnpj(::cCnpjr)) < 14                                                                                 // Pessoa Física - Cpf
@@ -811,7 +816,7 @@ METHOD fCria_Retirada() CLASS Malc_GeraXml                                      
 Return (Nil)
                  
 * -----------> Metodo para gerar a tag do endereço de entrega <--------------- *
-METHOD fCria_Entrega() CLASS Malc_GeraXml                                                                                        // Marcelo Brigatti
+METHOD fCria_Entrega()                                                                                        // Marcelo Brigatti
    If Alltrim(::cXlgrd) # Alltrim(::cXlgrg)  // Informar somente se diferente do endereço destinatário.                          // If !Empty(SoNumeroCnpj(::cCnpjg))  // Informar somente se diferente do endereço destinatário.                                 // If Alltrim(::cXlgrd) # Alltrim(::cXlgrg)  // Informar somente se diferente do endereço destinatário.
       ::cXml+= "<entrega>"
              If Len(SoNumeroCnpj(::cCnpjg)) < 14                                                                                 // Pessoa Física - Cpf
@@ -855,7 +860,7 @@ METHOD fCria_Entrega() CLASS Malc_GeraXml                                       
 Return (Nil)
    
 * ---------------> Metodo para gerar a tag dos itens da NFE <----------------- *
-METHOD fCria_Produto() CLASS Malc_GeraXml
+METHOD fCria_Produto()
    ::cXml+= [<det nItem="] + Left(NumberXml( ::nItem, 0 ), 3) + [">]
           ::cXml+= "<prod>"
                  ::cXml+= XmlTag( "cProd"    , Left(::cProd, 60))
@@ -959,7 +964,7 @@ METHOD fCria_Produto() CLASS Malc_GeraXml
 Return (Nil)
 
 * ----------------> Metodo para gerar a tag de veicProd <----------------- *
-METHOD fCria_ProdVeiculo() CLASS Malc_GeraXml  // Grupo JA. Detalhamento Específico de Veículos novos                                                                               
+METHOD fCria_ProdVeiculo()  // Grupo JA. Detalhamento Específico de Veículos novos                                                                               
    If !Empty(::cChassi)
       ::cXml+= "<veicProd>"
              ::cXml+= XmlTag( "tpOp"         , Iif(!(::cTpOp $ [0_1_2_3]), [0], Left(::cTpOp, 1)))                                                              // 1=Venda concessionária, 2=Faturamento direto para consumidor final 3=Venda direta para grandes consumidores (frotista, governo, ...) 0=Outros
@@ -990,7 +995,7 @@ METHOD fCria_ProdVeiculo() CLASS Malc_GeraXml  // Grupo JA. Detalhamento Específ
 Return (Nil)
 
 * ----------------> Metodo para gerar a Tag arma <---------------------------- *
-METHOD fCria_ProdArmamento() CLASS Malc_GeraXml  // Tag arma - Grupo L. Detalhamento Específico de Armamentos
+METHOD fCria_ProdArmamento()  // Tag arma - Grupo L. Detalhamento Específico de Armamentos
    Local cTexto:= cTexto1:= [], nPosIni, nPosFim
 
    If !Empty(::cNserie_a)
@@ -1026,7 +1031,7 @@ Static Function fRemoveDet(cTxtXml, nItem)
 Return (cTxtXml)
 
 * ----------------> Metodo para gerar a tag de Detalhe Medicam. <------------- *
-METHOD fCria_ProdMedicamento() CLASS Malc_GeraXml // Grupo K. Detalhamento Específico de Medicamento e de matérias-primas farmacêuticas
+METHOD fCria_ProdMedicamento() // Grupo K. Detalhamento Específico de Medicamento e de matérias-primas farmacêuticas
    If !Empty(::nVpmc)
       ::cXml+= "<med>"
              ::cXml+= XmlTag( "cProdANVISA"       , Left(::cProdanvisa, 13))                                                     // Código de Produto da ANVISA - Utilizar o número do registro ANVISA ou preencher com o literal “ISENTO”, no caso de medicamento isento de registro na ANVISA. (Incluído na NT2016.002. Atualizado na NT 2018.005)
@@ -1041,7 +1046,7 @@ METHOD fCria_ProdMedicamento() CLASS Malc_GeraXml // Grupo K. Detalhamento Espec
 Return (Nil)
 
 * ----------------> Metodo para gerar a tag de combustíveis <----------------- *
-METHOD fCria_ProdCombustivel() CLASS Malc_GeraXml                                                                                // Marcelo de Paula, Marcelo Brigatti
+METHOD fCria_ProdCombustivel()                                                                                // Marcelo de Paula, Marcelo Brigatti
    Local cGrupoANP:= [1662,2662,5651,5652,5653,5654,5655,5656,5657,5658,5659,5660,5661,5662,5663,5664,5665,5666,5667,6651,6652,6653,6654,6655,6656,6657,6658,6659,6660,6661,6662,6663,6664,6665,6666,6667,7651,7654,7667]
 
    // Número ANP para combustíveis
@@ -1066,7 +1071,7 @@ METHOD fCria_ProdCombustivel() CLASS Malc_GeraXml                               
 Return (Nil)
 
 * --------------------> Metodo para gerar a tag do ICMS <--------------------- *
-METHOD fCria_ProdutoIcms() CLASS Malc_GeraXml
+METHOD fCria_ProdutoIcms()
    ::cXml+= "<ICMS>"                                                                                                             // BLOCO N - ICMS NORMAL E ST
           Do Case
              Case ::cCsticms == [000]
@@ -1218,7 +1223,7 @@ METHOD fCria_ProdutoIcms() CLASS Malc_GeraXml
 Return (Nil)
 
 * --------------------> Metodo para gerar a tag do ICMS NA <------------------ *
-METHOD fCria_ProdutoIcms_Na() CLASS Malc_GeraXml  //Grupo NA. ICMS para a UF de destino
+METHOD fCria_ProdutoIcms_Na()  //Grupo NA. ICMS para a UF de destino
    If !Empty(::nVbcufdest)
       ::cXml+= "<ICMSUFDest>"
              ::cXml+= XmlTag( "vBCUFDest"      , ::nVbcufdest)                                                                   // Valor da BC do ICMS na UF de destino
@@ -1235,7 +1240,7 @@ METHOD fCria_ProdutoIcms_Na() CLASS Malc_GeraXml  //Grupo NA. ICMS para a UF de 
 Return (Nil)
 
 * --------------------> Metodo para gerar a tag do IPI <---------------------- *
-METHOD fCria_ProdutoIpi() CLASS Malc_GeraXml
+METHOD fCria_ProdutoIpi()
    If ::nVipi > 0 .or. !Empty(::cCstipint)
       ::cXml+= "<IPI>"
              ::cXml+= XmlTag( "cEnq" , Left(::cCEnq, 3))
@@ -1259,7 +1264,7 @@ METHOD fCria_ProdutoIpi() CLASS Malc_GeraXml
 Return (Nil)
 
 * ------------------> Metodo para gerar a tag IS = Imposto Seletivo <--------- *
-METHOD fCria_ProdutoIs() CLASS Malc_GeraXml                                                                                      // Reforma tributária
+METHOD fCria_ProdutoIs()                                                                                      // Reforma tributária
    If !Empty(::cClasstribis)
       ::cXml+= "<IS>"
              ::cXml+= XmlTag( "CSTIS"        , Left(::cClasstribis, 3))                                                          // Utilizar tabela CÓDIGO DE CLASSIFICAÇÃO TRIBUTÁRIA DO IMPOSTO SELETIVO
@@ -1275,7 +1280,7 @@ METHOD fCria_ProdutoIs() CLASS Malc_GeraXml                                     
 Return (Nil)
 
 * ----------------------> Metodo para gerar a tag IBSCBS <-------------------- *
-METHOD fCria_ProdutoIbscbs() CLASS Malc_GeraXml  // Reforma tributária
+METHOD fCria_ProdutoIbscbs()  // Reforma tributária
    If !Empty(::cCclasstrib)
       ::cXml+= "<IBSCBS>"
              ::cXml+= XmlTag( "CST", Left(::cCclasstrib, 3))
@@ -1395,7 +1400,7 @@ METHOD fCria_ProdutoIbscbs() CLASS Malc_GeraXml  // Reforma tributária
 Return (Nil)
 
 * -------------------> Metodo para gerar a tag gIBSCBSMono <------------------ *
-METHOD fCria_Gibscbsmono() CLASS Malc_GeraXml   // Reforma tributária
+METHOD fCria_Gibscbsmono()   // Reforma tributária
    If ::nQbcmono # 0
       ::cXml+= "<gIBSCBSMono>"
              ::cXml+= XmlTag( "qBCMono"         , ::nQbcmono)
@@ -1424,7 +1429,7 @@ METHOD fCria_Gibscbsmono() CLASS Malc_GeraXml   // Reforma tributária
 Return (Nil)
 
 * ----------------> Metodo para gerar as tags do PIS e COFINS <--------------- *
-METHOD fCria_ProdutoPisCofins() CLASS Malc_GeraXml   // Marcelo Brigatti
+METHOD fCria_ProdutoPisCofins()   // Marcelo Brigatti
    If !Empty(::cCstPis)
              ::cXml+= "<PIS>"
                    ::cXml+= "<PISAliq>"
@@ -1491,7 +1496,7 @@ METHOD fCria_ProdutoPisCofins() CLASS Malc_GeraXml   // Marcelo Brigatti
 Return (Nil)
 
 * ---------------> Metodo para gerar a tag de Totais da NFe <----------------- *
-METHOD fCria_Totais() CLASS Malc_GeraXml
+METHOD fCria_Totais()
    ::cXml+= "<total>"
         ::cXml+= "<ICMSTot>"
              ::cXml+= XmlTag( "vBC"          , ::nVbc_t)
@@ -1555,7 +1560,7 @@ METHOD fCria_Totais() CLASS Malc_GeraXml
 Return (Nil)
 
 * --------------> Metodo para gerar a tag de Total IS da NFe <---------------- *
-METHOD fCria_Istot() CLASS Malc_GeraXml
+METHOD fCria_Istot()
    If ::nVisistot # 0
 
       If "</total>" $ ::cXml
@@ -1598,7 +1603,7 @@ METHOD fCria_Istot() CLASS Malc_GeraXml
 Return (Nil)
 
 * ---------------> Metodo para gerar a tag do Transportador <----------------- *
-METHOD fCria_Transportadora() CLASS Malc_GeraXml
+METHOD fCria_Transportadora()
    If ::cModelo # [65]
       ::cXml+= "<transp>"
              ::cXml+= XmlTag( "modFrete" , Iif(!(::cModFrete $ [0_1_2_3_4_9]), [0], Left(::cModFrete, 1)))                       // Modalidade do frete 0=Contratação do Frete por conta do Remetente (CIF); 1=Contratação do Frete por conta do Destinatário (FOB); 2=Contratação do Frete por conta de Terceiros; 3=Transporte Próprio por conta do Remetente; 4=Transporte Próprio por conta do Destinatário;9=Sem Ocorrência de Transporte. (Atualizado na NT2016.002)
@@ -1683,7 +1688,7 @@ METHOD fCria_Transportadora() CLASS Malc_GeraXml
 Return (Nil)
 
 * ------------------> Metodo para gerar a tag de Cobrança <------------------- *
-METHOD fCria_Cobranca() CLASS Malc_GeraXml  // Grupo Y. Dados da Cobrança
+METHOD fCria_Cobranca()  // Grupo Y. Dados da Cobrança
    If !Empty(::cNfat)
       If !("<cobr>") $ ::cXml
          ::cXml+= "<cobr>" 
@@ -1724,7 +1729,7 @@ METHOD fCria_Cobranca() CLASS Malc_GeraXml  // Grupo Y. Dados da Cobrança
 Return (Nil)
 
 * ------------> Metodo para gerar a tag de Pagamentos <----------------------- *
-METHOD fCria_Pagamento() CLASS Malc_GeraXml // Grupo YA. Informações de Pagamento
+METHOD fCria_Pagamento() // Grupo YA. Informações de Pagamento
    If !("<pag>") $ ::cXml
       ::cXml+= "<pag>" 
    Endif  
@@ -1781,7 +1786,7 @@ METHOD fCria_Pagamento() CLASS Malc_GeraXml // Grupo YA. Informações de Pagament
 Return (Nil)
 
 * ------------> Metodo para gerar a tag de Informações Adicionais <----------- *
-METHOD fCria_Informacoes() CLASS Malc_GeraXml
+METHOD fCria_Informacoes()
    ::cXml+= "<infAdic>"
           If ::lComplementar                                                                                                     // Informações DIFAL
              If ::nVIcmsSufDest > 0
@@ -1813,7 +1818,7 @@ METHOD fCria_Informacoes() CLASS Malc_GeraXml
 Return (Nil)
 
 * ----------> Metodo para gerar a tag de Declaração de Importação <----------- *
-METHOD fCria_ProdImporta() CLASS Malc_GeraXml                                                                                    // Colaboração Rubens Aluotto, Marcelo Brigatti
+METHOD fCria_ProdImporta()                                                                                    // Colaboração Rubens Aluotto, Marcelo Brigatti
    If Substr(Alltrim(::cCfop), 1, 1) == [3]
       ::cXml+= "<DI>"
              ::cXml+= XmlTag( "nDI" , Left(::cNdi, 12))                                                                          // número do docto de importação DI/DSI/DA - 1-10 C  
@@ -1872,7 +1877,7 @@ METHOD fCria_ProdImporta() CLASS Malc_GeraXml                                   
 Return (Nil)
 
 * -----------------> Metodo para gerar a tag de Exportação <------------------ *
-METHOD fCria_ProdExporta() CLASS Malc_GeraXml                                                                                    // Colaboração Rubens Aluotto - 16/06/2025
+METHOD fCria_ProdExporta()                                                                                    // Colaboração Rubens Aluotto - 16/06/2025
    If !Empty(::cUfSaidapais) .and. Substr(SoNumero(::cCfOp), 1, 1) == [7]
       ::cXml+= "<exporta>"
              ::cXml+= XmlTag( "UFSaidaPais" , Left(::cUfSaidapais, 2))
@@ -1883,7 +1888,7 @@ METHOD fCria_ProdExporta() CLASS Malc_GeraXml                                   
 Return (Nil)
 
 * ------------> Metodo para gerar a tag do Responsável Técnico <-------------- *
-METHOD fCria_Responsavel() CLASS Malc_GeraXml
+METHOD fCria_Responsavel()
    If !Empty(::cRespNome) .and. !Empty(::cRespcnpj) .and. !Empty(::cRespemail)
       ::cXml+= "<infRespTec>" 
              ::cXml+= XmlTag( "CNPJ"     , Left(SoNumeroCnpj(::cRespcnpj), 14))                                                  // CNPJ do Responsável Técnico
@@ -1895,7 +1900,7 @@ METHOD fCria_Responsavel() CLASS Malc_GeraXml
 Return (Nil)
 
 * -----------> Metodo para gerar a tag do Imposto de Importação <------------- *
-METHOD fCria_ProdutoII() CLASS Malc_GeraXml  // Marcelo Brigatti
+METHOD fCria_ProdutoII()  // Marcelo Brigatti
    If Substr(Alltrim(::cCfOp), 1, 1) == [3]
       ::cXml+= "<II>"    // BLOCO P
             ::cXml+= XmlTag( "vBC"      , ::nVbci )
@@ -1907,13 +1912,13 @@ METHOD fCria_ProdutoII() CLASS Malc_GeraXml  // Marcelo Brigatti
 Return (Nil)
 
 * -----------------------> Metodo para fechar o XML <------------------------- *
-METHOD fCria_Fechamento() CLASS Malc_GeraXml
+METHOD fCria_Fechamento()
    ::cXml+= "</infNFe>"
    ::cXml+= "</NFe>"
 Return (Nil)
 
 * -----------------------> Metodo para Ler Certificado .PFX <----------------- *
-METHOD fCertificadopfx(cCertificadoArquivo, cCertificadoSenha) CLASS Malc_GeraXml
+METHOD fCertificadopfx(cCertificadoArquivo, cCertificadoSenha)
    Local oCertificado
 
    BEGIN SEQUENCE WITH __BreakBlock()
@@ -1948,11 +1953,13 @@ Return (cStr:= CharRem(cEliminar, cStr))
 Static Function fRetiraAcento(cStr)
    Local aLetraCAc:= {[Á],[À],[Ä],[Ã],[Â],[É],[È],[Ë],[Ê],[&],[Í],[Ì],[Ï],[Î],[Ó],[Ò],[Ö],[Õ],[Ô],[Ú],[Ù],[Ü],[Û],[Ç],[Ñ],[Ý],[á],[à],[ä],[ã],[â],[é],[è],[ë],[ƒ],[ê],[í],[ì],[ï],[î],[ó],[ò],[ö],[õ],[ô],[ú],[ù],[ü],[û],[ç],[ñ],[ý],[ÿ],[º] ,[ª] ,[‡],[Æ],[¡],[£],[ÿ],[ ],[á],[ ] ,[ ],[ ],[‚],[ˆ],[“],[¢],[…],[°],[A³],[A§],[Ai],[A©],[Ao.],[’],[´] }
    Local aLetraSAc:= {[A],[A],[A],[A],[A],[E],[E],[E],[E],[E],[I],[I],[I],[I],[O],[O],[O],[O],[O],[U],[U],[U],[U],[C],[N],[Y],[a],[a],[a],[a],[a],[e],[e],[e],[a],[e],[i],[i],[i],[i],[o],[o],[o],[o],[o],[u],[u],[u],[u],[c],[n],[y],[y],[o.],[a.],[c],[a],[i],[u],[a],[a],[a],[E ],[a],[ ],[e],[e],[o],[o],[a],[],[o],[c],[a],[e],[u],[],[]}, i
+
    hb_Default(@cStr, [])
 
    For i:= 1 To Len(aLetraCAc)
        cStr:= StrTran(cStr, aLetraCAc[i], aLetraSAc[i])
    Next
+
    Release aLetraCAc, aLetraSAc, i
 Return (cStr)
 
