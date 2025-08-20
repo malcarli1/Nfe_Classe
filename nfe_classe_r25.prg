@@ -294,7 +294,7 @@ CLASS Malc_GeraXml
    VAR nVicmsufdest_t        AS Num       INIT 0
    VAR nVicmsufremet_t       AS Num       INIT 0
    VAR nVfcp_t               AS Num       INIT 0
-   VAR nVbcST_t              AS Num       INIT 0
+   VAR nVbcst_t              AS Num       INIT 0
    VAR nVst_t                AS Num       INIT 0
    VAR nVfcpst_t             AS Num       INIT 0
    VAR nVfcpstret_t          AS Num       INIT 0
@@ -303,7 +303,6 @@ CLASS Malc_GeraXml
    VAR nVipi_t               AS Num       INIT 0
    VAR nVipidevol_t          AS Num       INIT 0       
    VAR nVpis_t               AS Num       INIT 0
-   VAR nVpist_t              AS Num       INIT 0
    VAR nVCofins_t            AS Num       INIT 0
    VAR nMonoBas              AS Num       INIT 0
    VAR nMonoAliq             AS Num       INIT 0
@@ -311,7 +310,6 @@ CLASS Malc_GeraXml
    VAR nVFretet              AS Num       INIT 0
    VAR nVDesc_t              AS Num       INIT 0
    VAR nVipidevol            AS Num       INIT 0
-   VAR nVpist                AS Num       INIT 0
    VAR nVCofinst             AS Num       INIT 0
    VAR nVOutrot              AS Num       INIT 0
    VAR nVnf                  AS Num       INIT 0
@@ -361,8 +359,6 @@ CLASS Malc_GeraXml
    VAR lComplementar         AS Logical   INIT .F.
    VAR nVIcmsSufDest         AS Num       INIT 0
    VAR nVIcmsSufRemet        AS Num       INIT 0
-   VAR nVpis                 AS Num       INIT 0
-   VAR nVcofins              AS Num       INIT 0
    VAR cCodDest              AS Character INIT [] 
    VAR cInfcpl               AS Character INIT []                               // Grupo Z - infCpl
    VAR cInfFisc              AS Character INIT []                               // Grupo Z - infAdFisco
@@ -892,11 +888,10 @@ METHOD fCria_Produto()
                  ::cXml+= XmlTag( "vUnCom"   , ::nVuncom, 10)
 
                  If ::nVprod == 0
-                    ::cXml+= XmlTag( "vProd" , Round(::nQcom * ::nVuncom, 2))
-                 Else
-                    ::cXml+= XmlTag( "vProd" , ::nVprod)
+                    ::nVprod:= Round(::nQcom * ::nVuncom, 2)
                  Endif
-
+ 
+                 ::cXml+= XmlTag( "vProd"    , ::nVprod)
                  ::nVprodt+= ::nVprod      // já acumula o valor dos produtos para os totais
 
 		 If !Empty(::cEantrib)
@@ -1107,6 +1102,7 @@ METHOD fCria_ProdutoIcms()
                          ::cXml+= XmlTag( "vBCST"   , ::nVbcst)
                          ::cXml+= XmlTag( "pICMSST" , ::nPicmst, 4)
                          ::cXml+= XmlTag( "vICMSST" , ::nVicmsst)
+                         ::nVbcst_t+= ::nVbcst // já acumula o valor dos base de cálculo da subs. tributária para os totais
                    ::cXml+= "</ICMS10>"
              Case ::cCsticms == [020]
                    ::cXml+= "<ICMS20>"
@@ -1164,6 +1160,7 @@ METHOD fCria_ProdutoIcms()
                          ::cXml+= XmlTag( "vICMSST" , ::nVicmsst)
                          ::cXml+= XmlTag( "pBCOp"   , 1, 4)
                          ::cXml+= XmlTag( "UFST"    , Left(::cUfd, 2))
+                         ::nVbcst_t+= ::nVbcst // já acumula o valor dos base de cálculo da subs. tributária para os totais
                    ::cXml+= "</ICMS70>"
              Case ::cCsticms == [090]
                    ::cXml+= "<ICMS90>"
@@ -1227,6 +1224,7 @@ METHOD fCria_ProdutoIcms()
                             ::cXml+= XmlTag( "vICMSST"     , ::nVicmsst)
                             ::cXml+= XmlTag( "pCredSN"     , ::nPcredsn, 4)
                             ::cXml+= XmlTag( "vCredICMSSN" , ::nVcredicmssn, 4)
+                            ::nVbcst_t+= ::nVbcst // já acumula o valor dos base de cálculo da subs. tributária para os totais
                          Endif 
                    ::cXml+= "</ICMSSN900>"
           Endcase
@@ -1262,6 +1260,8 @@ METHOD fCria_ProdutoIpi()
                        ::cXml+= XmlTag( "vBC"  , ::nVbcipi)
                        ::cXml+= XmlTag( "pIPI" , ::nPipi, 4)
                        ::cXml+= XmlTag( "vIPI" , ::nVipi)
+                       ::nVipi_t+= ::nVipi // já acumula o valor dos produtos para os totais
+
                 ::cXml+= "</IPITrib>"
              Endif 
 
@@ -1298,7 +1298,7 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
              ::cXml+= XmlTag( "cClassTrib", Left(::cCclasstrib, 6))
                     ::cXml+= "<gIBSCBS>"
                               If ::nVbcibs == 0
-                                  ::nVbcibs:= ::nVprodt + ::nVServs + ::nVFretet + ::nVSeg_t + ::nVOutrot + ::nVii - ::nVDesc_t - ::nVpist - ::nVCofinst - ::nVicms - ::nVicmsufdest - ::nVfcp - ::nVfcpufdest - Round(::nMonoBas * ::nMonoAliq, 2) - ::nVissqn + ::nVisistot
+                                  ::nVbcibs:= ::nVprodt + ::nVServs + ::nVFretet + ::nVSeg_t + ::nVOutrot + ::nVii_t - ::nVDesc_t - ::nVpis_t - ::nVCofinst - ::nVicms - ::nVicmsufdest - ::nVfcp_t - ::nVfcpufdest - Round(::nMonoBas * ::nMonoAliq, 2) - ::nVissqn + ::nVisistot
                               Endif
 
                               ::cXml+= XmlTag( "vBC" , ::nVbcibs)
@@ -1448,6 +1448,7 @@ METHOD fCria_ProdutoPisCofins()   // Marcelo Brigatti
                          ::cXml+= XmlTag( "vBC"     , ::nBcPis )                   
                          ::cXml+= XmlTag( "pPIS"    , ::nAlPis, 4 )                 
                          ::cXml+= XmlTag( "vPIS"    , ::nBcPis * (::nAlPis / 100) ) 
+                         ::nVpis_t+= (::nBcPis * (::nAlPis / 100)) // já acumula o valor do PIS para os totais
                    ::cXml+= "</PISAliq>"
              ::cXml+= "</PIS>"
              ::cXml+= "<COFINS>"
@@ -1456,6 +1457,7 @@ METHOD fCria_ProdutoPisCofins()   // Marcelo Brigatti
                          ::cXml+= XmlTag( "vBC"     , ::nBcCofins )                   
                          ::cXml+= XmlTag( "pCOFINS" , ::nAlCofins, 4 )                
                          ::cXml+= XmlTag( "vCOFINS" , ::nBcCofins * (::nAlCofins / 100) )
+                         ::nVCofins_t+= (::nBcCofins * (::nAlCofins / 100)) // já acumula o valor do COFINS para os totais
                    ::cXml+= "</COFINSAliq>"
              ::cXml+= "</COFINS>"
    ElseIf !Empty(::cCstPisqtd)
@@ -1465,6 +1467,7 @@ METHOD fCria_ProdutoPisCofins()   // Marcelo Brigatti
                          ::cXml+= XmlTag( "qBCProd"   , ::nQcom )                                                                // Quantidade do produto vendida
                          ::cXml+= XmlTag( "vAliqProd" , ::nAlPis, 4 )                
                          ::cXml+= XmlTag( "vPIS"      , ::nQcom * (::nAlPis / 100) )
+                         ::nVpis_t+= (::nQcom * (::nAlPis / 100)) // já acumula o valor do PIS para os totais
                    ::cXml+= "</PISAQtde>"
              ::cXml+= "</PIS>"
              ::cXml+= "<COFINS>"
@@ -1473,6 +1476,7 @@ METHOD fCria_ProdutoPisCofins()   // Marcelo Brigatti
                          ::cXml+= XmlTag( "qBCProd"   , ::nQcom )                                                                // Quantidade do produto vendida
                          ::cXml+= XmlTag( "vAliqProd" , ::nAlPis, 4 )                                                                             
                          ::cXml+= XmlTag( "vCOFINS"   , ::nQcom * (::nAlCofins / 100) )
+                         ::nVCofins_t+= (::nQcom * (::nAlCofins / 100)) // já acumula o valor do COFINS para os totais
                    ::cXml+= "</COFINSQtde>"
              ::cXml+= "</COFINS>"
    ElseIf !Empty(::cCstPisnt)
@@ -1493,6 +1497,7 @@ METHOD fCria_ProdutoPisCofins()   // Marcelo Brigatti
                          ::cXml+= XmlTag( "vBC"     , ::nBcPis )                   
                          ::cXml+= XmlTag( "pPIS"    , ::nAlPis, 4 )                 
                          ::cXml+= XmlTag( "vPIS"    , ::nBcPis * (::nAlPis / 100) ) 
+                         ::nVpis_t+= (::nBcPis * (::nAlPis / 100)) // já acumula o valor do PIS para os totais
                    ::cXml+= "</PISOutr>"
              ::cXml+= "</PIS>"
              ::cXml+= "<COFINS>"
@@ -1501,6 +1506,7 @@ METHOD fCria_ProdutoPisCofins()   // Marcelo Brigatti
                          ::cXml+= XmlTag( "vBC"       , ::nBcCofins )                   
                          ::cXml+= XmlTag( "pCOFINS"   , ::nAlCofins, 4 )                
                          ::cXml+= XmlTag( "vCOFINS"   , ::nBcCofins * (::nAlCofins / 100) )
+                         ::nVCofins_t+= (::nBcCofins * (::nAlCofins / 100)) // já acumula o valor do COFINS para os totais
                    ::cXml+= "</COFINSOutr>"
              ::cXml+= "</COFINS>"
    Endif  
@@ -1527,7 +1533,7 @@ METHOD fCria_Totais()
              Endif
 
              ::cXml+= XmlTag( "vFCP"         , ::nVfcp_t)                                                                         // Campo referente a FCP Para versão 4.0
-             ::cXml+= XmlTag( "vBCST"        , ::nVbcST_t)
+             ::cXml+= XmlTag( "vBCST"        , ::nVbcst_t)
              ::cXml+= XmlTag( "vST"          , ::nVst_t)
              ::cXml+= XmlTag( "vFCPST"       , ::nVfcpst_t)                                                                       // Campo referente a FCP Para versão 4.0
              ::cXml+= XmlTag( "vFCPSTRet"    , ::nVfcpstret_t)                                                                    // Campo referente a FCP Para versão 4.0
@@ -1805,9 +1811,9 @@ METHOD fCria_Informacoes()
                 ::cInfFisc+= "DIFAL para UF Origem R$ " + NumberXml(::nVIcmsSufRemet, 2) + hb_OsNewLine()
              Endif    
 
-             If !Empty(::nVpis)                                                                                                  // Destaque valor do PIS/COFINS
-                ::cInfFisc+= "Valor de PIS para movimento R$ " + NumberXml(::nVpis, 2) + hb_OsNewLine()
-                ::cInfFisc+= "Valor de COFINS para movimento R$ " + NumberXml(::nVcofins, 2) + hb_OsNewLine()
+             If !Empty(::nVpis_t)                                                                                                  // Destaque valor do PIS/COFINS
+                ::cInfFisc+= "Valor de PIS para movimento R$ " + NumberXml(::nVpis_t, 2) + hb_OsNewLine()
+                ::cInfFisc+= "Valor de COFINS para movimento R$ " + NumberXml(::nVcofins_t, 2) + hb_OsNewLine()
              Endif 
              If ::cUfd # [EX] .and. !Empty(::cCodDest)
  		::cInfFisc+= "Cód:" + ::cCodDest + hb_OsNewLine()
@@ -1820,7 +1826,6 @@ METHOD fCria_Informacoes()
 
           If !Empty(AllTrim(::cInfcpl))
              ::cXml+= XmlTag( "infCpl" , Left(CharRem("°ºª-:\(){}[]`´’'", fRetiraAcento(StrTran(::cInfcpl, hb_OsNewLine(), '; '))), 5000))
-          *  ::cXml+= XmlTag( "infCpl" , Left(fRetiraAcento(StrTran(::cInfcpl, hb_OsNewLine(), '; ')), 5000))
           Endif 
    ::cXml+= "</infAdic>"
 Return (Nil)
@@ -1915,6 +1920,7 @@ METHOD fCria_ProdutoII()  // Marcelo Brigatti
             ::cXml+= XmlTag( "vDespAdu" , ::nVdespadu )
             ::cXml+= XmlTag( "vII"      , ::nVii )
             ::cXml+= XmlTag( "vIOF"     , ::nViof )
+            ::nVii_t+= ::nVii // já acumula o valor dos produtosii para os totais
       ::cXml+= "</II>"
    Endif 
 Return (Nil)

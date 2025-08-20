@@ -203,8 +203,12 @@ Static Procedure fGerarxml()
        oXml:nVuncom  := 4.77
 *      oXml:nVprod   := 4.77  // se não informar vai calcular automaticamente
        oXml:nVtottrib:= 4.77
-       oXml:cCstIcms:= [500]
-       oXml:cOrig   := [0]
+       oXml:cCstIcms := [500]
+       oXml:cOrig    := [0]
+       oXml:nVdesc   := .50
+       oXml:nVfrete  := .20
+       oXml:nVseg    := .1
+       oXml:nVoutro  := .01
 
        // teste para nota para exterior / comentar estas tags
        oXml:cCstPis   := [49]
