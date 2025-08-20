@@ -1,0 +1,1 @@
+call c:\minigui\batch\compile.bat demo 
