@@ -8,7 +8,7 @@
  *          : Marcelo Brigatti                                               *
  *          : Maurílio Franchin Júnior                                       *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 20.08.2025                                                     *
+ * ULT. ALT.: 21.08.2025                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 
@@ -223,10 +223,10 @@ CLASS Malc_GeraXml
    // Tag comb - Grupo LA - Combustíveis
    VAR cCprodanp             AS Character INIT []                               // Código de produto da ANP
    VAR cDescanp              AS Character INIT []                               // Descrição do produto conforme ANP
-   VAR nQtemp                AS Num       INIT 0                                            // Quantidade de combustível faturada à temperatura ambiente.
-   VAR nQbcprod              AS Num       INIT 0                                            // Informar a BC da CIDE em quantidade
-   VAR nValiqprod            AS Num       INIT 0                                            // Informar o valor da alíquota em reais da CIDE
-   VAR nVcide                AS Num       INIT 0                                            // Informar o valor da CIDE
+   VAR nQtemp                AS Num       INIT 0                                // Quantidade de combustível faturada à temperatura ambiente.
+   VAR nQbcprod              AS Num       INIT 0                                // Informar a BC da CIDE em quantidade
+   VAR nValiqprod            AS Num       INIT 0                                // Informar o valor da alíquota em reais da CIDE
+   VAR nVcide                AS Num       INIT 0                                // Informar o valor da CIDE
 
    // Tag Icms - Grupo N
    VAR cOrig                 AS Character INIT [0]
@@ -266,10 +266,10 @@ CLASS Malc_GeraXml
 
    // Imposto de Importação 
    // TAG II - Grupo P - Grupo Imposto de Importação                           // (Informar apenas quando o item for sujeito ao II) 
-   VAR nVbci                 AS Num       INIT 0                                            // Valor BC do Imposto de Importação
-   VAR nVdespadu             AS Num       INIT 0                                            // Valor despesas aduaneiras
-   VAR nVii                  AS Num       INIT 0                                            // Valor Imposto de Importação
-   VAR nViof                 AS Num       INIT 0                                            // Valor Imposto sobre Operações Financeiras 
+   VAR nVbci                 AS Num       INIT 0                               // Valor BC do Imposto de Importação
+   VAR nVdespadu             AS Num       INIT 0                               // Valor despesas aduaneiras
+   VAR nVii                  AS Num       INIT 0                               // Valor Imposto de Importação
+   VAR nViof                 AS Num       INIT 0                               // Valor Imposto sobre Operações Financeiras 
 
    // Tag Pis/Cofins - Grupo Q e S
    VAR cCstPis               AS Character INIT []                               // (01, 02) CSTs do PIS são mutuamente exclusivas só pode existir um tipo
@@ -402,6 +402,8 @@ CLASS Malc_GeraXml
    VAR nVdevtribgcbs         AS Num       INIT 0
    VAR nPredaliqgcbs         AS Num       INIT 0
    VAR nVcbs                 AS Num       INIT 0
+   VAR nVibs_c               AS Num       INIT 0   // tag gTransfCred
+   VAR nVcbs_c               AS Num       INIT 0   // tag gTransfCred
    VAR cClasstribreg         AS Character INIT [] 
    VAR nPaliqefetregibsuf    AS Num       INIT 0
    VAR nVtribregibsuf        AS Num       INIT 0
@@ -1293,121 +1295,138 @@ Return (Nil)
 * ----------------------> Metodo para gerar a tag IBSCBS <-------------------- *
 METHOD fCria_ProdutoIbscbs()  // Reforma tributária
    If !Empty(::cCclasstrib)
-      ::cXml+= "<IBSCBS>"
-             ::cXml+= XmlTag( "CST", Left(::cCclasstrib, 3))
-             ::cXml+= XmlTag( "cClassTrib", Left(::cCclasstrib, 6))
-                    ::cXml+= "<gIBSCBS>"
-                              If ::nVbcibs == 0
-                                  ::nVbcibs:= ::nVprodt + ::nVServs + ::nVFretet + ::nVSeg_t + ::nVOutrot + ::nVii_t - ::nVDesc_t - ::nVpis_t - ::nVCofinst - ::nVicms - ::nVicmsufdest - ::nVfcp_t - ::nVfcpufdest - Round(::nMonoBas * ::nMonoAliq, 2) - ::nVissqn + ::nVisistot
+      If Left(::cCclasstrib, 3) $ [000-200-410-510-620] .or. (Left(::cCclasstrib, 3) $ [550-800] .and. ::cModelo # [65])
+
+         ::cXml+= "<IBSCBS>"
+                ::cXml+= XmlTag( "CST", Left(::cCclasstrib, 3))
+                ::cXml+= XmlTag( "cClassTrib", Left(::cCclasstrib, 6))
+                       
+                ::cXml+= "<gIBSCBS>"
+
+                       If ::nVbcibs == 0
+                          ::nVbcibs:= ::nVprodt + ::nVServs + ::nVFretet + ::nVSeg_t + ::nVOutrot + ::nVii_t - ::nVDesc_t - ::nVpis_t - ::nVCofinst - ::nVicms - ::nVicmsufdest - ::nVfcp_t - ::nVfcpufdest - Round(::nMonoBas * ::nMonoAliq, 2) - ::nVissqn + ::nVisistot
+                       Endif
+
+                       ::cXml+= XmlTag( "vBC" , ::nVbcibs)
+                       ::cXml+= "<gIBSUF>"
+                              ::cXml+= XmlTag( "pIBSUF" , ::nPibsuf, 4)
+
+                              If ::nPdifgibuf # 0 .and. Left(::cCclasstrib, 3) == [510]
+                                 ::cXml+= "<gDif>"
+                                        ::cXml+= XmlTag( "pDif" , ::nPdifgibuf, 4)
+                                        ::cXml+= XmlTag( "vDif" , ::nVbcibs * ::nPibsuf * (::nPdifgibuf / 100) )
+                                 ::cXml+= "</gDif>"
                               Endif
 
-                              ::cXml+= XmlTag( "vBC" , ::nVbcibs)
-                                  ::cXml+= "<gIBSUF>"
-                                         ::cXml+= XmlTag( "pIBSUF" , ::nPibsuf, 4)
-                                                If ::nPdifgibuf # 0
-                                                   ::cXml+= "<gDif>"
-                                                          ::cXml+= XmlTag( "pDif" , ::nPdifgibuf, 4)
-                                                          ::cXml+= XmlTag( "vDif" , ::nVbcibs * ::nPibsuf * (::nPdifgibuf / 100) )
-                                                   ::cXml+= "</gDif>"
-                                                Endif
+                              If ::nVdevtribgibuf # 0
+                                 ::cXml+= "<gDevTrib>"
+                                        ::cXml+= XmlTag( "vDevTrib" , ::nVdevtribgibuf)
+                                 ::cXml+= "</gDevTrib>"
+                              Endif
 
-                                                If ::nVdevtribgibuf # 0
-                                                   ::cXml+= "<gDevTrib>"
-                                                          ::cXml+= XmlTag( "vDevTrib" , ::nVdevtribgibuf)
-                                                   ::cXml+= "</gDevTrib>"
-                                                Endif
-
-                                                If ::nPredaliqgibuf # 0
-                                                   ::cXml+= "<gRed>"
-                                                          ::cXml+= XmlTag( "pRedAliq"  , ::nPredaliqgibuf, 4)
-                                                          ::cXml+= XmlTag( "pAliqEfet" , ::nPibsuf * (1 - ::nPredaliqgibuf), 4)
-                                                   ::cXml+= "</gRed>"
-                                                Endif
+                              If ::nPredaliqgibuf # 0 .and. Left(::cCclasstrib, 3) == [200]
+                                 ::cXml+= "<gRed>"
+                                        ::cXml+= XmlTag( "pRedAliq"  , ::nPredaliqgibuf, 4)
+                                        ::cXml+= XmlTag( "pAliqEfet" , ::nPibsuf * (1 - ::nPredaliqgibuf), 4)
+                                 ::cXml+= "</gRed>"
+                              Endif
                                        
-                                         ::cXml+= XmlTag( "vIBSUF" , Iif(::nVibsuf == 0, ::nVibsuf:= ::nVbcibs * ::nPibsuf, ::nVibsuf))
-                                  ::cXml+= "</gIBSUF>"
-                                  ::cXml+= "<gIBSMun>"
-                                         ::cXml+= XmlTag( "pIBSMun" , ::nPibsmun, 4)
-                                                If ::nPifgibsmun # 0
-                                                   ::cXml+= "<gDif>"
-                                                          ::cXml+= XmlTag( "pDif"   , ::nPifgibsmun, 4)
-                                                          ::cXml+= XmlTag( "vDif"   , ::nVbcibs * (::nPibsmun / 100) * (::nPifgibsmun / 100) ) 
-                                                   ::cXml+= "</gDif>"
-                                                Endif
+                              ::cXml+= XmlTag( "vIBSUF" , Iif(::nVibsuf == 0, ::nVibsuf:= ::nVbcibs * ::nPibsuf, ::nVibsuf))
+                       ::cXml+= "</gIBSUF>"
+                       ::cXml+= "<gIBSMun>"
+                              ::cXml+= XmlTag( "pIBSMun" , ::nPibsmun, 4)
 
-                                                If ::nVdevtribgibsmun # 0
-                                                   ::cXml+= "<gDevTrib>"
-                                                          ::cXml+= XmlTag( "vDevTrib"  , ::nVdevtribgibsmun)
-                                                   ::cXml+= "</gDevTrib>"
-                                                Endif
+                              If ::nPifgibsmun # 0 .and. Left(::cCclasstrib, 3) == [510]
+                                 ::cXml+= "<gDif>"
+                                        ::cXml+= XmlTag( "pDif"   , ::nPifgibsmun, 4)
+                                        ::cXml+= XmlTag( "vDif"   , ::nVbcibs * (::nPibsmun / 100) * (::nPifgibsmun / 100) ) 
+                                 ::cXml+= "</gDif>"
+                              Endif
 
-                                                If ::nPredaliqibsmun # 0
-                                                   ::cXml+= "<gRed>"
-                                                          ::cXml+= XmlTag( "pRedAliq"  , ::nPredaliqibsmun, 4)
-                                                          ::cXml+= XmlTag( "pAliqEfet" , ::nPibsmun * (1 - ::nPredaliqibsmun), 4)
-                                                   ::cXml+= "</gRed>"
-                                                Endif
+                              If ::nVdevtribgibsmun # 0
+                                 ::cXml+= "<gDevTrib>"
+                                        ::cXml+= XmlTag( "vDevTrib"  , ::nVdevtribgibsmun)
+                                 ::cXml+= "</gDevTrib>"
+                              Endif
 
-                                         ::cXml+= XmlTag( "vIBSMun" , Iif(::nVibsmun == 0, ::nVibsmun:= ::nVbcibs * ::nPibsmun, ::nVibsmun))
-                                  ::cXml+= "</gIBSMun>"
-                                  ::cXml+= "<gCBS>"
-                                         ::cXml+= XmlTag( "pCBS" , ::nPcbs, 4)
-                                                If ::nPpDifgcbs # 0
-                                                   ::cXml+= "<gDif>"
-                                                          ::cXml+= XmlTag( "pDif"   , ::nPpDifgcbs, 4)
-                                                          ::cXml+= XmlTag( "vDif"   , ::nVbcibs * ::nPcbs * (::nPpDifgcbs / 100) )  
-                                                   ::cXml+= "</gDif>"
-                                                Endif
+                              If ::nPredaliqibsmun # 0 .and. Left(::cCclasstrib, 3) == [200]
+                                 ::cXml+= "<gRed>"
+                                        ::cXml+= XmlTag( "pRedAliq"  , ::nPredaliqibsmun, 4)
+                                        ::cXml+= XmlTag( "pAliqEfet" , ::nPibsmun * (1 - ::nPredaliqibsmun), 4)
+                                 ::cXml+= "</gRed>"
+                              Endif
 
-                                                If ::nVdevtribgcbs # 0
-                                                   ::cXml+= "<gDevTrib>"
-                                                          ::cXml+= XmlTag( "vDevTrib" , ::nVdevtribgcbs)
-                                                   ::cXml+= "</gDevTrib>"
-                                                Endif
+                              ::cXml+= XmlTag( "vIBSMun" , Iif(::nVibsmun == 0, ::nVibsmun:= ::nVbcibs * ::nPibsmun, ::nVibsmun))
+                       ::cXml+= "</gIBSMun>"
+                       ::cXml+= "<gCBS>"
+                              ::cXml+= XmlTag( "pCBS" , ::nPcbs, 4)
 
-                                                If ::nPredaliqgcbs # 0
-                                                   ::cXml+= "<gRed>"
-                                                          ::cXml+= XmlTag( "pRedAliq"  , ::nPredaliqgcbs, 4)
-                                                          ::cXml+= XmlTag( "pAliqEfet" , ::nPcbs * (1 - ::nPredaliqgcbs), 4)
-                                                   ::cXml+= "</gRed>"
-                                                Endif
+                              If ::nPpDifgcbs # 0 .and. Left(::cCclasstrib, 3) == [510]
+                                 ::cXml+= "<gDif>"
+                                        ::cXml+= XmlTag( "pDif"   , ::nPpDifgcbs, 4)
+                                        ::cXml+= XmlTag( "vDif"   , ::nVbcibs * ::nPcbs * (::nPpDifgcbs / 100) )  
+                                 ::cXml+= "</gDif>"
+                              Endif
 
-                                         ::cXml+= XmlTag( "vCBS" , Iif(::nVcbs == 0, ::nVcbs:= ::nVbcibs * ::nPcbs, ::nVcbs))
-                                  ::cXml+= "</gCBS>"
+                              If ::nVdevtribgcbs # 0
+                                 ::cXml+= "<gDevTrib>"
+                                        ::cXml+= XmlTag( "vDevTrib" , ::nVdevtribgcbs)
+                                        ::cXml+= "</gDevTrib>"
+                               Endif
 
-                                  If !Empty(::cClasstribreg)
-                                     ::cXml+= "<gTribRegular>"
-                                            ::cXml+= XmlTag( "CSTReg"             , Left(::cClasstribreg, 3))
-                                            ::cXml+= XmlTag( "cClassTribReg"      , Left(::cClasstribreg, 6))
-                                            ::cXml+= XmlTag( "pAliqEfetRegIBSUF"  , ::nPaliqefetregibsuf, 4)
-                                            ::cXml+= XmlTag( "vTribRegIBSUF"      , ::nVtribregibsuf)
-                                            ::cXml+= XmlTag( "pAliqEfetRegIBSMun" , ::nPaliqefetregibsMun, 4)
-                                            ::cXml+= XmlTag( "vTribRegIBSMun"     , ::nVtribregibsMun)
-                                            ::cXml+= XmlTag( "pAliqEfetRegCBS"    , ::nPaliqefetregcbs, 4)
-                                            ::cXml+= XmlTag( "vTribRegCBS"        , ::nVtribregcbs)
-                                     ::cXml+= "</gTribRegular>"
-                                  Endif
+                               If ::nPredaliqgcbs # 0 .and. Left(::cCclasstrib, 3) == [200]
+                                  ::cXml+= "<gRed>"
+                                         ::cXml+= XmlTag( "pRedAliq"  , ::nPredaliqgcbs, 4)
+                                         ::cXml+= XmlTag( "pAliqEfet" , ::nPcbs * (1 - ::nPredaliqgcbs), 4)
+                                  ::cXml+= "</gRed>"
+                               Endif
 
-                                  If !Empty(::cCredPresgibs) .and. ::cCredPresgibs $ [1_2_3_4_5]
-                                     ::cXml+= "<gIBSCredPres>"
-                                            ::cXml+= XmlTag( "cCredPres" , Left(::cCredPresgibs, 2))
-                                            ::cXml+= XmlTag( "pCredPres" , ::nPcredpresgibs, 4)
-                                            ::cXml+= XmlTag( "vCredPres" , ::nVcredpresgibs)
-                                     ::cXml+= "</gIBSCredPres>"
-                                  Endif
+                               ::cXml+= XmlTag( "vCBS" , Iif(::nVcbs == 0, ::nVcbs:= ::nVbcibs * ::nPcbs, ::nVcbs))
+                       ::cXml+= "</gCBS>"
 
-                                  If !Empty(::cCredPrescbs) .and. ::cCredPrescbs $ [1_2_3_4_5]
-                                     ::cXml+= "<gCBSCredPres>"
-                                            ::cXml+= XmlTag( "cCredPres" , Left(::cCredPrescbs, 2))
-                                            ::cXml+= XmlTag( "pCredPres" , ::nPcredprescbs, 4)
-                                            ::cXml+= XmlTag( "vCredPres" , ::nVcredprescbs)
-                                     ::cXml+= "</gCBSCredPres>"
-                                  Endif
-                    ::cXml+= "</gIBSCBS>"
-      ::cXml+= "</IBSCBS>"
+                       If !Empty(::cClasstribreg)
+                          ::cXml+= "<gTribRegular>"
+                                 ::cXml+= XmlTag( "CSTReg"             , Left(::cClasstribreg, 3))
+                                 ::cXml+= XmlTag( "cClassTribReg"      , Left(::cClasstribreg, 6))
+                                 ::cXml+= XmlTag( "pAliqEfetRegIBSUF"  , ::nPaliqefetregibsuf, 4)
+                                 ::cXml+= XmlTag( "vTribRegIBSUF"      , ::nVtribregibsuf)
+                                 ::cXml+= XmlTag( "pAliqEfetRegIBSMun" , ::nPaliqefetregibsMun, 4)
+                                 ::cXml+= XmlTag( "vTribRegIBSMun"     , ::nVtribregibsMun)
+                                 ::cXml+= XmlTag( "pAliqEfetRegCBS"    , ::nPaliqefetregcbs, 4)
+                                 ::cXml+= XmlTag( "vTribRegCBS"        , ::nVtribregcbs)
+                          ::cXml+= "</gTribRegular>"
+                       Endif
+
+                       If !Empty(::cCredPresgibs) .and. ::cCredPresgibs $ [1_2_3_4_5]
+                          ::cXml+= "<gIBSCredPres>"
+                                 ::cXml+= XmlTag( "cCredPres" , Left(::cCredPresgibs, 2))
+                                 ::cXml+= XmlTag( "pCredPres" , ::nPcredpresgibs, 4)
+                                 ::cXml+= XmlTag( "vCredPres" , ::nVcredpresgibs)
+                          ::cXml+= "</gIBSCredPres>"
+                       Endif
+
+                       If !Empty(::cCredPrescbs) .and. ::cCredPrescbs $ [1_2_3_4_5]
+                          ::cXml+= "<gCBSCredPres>"
+                                 ::cXml+= XmlTag( "cCredPres" , Left(::cCredPrescbs, 2))
+                                 ::cXml+= XmlTag( "pCredPres" , ::nPcredprescbs, 4)
+                                 ::cXml+= XmlTag( "vCredPres" , ::nVcredprescbs)
+                          ::cXml+= "</gCBSCredPres>"
+                       Endif
+                ::cXml+= "</gIBSCBS>"
+          ::cXml+= "</IBSCBS>"
+
+          If Left(::cCclasstrib, 3) == [620]
+             ::fCria_Gibscbsmono()
+          Endif 
+
+          If Left(::cCclasstrib, 3) == [800] .and. ::cFinnfe == [6]
+             ::cXml+= "<gTransfCred>"
+             ::cXml+= XmlTag( "vIBS" , ::nVibs_c )
+             ::cXml+= XmlTag( "vCBS" , ::nVcbs_c )
+             ::cXml+= "</gTransfCred>"
+          Endif
+      Endif
    Endif 
-    
-   ::fCria_Gibscbsmono()
 Return (Nil)
 
 * -------------------> Metodo para gerar a tag gIBSCBSMono <------------------ *
