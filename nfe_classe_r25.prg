@@ -8,7 +8,7 @@
  *          : Marcelo Brigatti                                               *
  *          : Maurílio Franchin Júnior                                       *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 21.08.2025                                                     *
+ * ULT. ALT.: 22.08.2025                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 
@@ -374,8 +374,25 @@ CLASS Malc_GeraXml
    VAR cRespemail              AS Character INIT [] 
    VAR cRespfone               AS Character INIT [] 
 
+   // Configuração Básica de Indicadores da RTC para Classtrib
+   VAR cTipoDeAliquota         AS Character INIT [1] // 1 - Padrão, 2 - Uniforme setorial, 3 - Uniforme nacional (referência), 4 - Fixa, 5 - Sem alíquota, 6 - Uniforme setorial
+   VAR cPredibs                AS Character INIT []  // "", "30", "40", "50", "60", "70", "80", "100"
+   VAR cPredcbs                AS Character INIT []  // "", "30", "40", "50", "60", "70", "80", "100"
+   VAR cInd_RedutorBC          AS Character INIT []  // "", "S", "N"
+   VAR cInd_gTribRegular       AS Character INIT []  // "", "0", "1"
+   VAR cInd_CredPres           AS Character INIT []  // "", "1"
+   VAR cIndMono                AS Character INIT []  // "", "0", "1"
+   VAR cIndMonoReten           AS Character INIT []  // "", "0", "1"
+   VAR cIndMonoRet             AS Character INIT []  // "", "0", "1"
+   VAR cIndMonoDif             AS Character INIT []  // "", "0", "1"
+   VAR cCredito_para           AS Character INIT []  // 1 - "", 2 - Fornecedor, 3 - Adquirente. Crédito Presumido de IBS\nArt. 447. Fica concedido ao contribuinte sujeito ao regime regular do IBS e habilitado nos termos do art. 442 desta Lei Complementar crédito presumido de IBS\nrelativo à aquisição de bem material industrializado de origem nacional contemplado pela redução a zero da alíquota do IBS nos termos do art. 445 desta Lei\nComplementar,
+                                                     // 4 - Adquirente. Art. 168. Alíquota fixa por produto,
+                                                     // 5 - Adquirente. UTILIZADO SOMENTE NA VENDA, É O ÚNICO CASO. \nArt. 171. Fase de transição e após da transição,
+                                                     // 6 - Adquirente. Art. 168. \ncCredPres 1,
+                                                     // 7 - Fornecedor: N\n\nÚnica situação: Regime automotivo - projetos incentivados, observado o art. 312 da Lei Complementar nº 214, de 2025. \ncCredPress 5",
+
    // TAG is - Reforma tributária
-   VAR cClasstribiS            AS Character INIT [] 
+   VAR cClasstribis            AS Character INIT [] 
    VAR nVbcis                  AS Num       INIT 0
    VAR nPisis                  AS Num       INIT 0
    VAR nPisespec               AS Num       INIT 0
@@ -435,7 +452,7 @@ CLASS Malc_GeraXml
    VAR nVdifgcbs_t             AS Num       INIT 0
    VAR nVdevtribgcbs_t         AS Num       INIT 0
    VAR nVcbsgcbs_t             AS Num       INIT 0
-   VAR nVcredpresgcbs_t          AS Num       INIT 0
+   VAR nVcredpresgcbs_t        AS Num       INIT 0
    VAR nVcredprescondsusgcbs   AS Num       INIT 0
    VAR nVnftot                 AS Num       INIT 0
    VAR nvIBSMono_t             AS Num       INIT 0
@@ -1286,7 +1303,7 @@ METHOD fCria_ProdutoIs()                                                        
    If !Empty(::cClasstribis)
       ::cXml+= "<IS>"
              ::cXml+= XmlTag( "CSTIS"        , Left(::cClasstribis, 3))                                                          // Utilizar tabela CÓDIGO DE CLASSIFICAÇÃO TRIBUTÁRIA DO IMPOSTO SELETIVO
-             ::cXml+= XmlTag( "cClassTribIS" , Left(::cClasstribis, 6))                                                          // Utilizar tabela CÓDIGO DE CLASSIFICAÇÃO TRIBUTÁRIA DO IMPOSTO SELETIVO
+             ::cXml+= XmlTag( "cClasstribis" , Left(::cClasstribis, 6))                                                          // Utilizar tabela CÓDIGO DE CLASSIFICAÇÃO TRIBUTÁRIA DO IMPOSTO SELETIVO
              ::cXml+= XmlTag( "vBCIS"        , ::nVbcis)                                                                         // Valor da Base de Cálculo do Imposto Seletivo
              ::cXml+= XmlTag( "pIS"          , ::nPisis)                                                                         // Alíquota do Imposto Seletivo
              ::cXml+= XmlTag( "pISEspec"     , ::nPisespec, 4)                                                                   // Alíquota específica por unidade de medida apropriada
