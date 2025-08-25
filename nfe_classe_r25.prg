@@ -60,9 +60,8 @@ CLASS Malc_GeraXml
    VAR cCepe                   AS Character INIT []  
    VAR cTpnfdebito             AS Character INIT []                               // Reforma tributária
    VAR cTpnfcredito            AS Character INIT []                               // Reforma tributária
-   VAR cTpentegov              AS Character INIT []                               // Reforma tributária
+   VAR cTpcompragov            AS Character INIT []                               // Reforma tributária
    VAR nPredutor               AS Num       INIT 0                                // Reforma tributária 
-   VAR nTpOperGov              AS Num       INIT 0
  
    // Tag emit - Grupo C
    VAR cXnomee                 AS Character INIT []
@@ -385,11 +384,11 @@ CLASS Malc_GeraXml
    VAR cIndMonoReten           AS Character INIT []  // "", "0", "1"
    VAR cIndMonoRet             AS Character INIT []  // "", "0", "1"
    VAR cIndMonoDif             AS Character INIT []  // "", "0", "1"
-   VAR cCredito_para           AS Character INIT []  // 1 - "", 2 - Fornecedor, 3 - Adquirente. Crédito Presumido de IBS\nArt. 447. Fica concedido ao contribuinte sujeito ao regime regular do IBS e habilitado nos termos do art. 442 desta Lei Complementar crédito presumido de IBS\nrelativo à aquisição de bem material industrializado de origem nacional contemplado pela redução a zero da alíquota do IBS nos termos do art. 445 desta Lei\nComplementar,
+   VAR cCredito_para           AS Character INIT []  // 1 - "", 2 - Fornecedor, 3 - Adquirente. Crédito Presumido de IBS\nArt. 447. Fica concedido ao contribuinte sujeito ao regime regular do IBS e habilitado nos termos do art. 442 desta Lei Complementar crédito presumido de IBS relativo à aquisição de bem material industrializado de origem nacional contemplado pela redução a zero da alíquota do IBS nos termos do art. 445 desta Lei Complementar,
                                                      // 4 - Adquirente. Art. 168. Alíquota fixa por produto,
-                                                     // 5 - Adquirente. UTILIZADO SOMENTE NA VENDA, É O ÚNICO CASO. \nArt. 171. Fase de transição e após da transição,
-                                                     // 6 - Adquirente. Art. 168. \ncCredPres 1,
-                                                     // 7 - Fornecedor: N\n\nÚnica situação: Regime automotivo - projetos incentivados, observado o art. 312 da Lei Complementar nº 214, de 2025. \ncCredPress 5",
+                                                     // 5 - Adquirente. UTILIZADO SOMENTE NA VENDA, É O ÚNICO CASO.  Art. 171. Fase de transição e após da transição,
+                                                     // 6 - Adquirente. Art. 168.  cCredPres 1,
+                                                     // 7 - Fornecedor: Única situação: Regime automotivo - projetos incentivados, observado o art. 312 da Lei Complementar nº 214, de 2025.  cCredPress 5",
 
    // TAG is - Reforma tributária
    VAR cClasstribis            AS Character INIT [] 
@@ -618,7 +617,9 @@ METHOD fCria_Ide()
              ::cXml+= XmlTag( "xJust"  , Left(::cXjust, 256))                                                                    // Justificativa contingência   FSDA - tpEmis = 5
           Endif 
 
-          ::fCria_Compragov()
+          If ::cModelo == [55]
+             ::fCria_Compragov()
+          Endif
    ::cXml+= "</ide>"
 Return (Nil)
 
@@ -647,11 +648,10 @@ Return (Nil)
 
 * ------------------> Metodo para gerar a tag gCompragov <-------------------- *
 METHOD fCria_Compragov()
-   If !Empty(::cTpentegov)
+   If !Empty(::cTpcompragov)
       ::cXml+= "<gCompraGov>"                                                                                                    
-             ::cXml+= XmlTag( "tpEnteGov" , Iif(!(::cTpentegov $ [1_2_3_4]), [1], Left(::cTpentegov, 1)))                        // 1=União 2=Estado 3=Distrito Federal 4=Município
-             ::cXml+= XmlTag( "pRedutor"  , ::nPredutor, 4)                            
-             ::cXml+= XmlTag( "tpOperGov" , Iif(!(::cTpOperGov $ [1_2]), [1], Left(::cTpOperGov, 1)))                            // 1=Fornecimento 2=Recebimento do pagamento, conforme fato gerador do IBS/CBS definido no Art. 10 § 2º
+             ::cXml+= XmlTag( "tpCompraGov" , Iif(!(::cTpcompragov $ [1_2_3_4]), [1], Left(::cTpcompragov, 1)))                        // 1=União 2=Estado 3=Distrito Federal 4=Município
+             ::cXml+= XmlTag( "pRedutor"    , ::nPredutor, 4)                            
       ::cXml+= "</gCompraGov>"
    Endif                                                                             
 Return (Nil)
@@ -1337,15 +1337,15 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
 
                               If ::nPdifgibuf # 0 .and. Left(::cCclasstrib, 3) == [510]
                                  ::cXml+= "<gDif>"
-                                        ::cXml       += XmlTag( "pDif" , ::nPdifgibuf, 4)
-                                        ::cXml       += XmlTag( "vDif" , ::nVbcibs * ::nPibsuf * (::nPdifgibuf / 100) )
+                                        ::cXml         += XmlTag( "pDif" , ::nPdifgibuf, 4)
+                                        ::cXml         += XmlTag( "vDif" , ::nVbcibs * ::nPibsuf * (::nPdifgibuf / 100) )
                                         ::nVdifgibsuf_t+= ::nVbcibs * ::nPibsuf * (::nPdifgibuf / 100)  // já acumula o valor os totais
                                  ::cXml+= "</gDif>"
                               Endif
 
                               If ::nVdevtribgibuf # 0
                                  ::cXml+= "<gDevTrib>"
-                                        ::cXml           += XmlTag( "vDevTrib" , ::nVdevtribgibuf)
+                                        ::cXml             += XmlTag( "vDevTrib" , ::nVdevtribgibuf)
                                         ::nVdevtribgibsuf_t+= ::nVdevtribgibuf                          // já acumula o valor os totais
                                  ::cXml+= "</gDevTrib>"
                               Endif
@@ -1443,7 +1443,7 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
                           ::cXml+= "<gCBSCredPres>"
                                  ::cXml+= XmlTag( "cCredPres" , Left(::cCredPrescbs, 2))
                                  ::cXml+= XmlTag( "pCredPres" , ::nPcredprescbs, 4)
-                                 ::cXml+= XmlTag( "vCredPres" , If(::nVcredprescbs == 0, Round(::nVcredprescbs * ::nPcredprescbs, 2), ::nVcredprescbs)
+                                 ::cXml+= XmlTag( "vCredPres" , If(::nVcredprescbs == 0, Round(::nVcredprescbs * ::nPcredprescbs, 2), ::nVcredprescbs))
                                  ::nVcredprescbs_t+= ::nVcredprescbs                 // já acumula o valor os totais
                                  ::cXml+= XmlTag( "vCredPresCondSus" , ::nVcredprescondsuscbs)
                                  ::nVcredprescondsuscbs_t+= ::nVcredprescondsuscbs   // já acumula o valor os totais
