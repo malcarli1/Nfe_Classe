@@ -13,7 +13,7 @@
 #include <hbclass.ch>
 
 *   AS Num       INIT 0 pode conter decimais
-*   AS Int ou   AS Integer não contém decimais 4.5 vai ser 4
+*   AS Int ou AS Integer não contém decimais 4.5 vai ser 4
 
 CLASS Malc_GeraXml
    // Configurações iniciais básicas
@@ -1428,7 +1428,7 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
                           ::cXml+= "</gTribRegular>"
                        Endif
 
-                       If !Empty(::cCredPresgibs) .and. ::cCredPresgibs $ [1_2_3_4_5]
+                       If !Empty(::cCredPresgibs) .and. ::cCredPresgibs $ [1_2_3_4_5] .and. ::cModelo == [55]
                           ::cXml+= "<gIBSCredPres>"
                                  ::cXml+= XmlTag( "cCredPres" , Left(::cCredPresgibs, 2))
                                  ::cXml+= XmlTag( "pCredPres" , ::nPcredpresgibs, 4)
@@ -1439,7 +1439,7 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
                            ::cXml+= "</gIBSCredPres>"
                        Endif
 
-                       If !Empty(::cCredPrescbs) .and. ::cCredPrescbs $ [1_2_3_4_5]
+                       If !Empty(::cCredPrescbs) .and. ::cCredPrescbs $ [1_2_3_4_5] .and. ::cModelo == [55]
                           ::cXml+= "<gCBSCredPres>"
                                  ::cXml+= XmlTag( "cCredPres" , Left(::cCredPrescbs, 2))
                                  ::cXml+= XmlTag( "pCredPres" , ::nPcredprescbs, 4)
