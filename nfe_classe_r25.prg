@@ -8,7 +8,7 @@
  *          : Marcelo Brigatti                                               *
  *          : Maurílio Franchin Júnior                                       *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 22.08.2025                                                     *
+ * ULT. ALT.: 25.08.2025                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 
@@ -1432,7 +1432,7 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
                           ::cXml+= "<gIBSCredPres>"
                                  ::cXml+= XmlTag( "cCredPres" , Left(::cCredPresgibs, 2))
                                  ::cXml+= XmlTag( "pCredPres" , ::nPcredpresgibs, 4)
-                                 ::cXml+= XmlTag( "vCredPres" , ::nVcredpresgibs)
+                                 ::cXml+= XmlTag( "vCredPres" , If(::nVcredpresgibs == 0, ::nVcredpresgibs:= Round(::nVbcibs * ::nPcredpresgibs, 2), ::nVcredpresgibs ) )
                                  ::nVcredpresgibs_t+= ::nVcredpresgibs               // já acumula o valor os totais
                                  ::cXml+= XmlTag( "vCredPresCondSus" , ::nVcredprescondsusibs)
                                  ::nVcredprescondsusibs_t+= ::nVcredprescondsusibs   // já acumula o valor os totais
@@ -1443,7 +1443,7 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
                           ::cXml+= "<gCBSCredPres>"
                                  ::cXml+= XmlTag( "cCredPres" , Left(::cCredPrescbs, 2))
                                  ::cXml+= XmlTag( "pCredPres" , ::nPcredprescbs, 4)
-                                 ::cXml+= XmlTag( "vCredPres" , ::nVcredprescbs)
+                                 ::cXml+= XmlTag( "vCredPres" , If(::nVcredprescbs == 0, Round(::nVcredprescbs * ::nPcredprescbs, 2), ::nVcredprescbs)
                                  ::nVcredprescbs_t+= ::nVcredprescbs                 // já acumula o valor os totais
                                  ::cXml+= XmlTag( "vCredPresCondSus" , ::nVcredprescondsuscbs)
                                  ::nVcredprescondsuscbs_t+= ::nVcredprescondsuscbs   // já acumula o valor os totais
