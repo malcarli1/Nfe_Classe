@@ -230,11 +230,11 @@ CLASS Malc_GeraXml
    // Tag Icms - Grupo N
    VAR cOrig                   AS Character INIT [0]
    VAR cCsticms                AS Character INIT [] 
-   VAR nModbc                  AS Num       INIT 3
+   VAR cModbc                  AS Character INIT [3]
    VAR nVbc                    AS Num       INIT 0
    VAR nPicms                  AS Num       INIT 0
    VAR nVlicms                 AS Num       INIT 0
-   VAR nModbcst                AS Num       INIT 3
+   VAR cModbcst                AS Character INIT [3]
    VAR nPmvast                 AS Num       INIT 0
    VAR nPredbcst               AS Num       INIT 0
    VAR nVbcst                  AS Num       INIT 0
@@ -1119,11 +1119,11 @@ METHOD fCria_ProdutoIcms()
                    ::cXml+= "<ICMS10>"
                          ::cXml+= XmlTag( "orig"    , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
                          ::cXml+= XmlTag( "CST"     , SubStr(::cCsticms, 2, 2))
-                         ::cXml+= XmlTag( "modBC"   , Iif(!(Hb_Ntos(::nModbc) $ [0_1_2_3]), [0], Left(::nModbc, 1)), 0)          // Modalidade de determinação da BC do ICMS. 0=Margem Valor Agregado (%); 1=Pauta (Valor);2=Preço Tabelado Máx. (valor); 3=Valor da operação.
+                         ::cXml+= XmlTag( "modBC"   , Iif(!(::cModbc $ [0_1_2_3]), [0], Left(::cModbc, 1)))          // Modalidade de determinação da BC do ICMS. 0=Margem Valor Agregado (%); 1=Pauta (Valor);2=Preço Tabelado Máx. (valor); 3=Valor da operação.
                          ::cXml+= XmlTag( "vBC"     , ::nVbc)
                          ::cXml+= XmlTag( "pICMS"   , ::nPicms, 4)
                          ::cXml+= XmlTag( "vICMS"   , ::nVlicms)
-                         ::cXml+= XmlTag( "modBCST" , Iif(!(Hb_Ntos(::nModbcst) $ [0_1_2_3_4_5_6]), [3], Left(::nModbcst, 1)), 0) // Modalidade de determinação da BC do ICMS ST. 0=Preço tabelado ou máximo sugerido, 1=Lista Negativa (valor), 2=Lista Positiva (valor);3=Lista Neutra (valor), 4=Margem Valor Agregado (%), 5=Pauta (valor), 6 = Valor da Operação (NT 2019.001)
+                         ::cXml+= XmlTag( "modBCST" , Iif(!(::cModbcst $ [0_1_2_3_4_5_6]), [3], Left(::cModbcst, 1))) // Modalidade de determinação da BC do ICMS ST. 0=Preço tabelado ou máximo sugerido, 1=Lista Negativa (valor), 2=Lista Positiva (valor);3=Lista Neutra (valor), 4=Margem Valor Agregado (%), 5=Pauta (valor), 6 = Valor da Operação (NT 2019.001)
                          ::cXml+= XmlTag( "pMVAST"  , ::nPmvast, 4)
                          ::cXml+= XmlTag( "vBCST"   , ::nVbcst)
                          ::cXml+= XmlTag( "pICMSST" , ::nPicmst, 4)
@@ -1240,11 +1240,11 @@ METHOD fCria_ProdutoIcms()
                         
                          // Verifica se tem valor do ICMS
                          If ::nVlicms # 0
-                            ::cXml+= XmlTag( "modBC"       , Iif(!(Hb_Ntos(::nModbc) $ [0_1_2_3]), [0], Left(::nModbc, 1)), 0)   // Modalidade de determinação da BC do ICMS. 0=Margem Valor Agregado (%); 1=Pauta (Valor);2=Preço Tabelado Máx. (valor); 3=Valor da operação.
+                            ::cXml+= XmlTag( "modBC"       , Iif(!(::cModbc $ [0_1_2_3]), [0], Left(::cModbc, 1)))   // Modalidade de determinação da BC do ICMS. 0=Margem Valor Agregado (%); 1=Pauta (Valor);2=Preço Tabelado Máx. (valor); 3=Valor da operação.
                             ::cXml+= XmlTag( "vBC"         , ::nVbc)
                             ::cXml+= XmlTag( "pICMS"       , ::nPicms, 4)
                             ::cXml+= XmlTag( "vICMS"       , ::nVlicms)
-                            ::cXml+= XmlTag( "modBCST"     , Iif(!(::nModbcst $ [0_1_2_3_4_5_6]), [3], Left(::nModbcst, 1)), 0)  // Modalidade de determinação da BC do ICMS ST. 0=Preço tabelado ou máximo sugerido, 1=Lista Negativa (valor), 2=Lista Positiva (valor);3=Lista Neutra (valor), 4=Margem Valor Agregado (%), 5=Pauta (valor), 6 = Valor da Operação (NT 2019.001)
+                            ::cXml+= XmlTag( "modBCST"     , Iif(!(::cModbcst $ [0_1_2_3_4_5_6]), [3], Left(::cModbcst, 1)))  // Modalidade de determinação da BC do ICMS ST. 0=Preço tabelado ou máximo sugerido, 1=Lista Negativa (valor), 2=Lista Positiva (valor);3=Lista Neutra (valor), 4=Margem Valor Agregado (%), 5=Pauta (valor), 6 = Valor da Operação (NT 2019.001)
                             ::cXml+= XmlTag( "vBCST"       , ::nVbcst)
                             ::cXml+= XmlTag( "pICMSST"     , ::nPicmst, 4)
                             ::cXml+= XmlTag( "vICMSST"     , ::nVicmsst)
