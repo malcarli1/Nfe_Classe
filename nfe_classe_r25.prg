@@ -8,7 +8,7 @@
  *          : Marcelo Brigatti                                               *
  *          : Maurílio Franchin Júnior                                       *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 25.08.2025                                                     *
+ * ULT. ALT.: 26.08.2025                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 
@@ -932,23 +932,23 @@ METHOD fCria_Produto()
 
                  If !Empty(::nVfrete)
                     ::cXml+= XmlTag( "vFrete", ::nVfrete)
-                    ::nVFretet+= ::nVfrete // já acumula o valor dos fretes para os totais
                  Endif 
+                 ::nVFretet+= ::nVfrete // já acumula o valor dos fretes para os totais
 
                  If !Empty(::nVseg)
                     ::cXml+= XmlTag( "vSeg"  , ::nVseg)
-                    ::nVseg_t+= ::nVseg    // já acumula o valor dos seguros para os totais
                  Endif 
+                 ::nVseg_t+= ::nVseg    // já acumula o valor dos seguros para os totais
 
                  If !Empty(::nVdesc)
                     ::cXml+= XmlTag( "vDesc" , ::nVdesc)
-                    ::nVDesc_t+= ::nVdesc  // já acumula o valor dos descontos para os totais
                  Endif 
+                 ::nVDesc_t+= ::nVdesc  // já acumula o valor dos descontos para os totais
 
                  If !Empty(::nVoutro)
                     ::cXml+= XmlTag( "vOutro" , ::nVoutro)
-                    ::nVOutrot+= ::nVoutro // já acumula o valor dos descontos para os totais
                  Endif 
+                 ::nVOutrot+= ::nVoutro // já acumula o valor dos descontos para os totais
  
                  ::cXml+= XmlTag( "indTot", Iif(!(::cIndtot $ [0_1]), [0], Left(::cIndtot, 1)))                                  // Indica se valor do Item (vProd) entra no valor total da NF-e (vProd). 0=Valor do item (vProd) não compõe o valor total da NF-e 1=Valor do item (vProd) compõe o valor total da NF-e (vProd) (v2.0)
 
