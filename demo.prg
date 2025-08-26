@@ -4,7 +4,7 @@
  * OBJETIVO : Gerar Xml de Nfe/Nfce                                          *
  * AUTOR    : Marcelo Antonio Lázzaro Carli                                  *
  * DATA     : 23.06.2025                                                     *
- * ULT. ALT.: 14.08.2025                                                     *
+ * ULT. ALT.: 26.08.2025                                                     *
  *****************************************************************************/
 #include <minigui.ch>
 
@@ -268,7 +268,7 @@ Static Procedure fGerarxml()
 *****************
 
    // Reforma Tributária  - RTC
-   oXml:nVisistot    := (oXml:nVbcis * oXml:nQtrib_is) * (oXml:nPisis / 100)
+   oXml:nVis_t    := (oXml:nVbcis * oXml:nQtrib_is) * (oXml:nPisis / 100)
 
    oXml:fCria_Totais() // criando a tag dos totais
 

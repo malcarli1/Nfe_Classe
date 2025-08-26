@@ -1690,7 +1690,7 @@ METHOD fCria_Istot()
                        ::cXml+= XmlTag( "vIBSMonoReten" , ::nvIBSMonoReten_t)
                        ::cXml+= XmlTag( "vCBSMonoReten" , ::nvCBSMonoReten_t)
                        ::cXml+= XmlTag( "vIBSMonoRet"   , ::nvIBSMonoRet_t)
-                      ::cXml+= XmlTag( "vCBSMonoRet"   , ::nvCBSMonoRet_t)
+                       ::cXml+= XmlTag( "vCBSMonoRet"   , ::nvCBSMonoRet_t)
                 ::cXml+= "</gMono>"
              Endif
       ::cXml+= "</IBSCBSTot>"
