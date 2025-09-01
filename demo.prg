@@ -105,7 +105,7 @@ Static Procedure fGerarxml()
    oXml:cAmbiente:= [2]  // se fosse omitido esse valor o padrão é 2 Ambiente de Homologação 
 
    oXml:fCria_Xml()  // criando arquivo, chave e demais informações básicas
- 
+
    *** Identificação - Tag Ide
    oXml:cNatop   := [VENDA DE MERCADORIA] 
    oXml:dDatae   := Date()
@@ -166,8 +166,48 @@ Static Procedure fGerarxml()
    oXml:cIed      := [197358979888]
    oXml:cEmaild   := [marceloalcarli@gmail.com]
 
-   oXml:cXlgrr    := oXml:cXlgrd  // se deseja que seja incluído a tag de retirada retirar e colocar as demais tags do local de retirada
-   oXml:cXlgrg    := oXml:cXlgrd  // se deseja que seja incluído a tag de entrega retirar e colocar as demais tags do local de entrega
+   oXml:fCria_Destinatario() // criando a tag destinatário
+
+   // ------------------------
+   // DADOS DE ENTREGA
+   // ------------------------
+   oXml:cCnpjg   := "12345678000195"
+   oXml:cXnomeg  := "Cliente Teste Ltda"
+   oXml:cXfantg  := "Cliente Fantasia"
+   oXml:cXlgrg   := "Rua das Flores"
+   oXml:cNrog    := "123"
+   oXml:cXcplg   := "Bloco A"
+   oXml:cXBairrog:= "Centro"
+   oXml:cMunfg   := "3550308"
+   oXml:cXmung   := "Sao Paulo"
+   oXml:cUfg     := "SP"
+   oXml:cCepg    := "01001000"
+   oXml:cPaisg   := "1058"
+   oXml:cXpaisg  := "BRASIL"
+   oXml:cFoneg   := "11987654321"
+   oXml:cEmailg  := "cliente@teste.com.br"
+   oXml:cIeg     := "123456789012"
+
+   oXml:fCria_Entrega()
+
+   // ------------------------
+   // DADOS DE RETIRADA
+   // ------------------------
+   oXml:cCnpjr   := "12345678901"   // CPF neste caso
+   oXml:cXnomer  := "Joao da Silva"
+   oXml:cXlgrr   := "Avenida Brasil"
+   oXml:cNror    := "456"
+   oXml:cXBairror:= "Jardins"
+   oXml:cMunfg   := "3304557"
+   oXml:cXmunr   := "Rio de Janeiro"
+   oXml:cUfE     := "RJ"
+   oXml:cCepr    := "20040002"
+   oXml:cPaisr   := "1058"
+   oXml:cXpaisr  := "BRASIL"
+   oXml:cFoner   := "21999999999"
+   oXml:cIer     := "987654321000"
+
+   oXml:fCria_Retirada()
 
    *** teste para nota para exterior / trocar por este valor
    * oXml:cIdestrangeiro:= [20250707]
@@ -178,7 +218,6 @@ Static Procedure fGerarxml()
    * oXml:cXpaisd       := [COLOMBIA]
    * oXml:cIndiedest    := [9]
 
-   oXml:fCria_Destinatario() // criando a tag destinatário
 
    *** Pode repetir até 10 vezes
    oXml:cAutxml   := [99999999000191]
@@ -255,7 +294,6 @@ Static Procedure fGerarxml()
           oXml:cDescr_a := [Descrição da arma com até 256 caracteres]
 
           oXml:fCria_ProdArmamento()
-
           oXml:cTparma  := [0]
           oXml:cNserie_a:= [BC000123]
           oXml:cNcano   := [NCC000123]
@@ -317,11 +355,13 @@ Static Procedure fGerarxml()
 
    oXml:fCria_Cobranca() // criando a tag de cobrança
 
+
    oXml:cNDup  := [002 Duplicata]   
    oXml:dDvencp:= Ctod([01/05/2025])
    oXml:nVdup  := 2.00
 
    oXml:fCria_Cobranca() // criando a tag de cobrança
+
 
    oXml:cNDup  := [003 Duplicata]   
    oXml:dDvencp:= Ctod([01/06/2025])

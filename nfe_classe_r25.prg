@@ -18,7 +18,7 @@
 
 CLASS Malc_GeraXml
    // Configurações iniciais básicas
-   VAR cXml                    AS Character INIT [] 
+   VAR cXml                    AS Character INIT []                              // xml gerado
    VAR cUf                     AS Character INIT [35]                            // Grupo B // SP = 35
    VAR cNf                     AS Character INIT []                              // Grupo B
    VAR cCnpj                   AS Character INIT []                              // Cnpj/Cpf Emitente
@@ -487,7 +487,8 @@ CLASS Malc_GeraXml
    VAR nVtotibsmonoItem        AS Num       INIT 0
    VAR nVtotcbsmonoItem        AS Num       INIT 0
 
-   METHOD fCria_Xml()          CONSTRUCTOR
+   METHOD New()                CONSTRUCTOR
+   METHOD fCria_Xml()          
    METHOD fCria_ChaveAcesso()
    METHOD fCria_Ide()
    METHOD fCria_AddNfref()
@@ -495,8 +496,9 @@ CLASS Malc_GeraXml
    METHOD fCria_Autxml()
    METHOD fCria_Emitente()
    METHOD fCria_Destinatario()
-   METHOD fCria_Retirada() 
-   METHOD fCria_Entrega()
+   METHOD fCria_Endereco()                                                     // cTipo = entrega ou retirada
+   METHOD fCria_Retirada()                                                     // gerar e manter a compatibilidade com o método endereco
+   METHOD fCria_Entrega()                                                      // gerar e manter a compatibilidade com o método endereco
    METHOD fCria_Produto() 
    METHOD fCria_ProdutoIcms()
    METHOD fCria_ProdutoIcms_Na()
@@ -524,13 +526,18 @@ CLASS Malc_GeraXml
    METHOD fCertificadopfx()
 ENDCLASS
 
+* ---------------> Metodo para inicializar a criação da Classe <-------------- *
+METHOD New()
+   ::cXml:= []
+Return Self
+
 * ---------------> Metodo para inicializar a criação do XML <----------------- *
 METHOD fCria_Xml()
    ::fCria_ChaveAcesso()
 
    ::cXml+= '<NFe xmlns="http://www.portalfiscal.inf.br/nfe">'
    ::cXml+= '<infNFe versao="' + ::cVersao + '" Id="NFe' + ::cId + '">'
-Return Self
+Return (Nil)
 
 * --------------> Metodo para gerar a chave de acesso da NFe <---------------- *
 METHOD fCria_ChaveAcesso()
@@ -707,77 +714,87 @@ Return (Nil)
 
 * -----------------> Metodo para gerar a tag do destinatário <---------------- *
 METHOD fCria_Destinatario()
-   If !Empty(::cCnpjd)
+   // Para NF-e (55) sempre deve gerar a tag <dest>
+   // Para NFC-e (65) só gera se houver xNome (CNPJ/CPF é opcional)
+   If (::cModelo == [55]) .or. (::cModelo == [65] .and. (!Empty(::cXnomed) .or. !Empty(::cCnpjd)))
       ::cXml+= "<dest>"
-             If !Empty(::cCnpjd)
-                If Len(SoNumeroCnpj(::cCnpjd)) < 14                                                                              // Pessoa Física - Cpf
-                   ::cXml+= XmlTag( "CPF"  , Left(SoNumeroCnpj(::cCnpjd), 11))
-                Else                                                                                                             // Pessoa Juridica
-                   ::cXml+= XmlTag( "CNPJ" , Left(SoNumeroCnpj(::cCnpjd), 14))
-                Endif 
-             Endif    
 
-             If !Empty(::cIdestrangeiro)
-                If ::cUfd == [EX]
-                   ::cXml+= XmlTag( "idEstrangeiro" , Left(::cIdestrangeiro, 20))
-                Endif 
-             Endif    
+      // CNPJ/CPF
+      If !Empty(::cCnpjd)
+         If Len(SoNumeroCnpj(::cCnpjd)) < 14     // Pessoa Física - CPF
+            ::cXml+= XmlTag("CPF" , Left(SoNumeroCnpj(::cCnpjd), 11))
+         Else                                    // Pessoa Jurídica - CNPJ
+            ::cXml+= XmlTag("CNPJ", Left(SoNumeroCnpj(::cCnpjd), 14))
+         Endif
+      Endif
 
-             If ::cAmbiente == [2]                                                                                               // Homologação
-                ::cXml+= XmlTag( "xNome" , [NF-E EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL])
-             Else                                                                                                                // Produção
-                ::cXml+= XmlTag( "xNome" , Left(fRetiraAcento(::cXnomed), 60))
-             Endif    
+      // Id estrangeiro
+      If !Empty(::cIdestrangeiro)
+         If ::cUfd == [EX]
+            ::cXml+= XmlTag("idEstrangeiro", Left(::cIdestrangeiro, 20))
+         Endif
+      Endif
 
-             // Grupo Obrigatório para a NF-e (modelo 55).
-             ::cXml+= "<enderDest>"    
-                    ::cXml+= XmlTag( "xLgr"     , Left(fRetiraAcento(::cXlgrd), 60))
-                    ::cXml+= XmlTag( "nro"      , Left(::cNrod, 60))
+      // Nome
+      If ::cAmbiente == [2]   // Homologação
+         ::cXml+= XmlTag("xNome", "NF-E EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL")
+      Else                    // Produção
+         ::cXml+= XmlTag("xNome", Left(fRetiraAcento(::cXnomed), 60))
+      Endif
 
-                    If !Empty(::cXcpld)
-                       ::cXml+= XmlTag( "xCpl"  , Left(::cXcpld, 60))
-                    Endif 
+      // enderDest: só obrigatório para modelo 55
+      If ::cModelo == [55]
+         ::cXml+= "<enderDest>"
+         ::cXml+= XmlTag("xLgr" , Left(fRetiraAcento(::cXlgrd), 60))
+         ::cXml+= XmlTag("nro"  , Left(::cNrod, 60))
 
-                    ::cXml+= XmlTag( "xBairro"  , Left(fRetiraAcento(::cXBairrod), 60))
+         If !Empty(::cXcpld)
+            ::cXml+= XmlTag("xCpl", Left(::cXcpld, 60))
+         Endif
 
-                    If ::cUfd == [EX]                                                                                            // Importação/Exportação
-                       ::cXml+= XmlTag( "cMun"  , [9999999])
-                       ::cXml+= XmlTag( "xMun"  , [EXTERIOR])
-                       ::cXml+= XmlTag( "UF"    , [EX])
-                    Else                                                                                                         // Comércio Interno
-                       ::cXml+= XmlTag( "cMun"  , Left(::cCmund, 7))
-                       ::cXml+= XmlTag( "xMun"  , Left(fRetiraAcento(::cXmund), 60))
-                       ::cXml+= XmlTag( "UF"    , Left(::cUfd, 2))
-                       ::cXml+= XmlTag( "CEP"   , Left(SoNumero(::cCepd), 8))
-                    Endif 
+         ::cXml+= XmlTag("xBairro", Left(fRetiraAcento(::cXBairrod), 60))
 
-	            If !Empty(::cPaisd)
-                       ::cXml+= XmlTag( "cPais" , Left(::cPaisd, 4))
-                    Endif 
+         If ::cUfd == "EX"
+            ::cXml+= XmlTag("cMun", "9999999")
+            ::cXml+= XmlTag("xMun", "EXTERIOR")
+            ::cXml+= XmlTag("UF"  , "EX")
+         Else
+            ::cXml+= XmlTag("cMun", Left(::cCmund, 7))
+            ::cXml+= XmlTag("xMun", Left(fRetiraAcento(::cXmund), 60))
+            ::cXml+= XmlTag("UF"  , Left(::cUfd, 2))
+            ::cXml+= XmlTag("CEP" , Left(SoNumero(::cCepd), 8))
+         Endif
 
-	            If !Empty(::cXpaisd)
-                       ::cXml+= XmlTag( "xPais" , Left(::cXpaisd, 60))
-                    Endif 
+         If !Empty(::cPaisd)
+            ::cXml+= XmlTag("cPais", Left(::cPaisd, 4))
+         Endif
 
-	            If !Empty(SoNumero(::cFoned))
-                       ::cXml+= XmlTag( "fone"  , Left(SoNumero(::cFoned), 14))
-                     Endif 
-             ::cXml+= "</enderDest>"
+         If !Empty(::cXpaisd)
+            ::cXml+= XmlTag("xPais", Left(::cXpaisd, 60))
+         Endif
 
-   	     ::cXml+= XmlTag( "indIEDest" , If(::cModelo == [65] .or. ::cUfd == [EX], "9", Left(::cIndiedest, 1)))                   //   1 = Contribuinte ICMS (informar a IE do destinatário);
+         If !Empty(SoNumero(::cFoned))
+            ::cXml+= XmlTag("fone", Left(SoNumero(::cFoned), 14))
+         Endif
 
-             If !Empty(::cIed) .and. !(::cUfd == [EX]) .and. !(::cModelo == [65]) .and. ::cIndiedest == [1]                      //   9 = Não Contribuinte, que pode ou não possuir Inscrição Estadual no Cadastro de Contribuintes do ICMS.
-                ::cXml+= XmlTag( "IE" , Left(SoNumero(::cIed), 14))                                                              //   Nota 1: No caso de NFC-e informar indIEDest=9 e não informar a tag IE do destinatário; 
-             Endif                                                                                                               //   Nota 2: No caso de operação com o Exterior informar indIEDest=9 e não informar a tag IE do destinatário;
-                                                                                                                                 //   Nota 3: No caso de Contribuinte Isento de Inscrição (indIEDest=2), não informar a tag IE do destinatário.
-             If !Empty(::cEmaild)
-                ::cXml+= XmlTag( "email" , Left(::cEmaild, 60))
-             Endif    
+         ::cXml+= "</enderDest>"
+      Endif
+
+      // indIEDest
+      ::cXml+= XmlTag("indIEDest", If(::cModelo == [65] .or. ::cUfd == [EX], [9], Left(::cIndiedest, 1)))
+
+      // IE só se modelo 55 e não exterior
+      If !Empty(::cIed) .and. !(::cUfd == [EX]) .and. !(::cModelo == [65]) .and. ::cIndiedest == [1]
+         ::cXml+= XmlTag("IE", Left(SoNumero(::cIed), 14))
+      Endif
+
+      // Email (opcional em ambos os modelos)
+      If !Empty(::cEmaild)
+         ::cXml+= XmlTag("email", Left(::cEmaild, 60))
+      Endif
+
       ::cXml+= "</dest>"
    Endif
-
-   ::fCria_Retirada() 
-   ::fCria_Entrega()
 Return (Nil)
 
 * ----------> Metodo para gerar a tag do // Contador Responsável <------------ *
@@ -793,93 +810,99 @@ METHOD fCria_Autxml()   // Marcelo Brigatti
    Endif 
 Return (Nil)
 
+* ----------> Metodo genérico Endereco <-------------------------------------- *
+METHOD fCria_Endereco(cTipo)
+   Local lCond, cCnpj, cXNome, cXFant, cXlgr, cNro, cXcpl, cXBairro, cMun, cXMun, cUf, cCep, cPais, cXPais, cFone, cEmail, cIE
+
+   Do Case
+      Case Lower(cTipo) == [retirada]
+           lCond   := (Alltrim(::cXlgrd) # Alltrim(::cXlgrr))
+           cCnpj   := ::cCnpjr
+           cXNome  := ::cXnomer
+           cXFant  := ::cXfantr
+           cXlgr   := ::cXlgrr
+           cNro    := ::cNror
+           cXcpl   := ::cXcplr
+           cXBairro:= ::cXBairror
+           cMun    := ::cMunfg
+           cXMun   := ::cXmunr
+           cUf     := ::cUfE
+           cCep    := ::cCepr
+           cPais   := ::cPaisr
+           cXPais  := ::cXpaisr
+           cFone   := ::cFoner
+           cEmail  := ::cEmailr
+           cIE     := ::cIer
+      Case Lower(cTipo) == [entrega]
+           lCond   := (Alltrim(::cXlgrd) # Alltrim(::cXlgrg))
+           cCnpj   := ::cCnpjg
+           cXNome  := ::cXnomeg
+           cXFant  := ::cXfantg
+           cXlgr   := ::cXlgrg
+           cNro    := ::cNrog
+           cXcpl   := ::cXcplg
+           cXBairro:= ::cXBairrog
+           cMun    := ::cMunfg
+           cXMun   := ::cXmung
+           cUf     := ::cUfg
+           cCep    := ::cCepg
+           cPais   := ::cPaisg
+           cXPais  := ::cXpaisg
+           cFone   := ::cFoneg
+           cEmail  := ::cEmailg
+           cIE     := ::cIeg
+      Endcase
+
+      If lCond
+         ::cXml+= "<" + cTipo + ">"
+
+         If Len(cCnpj) < 14
+            ::cXml+= XmlTag("CPF"  , Left(cCnpj, 11))
+         Else
+            ::cXml+= XmlTag("CNPJ" , Left(cCnpj, 14))
+         Endif
+
+         ::cXml+= XmlTag("xNome"   , Left(fRetiraAcento(cXNome), 60))
+
+         If !Empty(cXFant)
+            ::cXml+= XmlTag("xFant", Left(fRetiraAcento(cXFant), 60))
+         Endif
+
+         ::cXml+= XmlTag("xLgr"    , Left(fRetiraAcento(cXlgr), 60))
+         ::cXml+= XmlTag("nro"     , Left(cNro, 60))
+
+         If !Empty(cXcpl)
+            ::cXml+= XmlTag("xCpl" , Left(fRetiraAcento(cXcpl), 60))
+         Endif
+
+         ::cXml+= XmlTag("xBairro" , Left(fRetiraAcento(cXBairro), 60))
+         ::cXml+= XmlTag("cMun"    , Left(cMun, 7))
+         ::cXml+= XmlTag("xMun"    , Left(fRetiraAcento(cXMun), 60))
+         ::cXml+= XmlTag("UF"      , Left(cUf, 2))
+         ::cXml+= XmlTag("CEP"     , Left(cCep, 8))
+         ::cXml+= XmlTag("cPais"   , Left(cPais, 4))
+         ::cXml+= XmlTag("xPais"   , Left(fRetiraAcento(cXPais), 60))
+
+         If !Empty(cFone)
+            ::cXml+= XmlTag("fone" , Left(cFone, 14))
+         Endif
+
+         If !Empty(cEmail)
+            ::cXml+= XmlTag("email", Left(cEmail, 60))
+         Endif
+
+         ::cXml+= XmlTag("IE"      , Left(cIE, 14))
+         ::cXml+= "</" + cTipo + ">"
+   ENDIF
+Return (Nil)
+
 * ----------> Metodo para gerar a tag do endereço de retirada <--------------- *
-METHOD fCria_Retirada()                                                                                       // Marcelo Brigatti
-   If Alltrim(::cXlgrd) # Alltrim(::cXlgrr)  // Informar somente se diferente do endereço do remetente.                          // If !Empty(SoNumeroCnpj(::cCnpjr))  // Informar somente se diferente do endereço do remetente.                                  
-      ::cXml+= "<retirada>"
-             If Len(SoNumeroCnpj(::cCnpjr)) < 14                                                                                 // Pessoa Física - Cpf
-                ::cXml+= XmlTag( "CPF"  , Left(SoNumeroCnpj(::cCnpjr), 11))
-             Else                                                                                                                // Pessoa Juridica
-                ::cXml+= XmlTag( "CNPJ" , Left(SoNumeroCnpj(::cCnpjr), 14))
-             Endif 
+METHOD fCria_Retirada()
+Return(::fCria_Endereco([retirada]))
 
-             ::cXml+= XmlTag( "xNome" , Left(fRetiraAcento(::cXnomer), 60))                                                      // Razão Social retirada
-
-             If !Empty(::cXfantr)
-                ::cXml+= XmlTag( "xFant" , Left(fRetiraAcento(::cXfantr), 60))                                                   // Nome Fantasia retirada
-             Endif 
-
-             ::cXml+= XmlTag( "xLgr"    , Left(fRetiraAcento(::cXlgrr), 60))                                                     // Endereço retirada
-             ::cXml+= XmlTag( "nro"     , Left(::cNror, 60))                                                                     // Número do Endereço do retirada
-
-             If !Empty(::cXcplr)
-                ::cXml+= XmlTag( "xCpl" , Left(fRetiraAcento(::cXcplr), 60))
-             Endif 
-
-             ::cXml+= XmlTag( "xBairro" , Left(fRetiraAcento(::cXBairror), 60))                                                  // Bairro do retirada
-             ::cXml+= XmlTag( "cMun"    , Left(SoNumero(::cMunfg), 7))                                                           // Código IBGE do retirada
-             ::cXml+= XmlTag( "xMun"    , Left(fRetiraAcento(::cXmunr), 60))                                                     // Cidade do retirada
-             ::cXml+= XmlTag( "UF"      , Left(::cUfE, 2))                                                                       // UF do retirada
-	         ::cXml+= XmlTag( "CEP"     , Left(SoNumero(::cCepr), 8))                                                            // CEP do retirada
-	         ::cXml+= XmlTag( "cPais"   , Left(::cPaisr, 4))                                                                     // Código do País retirada
-	         ::cXml+= XmlTag( "xPais"   , Left(fRetiraAcento(::cXpaisr), 60))                                                    // País retirada da NF
-
-             If !Empty(SoNumero(::cFoner))
-	            ::cXml+= XmlTag( "fone"    , Left(SoNumero(::cFoner), 14))                                                       // Telefone do retirada
-             Endif 
-
-             If !Empty(::cEmailr)
-                ::cXml+= XmlTag( "email" , Left(::cEmailr, 60))
-             Endif    
-
-             ::cXml+= XmlTag( "IE" , Left(SoNumero(::cIer), 14))
-      ::cXml+= "</retirada>"
-   Endif 
-Return (Nil)
-                 
-* -----------> Metodo para gerar a tag do endereço de entrega <--------------- *
-METHOD fCria_Entrega()                                                                                        // Marcelo Brigatti
-   If Alltrim(::cXlgrd) # Alltrim(::cXlgrg)  // Informar somente se diferente do endereço destinatário.                          // If !Empty(SoNumeroCnpj(::cCnpjg))  // Informar somente se diferente do endereço destinatário.                                 // If Alltrim(::cXlgrd) # Alltrim(::cXlgrg)  // Informar somente se diferente do endereço destinatário.
-      ::cXml+= "<entrega>"
-             If Len(SoNumeroCnpj(::cCnpjg)) < 14                                                                                 // Pessoa Física - Cpf
-                ::cXml+= XmlTag( "CPF"  , Left(SoNumeroCnpj(::cCnpjg), 11))
-             Else                                                                                                                // Pessoa Juridica
-                ::cXml+= XmlTag( "CNPJ" , Left(SoNumeroCnpj(::cCnpjg), 14))
-             Endif 
-
-             ::cXml+= XmlTag( "xNome" , Left(fRetiraAcento(::cXnomeg), 60))                                                      // Razão Social entrega
-
-             If !Empty(::cXfantg)
-                ::cXml+= XmlTag( "xFant" , Left(fRetiraAcento(::cXfantg), 60))                                                   // Nome Fantasia entrega
-             Endif 
-
-             ::cXml+= XmlTag( "xLgr"    , Left(fRetiraAcento(::cXlgrg), 60))                                                     // Endereço entrega
-             ::cXml+= XmlTag( "nro"     , Left(::cNrog, 60))                                                                     // Número do Endereço do entrega
-
-             If !Empty(::cXcplg)
-                ::cXml+= XmlTag( "xCpl" , Left(fRetiraAcento(::cXcplg), 60))
-             Endif 
-
-             ::cXml+= XmlTag( "xBairro" , Left(fRetiraAcento(::cXBairrog), 60))                                                  // Bairro do entrega
-             ::cXml+= XmlTag( "cMun"    , Left(SoNumero(::cMunfg), 7))                                                           // Código IBGE do entrega
-             ::cXml+= XmlTag( "xMun"    , Left(fRetiraAcento(::cXmung), 60))                                                     // Cidade do entrega
-	         ::cXml+= XmlTag( "UF"      , Left(::cUfg, 2))                                                                       // UF do entrega
-    	     ::cXml+= XmlTag( "CEP"     , Left(SoNumero(::cCepg), 8))                                                            // CEP do entrega
-	         ::cXml+= XmlTag( "cPais"   , Left(::cPaisg, 4))                                                                     // Código do País entrega
-	         ::cXml+= XmlTag( "xPais"   , Left(fRetiraAcento(::cXpaisg), 60))                                                    // País entrega da NF
-
-             If !Empty(SoNumero(::cFoneg))
-	            ::cXml+= XmlTag( "fone"    , Left(SoNumero(::cFoneg), 14))                                                       // Telefone do entrega
-             Endif 
-
-             If !Empty(::cEmailg)
-                ::cXml+= XmlTag( "email" , Left(::cEmailg, 60))
-             Endif    
-
-             ::cXml+= XmlTag( "IE" , Left(SoNumero(::cIeg), 14))
-      ::cXml+= "</entrega>"
-   Endif 
-Return (Nil)
+* ----------> Metodo para gerar a tag do endereço de entrega <---------------- *
+METHOD fCria_Entrega()
+Return(::fCria_Endereco([entrega]))
    
 * ---------------> Metodo para gerar a tag dos itens da NFE <----------------- *
 METHOD fCria_Produto()
