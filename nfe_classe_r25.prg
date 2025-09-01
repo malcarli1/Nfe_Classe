@@ -7,8 +7,9 @@
  *          : Marcelo de Paula                                               *
  *          : Marcelo Brigatti                                               *
  *          : Maurílio Franchin Júnior                                       *
+ *          : Jair Barreto                                                   *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 26.08.2025                                                     *
+ * ULT. ALT.: 01.09.2025                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 
@@ -519,7 +520,7 @@ CLASS Malc_GeraXml
    METHOD fCria_Informacoes() 
    METHOD fCria_Responsavel()
    METHOD fCria_Fechamento()
-
+   METHOD LimpaPropriedadesImposto()                                           //  Jair  Barreto
    METHOD fCertificadopfx()
 ENDCLASS
 
@@ -1203,7 +1204,7 @@ METHOD fCria_ProdutoIcms()
                          ::cXml+= XmlTag( "orig"        , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
                          ::cXml+= XmlTag( "CSOSN"       , ::cCsticms)
                          ::cXml+= XmlTag( "pCredSN"     , ::nPcredsn, 4)
-                         ::cXml+= XmlTag( "vCredICMSSN" , ::nVcredicmssn, 4)
+                         ::cXml+= XmlTag( "vCredICMSSN" , ::nVcredicmssn)
                    ::cXml+= "</ICMSSN101>"
              Case ::cCsticms $ [102_103_300_400]
                    ::cXml+= "<ICMSSN102>"
@@ -1249,7 +1250,7 @@ METHOD fCria_ProdutoIcms()
                             ::cXml+= XmlTag( "pICMSST"     , ::nPicmst, 4)
                             ::cXml+= XmlTag( "vICMSST"     , ::nVicmsst)
                             ::cXml+= XmlTag( "pCredSN"     , ::nPcredsn, 4)
-                            ::cXml+= XmlTag( "vCredICMSSN" , ::nVcredicmssn, 4)
+                            ::cXml+= XmlTag( "vCredICMSSN" , ::nVcredicmssn)
                             ::nVbcst_t+= ::nVbcst // já acumula o valor dos base de cálculo da subs. tributária para os totais
                          Endif 
                    ::cXml+= "</ICMSSN900>"
@@ -2012,6 +2013,20 @@ METHOD fCria_ProdutoII()  // Marcelo Brigatti
             ::nVii_t+= ::nVii // já acumula o valor dos produtosii para os totais
       ::cXml+= "</II>"
    Endif 
+Return (Nil)
+
+* -----------> Metodo para Limpar Constantes de Imposto <--------------------- * // Jair Barreto
+METHOD LimpaPropriedadesImposto()            
+   ::cOrig:= ::cCsticms:= ::cModbc:= ::cModbcst:= []
+   ::nVbc:= ::nPicms:= ::nVlicms:= ::nPredbc:= 0
+   ::nPmvast:= ::nPredbcst:= ::nVbcst:= ::nPicmst:= ::nVicmsst:= 0
+   ::nPcredsn:= ::nVcredicmssn:= 0
+   ::cCstipi:= ::cEnq:= ::cCstipint:= []
+   ::nVbcipi:= ::nPipi:= ::nVipi:= 0
+   ::cCstPis:= ::cCstCofins:= ::cCstPisnt:= ::cCstCofinsnt:= []
+   ::nBcPis:= ::nAlPis:= ::nBcCofins:= ::nAlCofins:= 0
+   ::nVbcufdest:= ::nPfcpufdest:= ::nPicmsufdest:= ::nPicmsinter:= ::nPicmsinterpart:= 0
+   ::nVfcpufdest:= ::nVicmsufdest:= ::nVicmsufremet:= 0
 Return (Nil)
 
 * -----------------------> Metodo para fechar o XML <------------------------- *
