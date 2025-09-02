@@ -728,39 +728,42 @@ Return (Nil)
 
 * -----------------> Metodo para gerar a tag do destinatário <---------------- *
 METHOD fCria_Destinatario()
-   // Para NF-e (55) sempre deve gerar a tag <dest>
-   // Para NFC-e (65) só gera se houver xNome (CNPJ/CPF é opcional)
-   If (::cModelo == [55]) .or. (::cModelo == [65] .and. (!Empty(::cXnomed) .or. !Empty(::cCnpjd)))
-      ::cXml+= "<dest>"
+   Local lGerarDest:= lGerarEnder:= .F.
+
+   // Decidir se deve gerar <dest>
+   lGerarDest:= (::cModelo == [55]) .or. (::cModelo == [65] .and. (!Empty(::cXnomed) .or. !Empty(::cCnpjd)))
+
+   If lGerarDest
+      ::cXml += "<dest>"
 
       // CNPJ/CPF
       If !Empty(::cCnpjd)
          If Len(::SoNumeroCnpj(::cCnpjd)) < 14     // Pessoa Física - CPF
-            ::cXml+= ::XmlTag("CPF" , Left(::SoNumeroCnpj(::cCnpjd), 11))
-         Else                                    // Pessoa Jurídica - CNPJ
+            ::cXml+= ::XmlTag("CPF", Left(::SoNumeroCnpj(::cCnpjd), 11))
+         Else                                     // Pessoa Jurídica - CNPJ
             ::cXml+= ::XmlTag("CNPJ", Left(::SoNumeroCnpj(::cCnpjd), 14))
          Endif
       Endif
 
       // Id estrangeiro
-      If !Empty(::cIdestrangeiro)
-         If ::cUfd == [EX]
-            ::cXml+= ::XmlTag("idEstrangeiro", Left(::cIdestrangeiro, 20))
-         Endif
+      If !Empty(::cIdestrangeiro) .AND. ::cUfd == [EX]
+         ::cXml+= ::XmlTag("idEstrangeiro", Left(::cIdestrangeiro, 20))
       Endif
 
       // Nome
       If ::cAmbiente == [2]   // Homologação
          ::cXml+= ::XmlTag("xNome", "NF-E EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL")
-      Else                    // Produção
+      Elseif !Empty(::cXnomed)   // Produção: só se tiver nome
          ::cXml+= ::XmlTag("xNome", Left(::fRetiraAcento(::cXnomed), 60))
       Endif
 
-      // enderDest: só obrigatório para modelo 55
-      If ::cModelo == [55]
+      // enderDest: gerar apenas se modelo 55 e houver dados de endereço
+      lGerarEnder:= ::cModelo == [55] .and. (!Empty(::cXlgrd) .or. !Empty(::cNrod) .or. !Empty(::cXBairrod) .or. !Empty(::cCmund) .or. !Empty(::cXmund))
+
+      If lGerarEnder
          ::cXml+= "<enderDest>"
-         ::cXml+= ::XmlTag("xLgr" , Left(::fRetiraAcento(::cXlgrd), 60))
-         ::cXml+= ::XmlTag("nro"  , Left(::cNrod, 60))
+         ::cXml+= ::XmlTag("xLgr", Left(::fRetiraAcento(::cXlgrd), 60))
+         ::cXml+= ::XmlTag("nro", Left(::cNrod, 60))
 
          If !Empty(::cXcpld)
             ::cXml+= ::XmlTag("xCpl", Left(::cXcpld, 60))
@@ -771,15 +774,15 @@ METHOD fCria_Destinatario()
          If ::cUfd == "EX"
             ::cXml+= ::XmlTag("cMun", "9999999")
             ::cXml+= ::XmlTag("xMun", "EXTERIOR")
-            ::cXml+= ::XmlTag("UF"  , "EX")
+            ::cXml+= ::XmlTag("UF", "EX")
          Else
             ::cXml+= ::XmlTag("cMun", Left(::cCmund, 7))
             ::cXml+= ::XmlTag("xMun", Left(::fRetiraAcento(::cXmund), 60))
-            ::cXml+= ::XmlTag("UF"  , Left(::cUfd, 2))
-            ::cXml+= ::XmlTag("CEP" , Left(::SoNumero(::cCepd), 8))
+            ::cXml+= ::XmlTag("UF", Left(::cUfd, 2))
+            ::cXml+= ::XmlTag("CEP", Left(::SoNumero(::cCepd), 8))
          Endif
 
-         If !Empty(::cPaisd)
+         IF !Empty(::cPaisd)
             ::cXml+= ::XmlTag("cPais", Left(::cPaisd, 4))
          Endif
 
