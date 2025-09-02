@@ -9,7 +9,7 @@
  *          : Maurílio Franchin Júnior                                       *
  *          : Jair Barreto                                                   *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 01.09.2025                                                     *
+ * ULT. ALT.: 02.09.2025                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 
@@ -1664,10 +1664,10 @@ METHOD fCria_Totais()
              ::cXml+= ::XmlTag( "vOutro"       , ::nVOutrot)
          
              If ::nVnf == 0
-                ::cXml+= ::XmlTag( "vNF"       , ::nVprodt - ::nVDesc_t - ::nVicmsdeson_t + ::nVst_t + ::nVfcpst_t + ::nVFretet + ::nVSeg_t + ::nVOutrot + ::nVii_t + ::nVipi_t + ::nVipidevol_t)
+                ::cXml+= ::XmlTag( "vNF"       , ::nVnf:= ::nVprodt - ::nVDesc_t - ::nVicmsdeson_t + ::nVst_t + ::nVfcpst_t + ::nVFretet + ::nVSeg_t + ::nVOutrot + ::nVii_t + ::nVipi_t + ::nVipidevol_t)
 
                 If ::cTpOp == [2]  // Exceção 1: Faturamento direto de veículos novos: Se informada operação de Faturamento Direto para veículos novos (tpOp = 2, id:J02): 
-                   ::cXml+= ::XmlTag( "vNF"    , ::nVprodt - ::nVDesc_t - ::nVicmsdeson_t + ::nVFretet + ::nVSeg_t + ::nVOutrot + ::nVii_t + ::nVipi_t)
+                   ::cXml+= ::XmlTag( "vNF"    , ::nVnf:= ::nVprodt - ::nVDesc_t - ::nVicmsdeson_t + ::nVFretet + ::nVSeg_t + ::nVOutrot + ::nVii_t + ::nVipi_t)
                 Endif
              Else
                ::cXml+= ::XmlTag( "vNF"        , ::nVnf)
