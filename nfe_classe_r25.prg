@@ -1853,7 +1853,7 @@ METHOD fCria_Cobranca()  // Grupo Y. Dados da Cobrança
             ::cXml:= StrTran(::cXml, "</fat></cobr><dup>", "</fat><dup>")
          EndIf   
 
-         If !Empty(::nVdup)
+         If !Empty(::nVdup) .and. ::cIndPag # [0]
              ::cXml+= "<dup>"
                     ::cXml+= ::XmlTag( "nDup"  , Left(::cNDup, 60))                                                                // Obrigatória informação do número de parcelas com 3 algarismos, sequenciais e consecutivos. Ex.: “001”,”002”,”003”,... Observação: este padrão de preenchimento será Obrigatório somente a partir de 03/09/2018
                     ::cXml+= ::XmlTag( "dVenc" , ::DateXml(::dDvencp))                                                               // Formato: “AAAA-MM-DD”. Obrigatória a informação da data de vencimento na ordem crescente das datas. Ex.: “2018-06-01”,”2018-07-01”, “2018-08-01”,...
