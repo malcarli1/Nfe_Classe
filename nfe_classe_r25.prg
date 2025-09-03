@@ -9,7 +9,7 @@
  *          : Maurílio Franchin Júnior                                       *
  *          : Jair Barreto                                                   *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 02.09.2025                                                     *
+ * ULT. ALT.: 03.09.2025                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 
@@ -2110,12 +2110,13 @@ Return (CharRem(cEliminar, cStr))
 
 * -----------------------> Metodo Retira acentos de uma string <-------------- *
 METHOD fRetiraAcento(cStr)
-   Local aLetraCAc:= {[Á],[À],[Ä],[Ã],[Â],[É],[È],[Ë],[Ê],[&],[Í],[Ì],[Ï],[Î],[Ó],[Ò],[Ö],[Õ],[Ô],[Ú],[Ù],[Ü],[Û],[Ç],[Ñ],[Ý],[á],[à],[ä],[ã],[â],[é],[è],[ë],[ƒ],[ê],[í],[ì],[ï],[î],[ó],[ò],[ö],[õ],[ô],[ú],[ù],[ü],[û],[ç],[ñ],[ý],[ÿ],[º],[ª],[‡],[Æ],[¡],[£],[ÿ],[ ],[á],[],[ ],[ ],[‚],[ˆ],[“],[¢],[…],[°],[A³],[A§],[Ai],[A©],[Ao.],[’],[´] }
-   Local aLetraSAc:= {[A],[A],[A],[A],[A],[E],[E],[E],[E],[E],[I],[I],[I],[I],[O],[O],[O],[O],[O],[U],[U],[U],[U],[C],[N],[Y],[a],[a],[a],[a],[a],[e],[e],[e],[a],[e],[i],[i],[i],[i],[o],[o],[o],[o],[o],[u],[u],[u],[u],[c],[n],[y],[y],[o.],[a.],[c],[a],[i],[u],[a],[a],[a],[E],[a],[ ],[e],[e],[o],[o],[a],[],[o],[c],[a],[e],[u],[],[]}, i
+   Local aFrom := {[Á],[À],[Â],[Ã],[Ä],[Å],[A],[A],[A],[Æ] ,[Ç],[C],[C],[É],[È],[Ê],[Ë],[E],[E],[Í],[Ì],[Î],[Ï],[L],[L],[N],[Ñ],[Ó],[Ò],[Ô],[Õ],[Ö],[Ø],[Œ] ,[R],[R],[S],[Š],[S],[T],[Ú],[Ù],[Û],[Ü],[U],[Ý],[Ÿ],[Z],[Ž],[Z],[á],[à],[â],[ã],[ä],[å],[a],[a],[a],[æ] ,[ç],[c],[c],[é],[è],[ê],[ë],[e],[e],[í],[ì],[î],[ï],[l],[l],[n],[ñ],[ó],[ò],[ô],[õ],[ö],[ø],[œ] ,[r],[r],[s],[š],[s],[t],[ú],[ù],[û],[ü],[u],[ý],[ÿ],[z],[ž],[z],[ß] ,[&],[º] ,[ª] ,[‡],[¡],[£],[ÿ],[ ],[á],[] ,[ ],[ ],[‚],[ˆ],[“],[¢],[…],[°],[A³],[A§],[Ai],[A©],[Ao.],[’],[´]}
+   Local aTo   := {[A],[A],[A],[A],[A],[A],[A],[A],[A],[AE],[C],[C],[C],[E],[E],[E],[E],[E],[E],[I],[I],[I],[I],[L],[L],[N],[N],[O],[O],[O],[O],[O],[O],[OE],[R],[R],[S],[S],[S],[T],[U],[U],[U],[U],[U],[Y],[Y],[Z],[Z],[Z],[a],[a],[a],[a],[a],[a],[a],[a],[a],[ae],[c],[c],[c],[e],[e],[e],[e],[e],[e],[i],[i],[i],[i],[l],[l],[n],[n],[o],[o],[o],[o],[o],[o],[oe],[r],[r],[s],[s],[s],[t],[u],[u],[u],[u],[u],[y],[y],[z],[z],[z],[ss],[E],[o.],[a.],[c],[i],[u],[a],[a],[a],[E],[a],[ ],[e],[e],[o],[o],[a],[],[o],[c],[a],[e],[u],[],[]}, i
 
-   hb_Default(@cStr, [])
-   For i:= 1 TO Len(aLetraCAc)
-       cStr:= StrTran(cStr, aLetraCAc[i], aLetraSAc[i])
+   hb_Default( @cStr,"" )
+
+   For i:= 1 To Len( aFrom )
+      cStr:= StrTran(cStr, aFrom[i], aTo[i])
    Next
 Return (cStr)
 
@@ -2248,7 +2249,7 @@ Return (dTerceiroDomingoDeFevereiro)
 
 * -------------> Metodo Cálculo de dígito módulo 11 <------------------------- *
 METHOD CalculaDigito(cNumero, cModulo)
-   Local nFator,nPos,nSoma,nResto,nModulo,cCalculo
+   Local nFator, nPos, nSoma, nResto, nModulo, cCalculo
  
    hb_Default(@cModulo, "11")
 
