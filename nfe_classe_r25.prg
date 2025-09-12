@@ -9,7 +9,7 @@
  *          : Maurílio Franchin Júnior                                       *
  *          : Jair Barreto                                                   *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 04.09.2025                                                     *
+ * ULT. ALT.: 12.09.2025                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 
@@ -1242,13 +1242,15 @@ METHOD fCria_ProdutoIcms()
                    ::cXml+= "<ICMS90>"
                          ::cXml+= ::XmlTag( "orig"    , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
                          ::cXml+= ::XmlTag( "CST"     , SubStr(::cCsticms, 2, 2))
-                         ::cXml+= ::XmlTag( "modBCST" , "3" )                                                                      // Modalidade de determinação da BC do ICMS. 0=Margem Valor Agregado (%); 1=Pauta (Valor);2=Preço Tabelado Máx. (valor); 3=Valor da operação.
-                         ::cXml+= ::XmlTag( "pRedBC"  , ::nPredbc, 4)
+                         ::cXml+= ::XmlTag( "modBC"   , "3" )                                                                      // Modalidade de determinação da BC do ICMS. 0=Margem Valor Agregado (%); 1=Pauta (Valor);2=Preço Tabelado Máx. (valor); 3=Valor da operação.
+                         If !Empty(::nPredbc)
+                            ::cXml+= ::XmlTag( "pRedBC"  , ::nPredbc, 4)
+                         Endif
                          ::cXml+= ::XmlTag( "vBC"     , ::nVbc)
                          ::cXml+= ::XmlTag( "pICMS"   , ::nPicms, 4)
-                         ::cXml+= ::XmlTag( "vICMS"   , If(::nVlicms == 0, ::nVlicms:= Round(::nVbc / ::nPicms , 2), ::nVlicms))
-                         ::nVbc_t   += ::nVbc    // já acumula o valor da base de cálculo para os totais
-                         ::nVlicms_t+= ::nVlicms // já acumula o valor do icms para os totais
+                         ::cXml+= ::XmlTag( "vICMS"   , If(::nVicms == 0, ::nVicms:= Round(::nVbc / ::nPicms , 2), ::nVicms))
+                         ::nVbc_t  += ::nVbc    // já acumula o valor da base de cálculo para os totais
+                         ::nVicms_t+= ::nVicms  // já acumula o valor do icms para os totais
                    ::cXml+= "</ICMS90>"
              Case ::cCsticms == [101]
                    ::cXml+= "<ICMSSN101>"
