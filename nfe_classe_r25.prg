@@ -1754,10 +1754,10 @@ METHOD fCria_Istot()
              Endif
       ::cXml+= "</IBSCBSTot>"
 
-      ::vNftot:= ::nVis_t + ::nVbcibscbs_t
+      ::nvNftot:= ::nVis_t + ::nVbcibscbs_t
 
-      If !Empty(::vNftot)
-          ::cXml+= ::XmlTag( "vNFTot" , ::vNftot)  //  Valor total da NF-e com IBS / CBS / IS
+      If !Empty(::nvNftot)
+          ::cXml+= ::XmlTag( "vNFTot" , ::nvNftot)  //  Valor total da NF-e com IBS / CBS / IS
       Endif
    
       ::cXml+= "</total>"
