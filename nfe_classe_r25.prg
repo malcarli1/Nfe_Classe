@@ -9,7 +9,7 @@
  *          : Maurílio Franchin Júnior                                       *
  *          : Jair Barreto                                                   *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 12.09.2025                                                     *
+ * ULT. ALT.: 15.09.2025                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 
@@ -234,7 +234,6 @@ CLASS Malc_GeraXml
    VAR cModbc                  AS Character INIT [3]
    VAR nVbc                    AS Num       INIT 0
    VAR nPicms                  AS Num       INIT 0
-   VAR nVlicms                 AS Num       INIT 0
    VAR cModbcst                AS Character INIT [3]
    VAR nPmvast                 AS Num       INIT 0
    VAR nPredbcst               AS Num       INIT 0
@@ -1154,9 +1153,9 @@ METHOD fCria_ProdutoIcms()
                          ::cXml+= ::XmlTag( "modBC" , [3] )                                                                        // Modalidade de determinação da BC do ICMS. 0=Margem Valor Agregado (%); 1=Pauta (Valor);2=Preço Tabelado Máx. (valor); 3=Valor da operação.
                          ::cXml+= ::XmlTag( "vBC"   , ::nVbc)
                          ::cXml+= ::XmlTag( "pICMS" , ::nPicms, 4)
-                         ::cXml+= ::XmlTag( "vICMS" , Iif(::nVlicms == 0, ::nVlicms:= Round(::nVbc / ::nPicms , 2), ::nVlicms))
-                         ::nVbc_t   += ::nVbc    // já acumula o valor da base de cálculo para os totais
-                         ::nVlicms_t+= ::nVlicms // já acumula o valor do icms para os totais
+                         ::cXml+= ::XmlTag( "vICMS" , Iif(::nVicms == 0, ::nVicms:= Round(::nVbc / ::nPicms , 2), ::nVicms))
+                         ::nVbc_t  += ::nVbc   // já acumula o valor da base de cálculo para os totais
+                         ::nVicms_t+= ::nVicms // já acumula o valor do icms para os totais
                    ::cXml+= "</ICMS00>"
              Case ::cCsticms == [010]
                    ::cXml+= "<ICMS10>"
@@ -1165,15 +1164,15 @@ METHOD fCria_ProdutoIcms()
                          ::cXml+= ::XmlTag( "modBC"   , Iif(!(::cModbc $ [0_1_2_3]), [0], Left(::cModbc, 1)))          // Modalidade de determinação da BC do ICMS. 0=Margem Valor Agregado (%); 1=Pauta (Valor);2=Preço Tabelado Máx. (valor); 3=Valor da operação.
                          ::cXml+= ::XmlTag( "vBC"     , ::nVbc)
                          ::cXml+= ::XmlTag( "pICMS"   , ::nPicms, 4)
-                         ::cXml+= ::XmlTag( "vICMS"   , Iif(::nVlicms == 0, ::nVlicms:= Round(::nVbc / ::nPicms , 2), ::nVlicms))
+                         ::cXml+= ::XmlTag( "vICMS"   , Iif(::nVicms == 0, ::nVicms:= Round(::nVbc / ::nPicms , 2), ::nVicms))
                          ::cXml+= ::XmlTag( "modBCST" , Iif(!(::cModbcst $ [0_1_2_3_4_5_6]), [3], Left(::cModbcst, 1))) // Modalidade de determinação da BC do ICMS ST. 0=Preço tabelado ou máximo sugerido, 1=Lista Negativa (valor), 2=Lista Positiva (valor);3=Lista Neutra (valor), 4=Margem Valor Agregado (%), 5=Pauta (valor), 6 = Valor da Operação (NT 2019.001)
                          ::cXml+= ::XmlTag( "pMVAST"  , ::nPmvast, 4)
                          ::cXml+= ::XmlTag( "vBCST"   , ::nVbcst)
                          ::cXml+= ::XmlTag( "pICMSST" , ::nPicmst, 4)
                          ::cXml+= ::XmlTag( "vICMSST" , Iif(::nVicmsst == 0, ::nVicmsst:= Round(::nVbcst / ::nPicmst , 2), ::nVicmsst))
-                         ::nVbc_t   += ::nVbc    // já acumula o valor da base de cálculo para os totais
-                         ::nVbcst_t += ::nVbcst  // já acumula o valor dos base de cálculo da subs. tributária para os totais
-                         ::nVlicms_t+= ::nVlicms // já acumula o valor do icms para os totais
+                         ::nVbc_t  += ::nVbc    // já acumula o valor da base de cálculo para os totais
+                         ::nVbcst_t+= ::nVbcst  // já acumula o valor dos base de cálculo da subs. tributária para os totais
+                         ::nVicms_t+= ::nVicms  // já acumula o valor do icms para os totais
                    ::cXml+= "</ICMS10>"
              Case ::cCsticms == [020]
                    ::cXml+= "<ICMS20>"
@@ -1183,9 +1182,9 @@ METHOD fCria_ProdutoIcms()
                          ::cXml+= ::XmlTag( "pRedBC" , ::nPredbc, 4)
                          ::cXml+= ::XmlTag( "vBC"    , ::nVbc)
                          ::cXml+= ::XmlTag( "pICMS"  , ::nPicms, 4)
-                         ::cXml+= ::XmlTag( "vICMS" , If(::nVlicms == 0, ::nVlicms:= Round(::nVbc / ::nPicms , 2), ::nVlicms))
-                         ::nVbc_t   += ::nVbc    // já acumula o valor da base de cálculo para os totais
-                         ::nVlicms_t+= ::nVlicms // já acumula o valor do icms para os totais
+                         ::cXml+= ::XmlTag( "vICMS" , If(::nVicms == 0, ::nVicms:= Round(::nVbc / ::nPicms , 2), ::nVicms))
+                         ::nVbc_t  += ::nVbc   // já acumula o valor da base de cálculo para os totais
+                         ::nVicms_t+= ::nVicms // já acumula o valor do icms para os totais
                    ::cXml+= "</ICMS20>"
              Case ::cCsticms == [030]
                    ::cXml+= "<ICMS30>"
@@ -1226,7 +1225,7 @@ METHOD fCria_ProdutoIcms()
                          ::cXml+= ::XmlTag( "pRedBC"  , ::nPredbc, 4)
                          ::cXml+= ::XmlTag( "vBC"     , ::nVbc)
                          ::cXml+= ::XmlTag( "pICMS"   , ::nPicms, 4)
-                         ::cXml+= ::XmlTag( "vICMS" , If(::nVlicms == 0, ::nVlicms:= Round(::nVbc / ::nPicms , 2), ::nVlicms))
+                         ::cXml+= ::XmlTag( "vICMS" , If(::nVicms == 0, ::nVicms:= Round(::nVbc / ::nPicms , 2), ::nVicms))
                          ::cXml+= ::XmlTag( "modBCST" , "0")
                          ::cXml+= ::XmlTag( "pMVAST"  , ::nPmvast, 4)
                          ::cXml+= ::XmlTag( "vBCST"   , ::nVbcst)
@@ -1234,9 +1233,9 @@ METHOD fCria_ProdutoIcms()
                          ::cXml+= ::XmlTag( "vICMSST" , Iif(::nVicmsst == 0, ::nVicmsst:= Round(::nVbcst / ::nPicmst , 2), ::nVicmsst))
                          ::cXml+= ::XmlTag( "pBCOp"   , 1, 4)
                          ::cXml+= ::XmlTag( "UFST"    , Left(::cUfd, 2))
-                         ::nVbc_t   += ::nVbc    // já acumula o valor da base de cálculo para os totais
-                         ::nVbcst_t += ::nVbcst  // já acumula o valor dos base de cálculo da subs. tributária para os totais
-                         ::nVlicms_t+= ::nVlicms // já acumula o valor do icms para os totais
+                         ::nVbc_t  += ::nVbc    // já acumula o valor da base de cálculo para os totais
+                         ::nVbcst_t+= ::nVbcst  // já acumula o valor dos base de cálculo da subs. tributária para os totais
+                         ::nVicms_t+= ::nVicms  // já acumula o valor do icms para os totais
                    ::cXml+= "</ICMS70>"
              Case ::cCsticms == [090]
                    ::cXml+= "<ICMS90>"
@@ -1293,20 +1292,20 @@ METHOD fCria_ProdutoIcms()
                          ::cXml+= ::XmlTag( "CSOSN"          , Left(::cCsticms, 3))
                         
                          // Verifica se tem valor do ICMS
-                         If ::nVlicms # 0
+                         If ::nVicms # 0
                             ::cXml+= ::XmlTag( "modBC"       , Iif(!(::cModbc $ [0_1_2_3]), [0], Left(::cModbc, 1)))   // Modalidade de determinação da BC do ICMS. 0=Margem Valor Agregado (%); 1=Pauta (Valor);2=Preço Tabelado Máx. (valor); 3=Valor da operação.
                             ::cXml+= ::XmlTag( "vBC"         , ::nVbc)
                             ::cXml+= ::XmlTag( "pICMS"       , ::nPicms, 4)
-                            ::cXml+= ::XmlTag( "vICMS"       , If(::nVlicms == 0, ::nVlicms:= Round(::nVbc / ::nPicms , 2), ::nVlicms))
+                            ::cXml+= ::XmlTag( "vICMS"       , If(::nVicms == 0, ::nVicms:= Round(::nVbc / ::nPicms , 2), ::nVicms))
                             ::cXml+= ::XmlTag( "modBCST"     , Iif(!(::cModbcst $ [0_1_2_3_4_5_6]), [3], Left(::cModbcst, 1)))  // Modalidade de determinação da BC do ICMS ST. 0=Preço tabelado ou máximo sugerido, 1=Lista Negativa (valor), 2=Lista Positiva (valor);3=Lista Neutra (valor), 4=Margem Valor Agregado (%), 5=Pauta (valor), 6 = Valor da Operação (NT 2019.001)
                             ::cXml+= ::XmlTag( "vBCST"       , ::nVbcst)
                             ::cXml+= ::XmlTag( "pICMSST"     , ::nPicmst, 4)
                             ::cXml+= ::XmlTag( "vICMSST"     , Iif(::nVicmsst == 0, ::nVicmsst:= Round(::nVbcst / ::nPicmst , 2), ::nVicmsst))
                             ::cXml+= ::XmlTag( "pCredSN"     , ::nPcredsn, 4)
                             ::cXml+= ::XmlTag( "vCredICMSSN" , ::nVcredicmssn)
-                            ::nVbc_t   += ::nVbc     // já acumula o valor da base de cálculo para os totais
-                            ::nVbcst_t += ::nVbcst   // já acumula o valor dos base de cálculo da subs. tributária para os totais
-                            ::nVlicms_t+= ::nVlicms  // já acumula o valor do icms para os totais
+                            ::nVbc_t  += ::nVbc     // já acumula o valor da base de cálculo para os totais
+                            ::nVbcst_t+= ::nVbcst   // já acumula o valor dos base de cálculo da subs. tributária para os totais
+                            ::nVicms_t+= ::nVicms   // já acumula o valor do icms para os totais
                          Endif 
                    ::cXml+= "</ICMSSN900>"
           Endcase
@@ -1387,18 +1386,20 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
                 ::cXml+= "<gIBSCBS>"
 
                        If ::nVbcibs == 0
-                          ::nVbcibs:= ::nVprodt + ::nVServs + ::nVFretet + ::nVSeg_t + ::nVOutrot + ::nVii_t - ::nVDesc_t - ::nVpis_t - ::nVCofinst - ::nVicms - ::nVicmsufdest_t - ::nVfcp_t - ::nVfcpufdest_t - Round(::nMonoBas * ::nMonoAliq, 2) - ::nVissqn + ::nVis_t
+                          ::nVbcibs:= ::nVprodt + ::nVServs + ::nVFretet + ::nVSeg_t + ::nVOutrot + ::nVii_t - ::nVDesc_t - ::nVpis_t - ::nVCofinst - ::nVicms_t - ::nVicmsufdest_t - ::nVfcp_t - ::nVfcpufdest_t - Round(::nMonoBas * ::nMonoAliq, 2) - ::nVissqn + ::nVis_t
                        Endif
 
                        ::cXml+= ::XmlTag( "vBC" , ::nVbcibs)
+                       ::nVbcibscbs_t+= ::nVbcibs       // já acumula o valor os totais
+
                        ::cXml+= "<gIBSUF>"
                               ::cXml+= ::XmlTag( "pIBSUF" , ::nPibsuf, 4)
 
                               If ::nPdifgibuf # 0 .and. Left(::cCclasstrib, 3) == [510]
                                  ::cXml+= "<gDif>"
                                         ::cXml         += ::XmlTag( "pDif" , ::nPdifgibuf, 4)
-                                        ::cXml         += ::XmlTag( "vDif" , ::nVbcibs * ::nPibsuf * (::nPdifgibuf / 100) )
-                                        ::nVdifgibsuf_t+= ::nVbcibs * ::nPibsuf * (::nPdifgibuf / 100)  // já acumula o valor os totais
+                                        ::cXml         += ::XmlTag( "vDif" , Round(::nVbcibs * ::nPibsuf * (::nPdifgibuf / 100), 2) )
+                                        ::nVdifgibsuf_t+= Round(::nVbcibs * ::nPibsuf * (::nPdifgibuf / 100), 2)  // já acumula o valor os totais
                                  ::cXml+= "</gDif>"
                               Endif
 
@@ -1416,8 +1417,7 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
                                  ::cXml+= "</gRed>"
                               Endif
                                        
-                              ::cXml+= ::XmlTag( "vIBSUF" , Iif(::nVibsuf == 0, ::nVibsuf:= ::nVbcibs * ::nPibsuf, ::nVibsuf))
-                              ::nVibsufgibsuf_t+= ::nVibsuf                                             // já acumula o valor os totais
+                              ::cXml+= ::XmlTag( "vIBSUF" , Iif(::nVibsuf == 0, ::nVibsuf:= Round(::nVbcibs * (::nPibsuf / 100), 2), ::nVibsuf))
                        ::cXml+= "</gIBSUF>"
                        ::cXml+= "<gIBSMun>"
                               ::cXml+= ::XmlTag( "pIBSMun" , ::nPibsmun, 4)
@@ -1425,8 +1425,8 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
                               If ::nPifgibsmun # 0 .and. Left(::cCclasstrib, 3) == [510]
                                  ::cXml+= "<gDif>"
                                         ::cXml+= ::XmlTag( "pDif"   , ::nPifgibsmun, 4)
-                                        ::cXml+= ::XmlTag( "vDif"   , ::nVbcibs * (::nPibsmun / 100) * (::nPifgibsmun / 100) ) 
-                                        ::nVdDifgibsmun_t+= ::nVbcibs * (::nPibsmun / 100) * (::nPifgibsmun / 100)  // já acumula o valor os totais
+                                        ::cXml+= ::XmlTag( "vDif"   , Round(::nVbcibs * (::nPibsmun / 100) * (::nPifgibsmun / 100), 2) ) 
+                                        ::nVdDifgibsmun_t+= Round(::nVbcibs * (::nPibsmun / 100) * (::nPifgibsmun / 100), 2)  // já acumula o valor os totais
                                  ::cXml+= "</gDif>"
                               Endif
 
@@ -1444,16 +1444,19 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
                                  ::cXml+= "</gRed>"
                               Endif
 
-                              ::cXml+= ::XmlTag( "vIBSMun" , Iif(::nVibsmun == 0, ::nVibsmun:= ::nVbcibs * ::nPibsmun, ::nVibsmun))
+                              ::cXml+= ::XmlTag( "vIBSMun" , Iif(::nVibsmun == 0, ::nVibsmun:= Round(::nVbcibs * ::nPibsmun, 2), ::nVibsmun))
                               ::nVibsmungibsmun_t+= ::nVibsmun                                             // já acumula o valor os totais
                        ::cXml+= "</gIBSMun>"
+                       ::cXml+= ::XmlTag( "vIBS" , ::nVibsuf + ::nVibsmun )
+                       ::nVibsufgibsuf_t+= (::nVibsuf + ::nVibsmun)                                        // já acumula o valor os totais
+
                        ::cXml+= "<gCBS>"
                               ::cXml+= ::XmlTag( "pCBS" , ::nPcbs, 4)
 
                               If ::nPpDifgcbs # 0 .and. Left(::cCclasstrib, 3) == [510]
                                  ::cXml+= "<gDif>"
                                         ::cXml+= ::XmlTag( "pDif"   , ::nPpDifgcbs, 4)
-                                        ::cXml+= ::XmlTag( "vDif"   , ::nVbcibs * ::nPcbs * (::nPpDifgcbs / 100) )  
+                                        ::cXml+= ::XmlTag( "vDif"   , Round(::nVbcibs * ::nPcbs * (::nPpDifgcbs / 100), 2) )  
                                  ::cXml+= "</gDif>"
                               Endif
 
@@ -1471,7 +1474,8 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
                                  ::cXml+= "</gRed>"
                               Endif
 
-                              ::cXml+= ::XmlTag( "vCBS" , Iif(::nVcbs == 0, ::nVcbs:= ::nVbcibs * ::nPcbs, ::nVcbs))
+                              ::cXml+= ::XmlTag( "vCBS" , Iif(::nVcbs == 0, ::nVcbs:= Round(::nVbcibs * (::nPcbs / 100), 2), ::nVcbs))
+                              ::nVcbsgcbs_t+= ::nVcbs                                  // já acumula o valor os totais
                        ::cXml+= "</gCBS>"
 
                        If ::nPaliqefetregibsuf # 0 .and. Left(::cCclasstrib, 3) == [550]
@@ -1705,7 +1709,7 @@ Return (Nil)
 
 * --------------> Metodo para gerar a tag de Total IS da NFe <---------------- *
 METHOD fCria_Istot()
-   If ::nVis_t # 0
+*   If ::nVis_t # 0
 
       If "</total>" $ ::cXml
          ::cXml:= StrTran(::cXml, "</total>", "")  
@@ -1730,7 +1734,7 @@ METHOD fCria_Istot()
                            ::cXml+= ::XmlTag( "vDevTrib" , ::nVdevtribgibsmun_t)
                            ::cXml+= ::XmlTag( "vIBSMun"  , ::nVibsmungibsmun_t)
                     ::cXml+= "</gIBSMun>"
-                    ::cXml+= ::XmlTag( "vIBS"             , ::nVibsgibs_t)
+                    ::cXml+= ::XmlTag( "vIBS"             , If(::nVibsgibs_t == 0, ::nVibsgibs_t:= ::nVibsufgibsuf_t + ::nVibsmungibsmun_t ,::nVibsgibs_t))
                     ::cXml+= ::XmlTag( "vCredPres"        , ::nVcredpresgibs_t)
                     ::cXml+= ::XmlTag( "vCredPresCondSus" , ::nVcredprescondsusibs_t)
              ::cXml+= "</gIBS>"
@@ -1753,15 +1757,15 @@ METHOD fCria_Istot()
                 ::cXml+= "</gMono>"
              Endif
       ::cXml+= "</IBSCBSTot>"
-
+/*
       ::nvNftot:= ::nVis_t + ::nVbcibscbs_t
 
       If !Empty(::nvNftot)
           ::cXml+= ::XmlTag( "vNFTot" , ::nvNftot)  //  Valor total da NF-e com IBS / CBS / IS
       Endif
-   
+*/   
       ::cXml+= "</total>"
-   Endif 
+*   Endif 
 Return (Nil)
 
 * ---------------> Metodo para gerar a tag do Transportador <----------------- *
@@ -2077,7 +2081,7 @@ Return (Nil)
 * -----------> Metodo para Limpar Constantes de Imposto <--------------------- * // Jair Barreto
 METHOD LimpaPropriedadesImposto()            
    ::cOrig:= ::cCsticms:= ::cModbc:= ::cModbcst:= []
-   ::nVbc:= ::nPicms:= ::nVlicms:= ::nPredbc:= 0
+   ::nVbc:= ::nPicms:= ::nVicms:= ::nPredbc:= 0
    ::nPmvast:= ::nPredbcst:= ::nVbcst:= ::nPicmst:= ::nVicmsst:= 0
    ::nPcredsn:= ::nVcredicmssn:= 0
    ::cCstipi:= ::cEnq:= ::cCstipint:= []
@@ -2128,8 +2132,8 @@ Return (CharRem(cEliminar, cStr))
 
 * -----------------------> Metodo Retira acentos de uma string <-------------- *
 METHOD fRetiraAcento(cStr)
-   Local aFrom := {[Á],[À],[Â],[Ã],[Ä],[Å],[Æ] ,[Ç],[É],[È],[Ê],[Ë],[Í],[Ì],[Î],[Ï],[Ñ],[Ó],[Ò],[Ô],[Õ],[Ö],[Ø],[Œ] ,[Š],[Ú],[Ù],[Û],[Ü],[Ý],[Ÿ],[Ž],[á],[à],[â],[ã],[ä],[å],[æ] ,[ç],[é],[è],[ê],[ë],[í],[ì],[î],[ï],[ñ],[ó],[ò],[ô],[õ],[ö],[ø],[œ] ,[š],[ú],[ù],[û],[ü],[ý],[ÿ],[ž],[ß] ,[&],[º] ,[ª] ,[‡],[¡],[£],[ÿ],[ ],[á],[] ,[ ],[ ],[‚],[ˆ],[“],[¢],[…],[°],[A³],[A§],[Ai],[A©],[Ao.],[’],[´]}
-   Local aTo   := {[A],[A],[A],[A],[A],[A],[AE],[C],[E],[E],[E],[E],[I],[I],[I],[I],[N],[O],[O],[O],[O],[O],[O],[OE],[S],[U],[U],[U],[U],[Y],[Y],[Z],[a],[a],[a],[a],[a],[a],[ae],[c],[e],[e],[e],[e],[i],[i],[i],[i],[n],[o],[o],[o],[o],[o],[o],[oe],[s],[u],[u],[u],[u],[y],[y],[z],[ss],[E],[o.],[a.],[c],[i],[u],[a],[a],[a],[E],[a],[ ],[e],[e],[o],[o],[a],[],[o],[c],[a],[e],[u],[],[]}, i
+   Local aFrom := {[Á],[À],[Â],[Ã],[Ä],[Å],[A],[A],[A],[Æ] ,[Ç],[C],[C],[É],[È],[Ê],[Ë],[E],[E],[Í],[Ì],[Î],[Ï],[L],[L],[N],[Ñ],[Ó],[Ò],[Ô],[Õ],[Ö],[Ø],[Œ] ,[R],[R],[S],[Š],[S],[T],[Ú],[Ù],[Û],[Ü],[U],[Ý],[Ÿ],[Z],[Ž],[Z],[á],[à],[â],[ã],[ä],[å],[a],[a],[a],[æ] ,[ç],[c],[c],[é],[è],[ê],[ë],[e],[e],[í],[ì],[î],[ï],[l],[l],[n],[ñ],[ó],[ò],[ô],[õ],[ö],[ø],[œ] ,[r],[r],[s],[š],[s],[t],[ú],[ù],[û],[ü],[u],[ý],[ÿ],[z],[ž],[z],[ß] ,[&],[º] ,[ª] ,[‡],[¡],[£],[ÿ],[ ],[á],[] ,[ ],[ ],[‚],[ˆ],[“],[¢],[…],[°],[A³],[A§],[Ai],[A©],[Ao.],[’],[´]}
+   Local aTo   := {[A],[A],[A],[A],[A],[A],[A],[A],[A],[AE],[C],[C],[C],[E],[E],[E],[E],[E],[E],[I],[I],[I],[I],[L],[L],[N],[N],[O],[O],[O],[O],[O],[O],[OE],[R],[R],[S],[S],[S],[T],[U],[U],[U],[U],[U],[Y],[Y],[Z],[Z],[Z],[a],[a],[a],[a],[a],[a],[a],[a],[a],[ae],[c],[c],[c],[e],[e],[e],[e],[e],[e],[i],[i],[i],[i],[l],[l],[n],[n],[o],[o],[o],[o],[o],[o],[oe],[r],[r],[s],[s],[s],[t],[u],[u],[u],[u],[u],[y],[y],[z],[z],[z],[ss],[E],[o.],[a.],[c],[i],[u],[a],[a],[a],[E],[a],[ ],[e],[e],[o],[o],[a],[],[o],[c],[a],[e],[u],[],[]}, i
 
    hb_Default( @cStr,"" )
 
@@ -2269,10 +2273,10 @@ Return (dTerceiroDomingoDeFevereiro)
 METHOD CalculaDigito(cNumero, cModulo)
    Local nFator, nPos, nSoma, nResto, nModulo, cCalculo
  
-   hb_Default(@cModulo, "11")
+   hb_Default(@cModulo, [11])
 
    If Empty(cNumero)
-      Return ("")
+      Return ([])
    Endif
 
    cCalculo:= AllTrim(cNumero)
@@ -2281,13 +2285,13 @@ METHOD CalculaDigito(cNumero, cModulo)
    nSoma   := 0
 
    If nModulo == 10
-      For nPos = Len(cCalculo) TO 1 STEP -1
-          nSoma += Val(Substr(cCalculo,nPos,1))*nFator
-          nFator += 1
+      For nPos:= Len(cCalculo) TO 1 STEP -1
+          nSoma += Val(Substr(cCalculo, nPos, 1)) * nFator
+          nFator+= 1
       Next
    Else
-      For nPos = Len(cCalculo) TO 1 STEP -1
-         nSoma += (Asc(Substr(cCalculo,nPos,1))-48)*nFator
+      For nPos:= Len(cCalculo) TO 1 STEP -1
+         nSoma += (Asc(Substr(cCalculo, nPos, 1)) - 48) * nFator
          If nFator == 9
             nFator:= 2
          Else
