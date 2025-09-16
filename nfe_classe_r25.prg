@@ -1369,8 +1369,8 @@ METHOD fCria_ProdutoIs()                                                        
              ::cXml  += ::XmlTag( "pISEspec"     , ::nPisespec, 4)                                                                   // Alíquota específica por unidade de medida apropriada
              ::cXml  += ::XmlTag( "uTrib"        , Left(::cUtrib_is, 6))                                                             // Unidade de Medida Tributável
              ::cXml  += ::XmlTag( "qTrib"        , ::nQtrib_is, 4)                                                                   // Quantidade Tributável
-             ::cXml  += ::XmlTag( "vIS"          , Round((::nVbcis * ::nQtrib_is) * (::nPisis / 100)), 2)                                     // Valor do Imposto Seletivo
-             ::nVis_t+= Round((::nVbcis * ::nQtrib_is) * (::nPisis / 100)), 2)
+             ::cXml  += ::XmlTag( "vIS"          , Round((::nVbcis * ::nQtrib_is) * (::nPisis / 100), 2))                                     // Valor do Imposto Seletivo
+             ::nVis_t+= Round((::nVbcis * ::nQtrib_is) * (::nPisis / 100), 2)
       ::cXml+= "</IS>"
    Endif 
 Return (Nil)
