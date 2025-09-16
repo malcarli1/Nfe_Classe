@@ -9,7 +9,7 @@
  *          : Maurílio Franchin Júnior                                       *
  *          : Jair Barreto                                                   *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 15.09.2025                                                     *
+ * ULT. ALT.: 16.09.2025                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 
@@ -1362,14 +1362,15 @@ Return (Nil)
 METHOD fCria_ProdutoIs()                                                                                      // Reforma tributária
    If !Empty(::cClasstribis)
       ::cXml+= "<IS>"
-             ::cXml+= ::XmlTag( "CSTIS"        , Left(::cClasstribis, 3))                                                          // Utilizar tabela CÓDIGO DE CLASSIFICAÇÃO TRIBUTÁRIA DO IMPOSTO SELETIVO
-             ::cXml+= ::XmlTag( "cClasstribis" , Left(::cClasstribis, 6))                                                          // Utilizar tabela CÓDIGO DE CLASSIFICAÇÃO TRIBUTÁRIA DO IMPOSTO SELETIVO
-             ::cXml+= ::XmlTag( "vBCIS"        , ::nVbcis)                                                                         // Valor da Base de Cálculo do Imposto Seletivo
-             ::cXml+= ::XmlTag( "pIS"          , ::nPisis)                                                                         // Alíquota do Imposto Seletivo
-             ::cXml+= ::XmlTag( "pISEspec"     , ::nPisespec, 4)                                                                   // Alíquota específica por unidade de medida apropriada
-             ::cXml+= ::XmlTag( "uTrib"        , Left(::cUtrib_is, 6))                                                             // Unidade de Medida Tributável
-             ::cXml+= ::XmlTag( "qTrib"        , ::nQtrib_is, 4)                                                                   // Quantidade Tributável
-             ::cXml+= ::XmlTag( "vIS"          , (::nVbcis * ::nQtrib_is) * (::nPisis / 100))                                      // Valor do Imposto Seletivo
+             ::cXml  += ::XmlTag( "CSTIS"        , Left(::cClasstribis, 3))                                                          // Utilizar tabela CÓDIGO DE CLASSIFICAÇÃO TRIBUTÁRIA DO IMPOSTO SELETIVO
+             ::cXml  += ::XmlTag( "cClasstribis" , Left(::cClasstribis, 6))                                                          // Utilizar tabela CÓDIGO DE CLASSIFICAÇÃO TRIBUTÁRIA DO IMPOSTO SELETIVO
+             ::cXml  += ::XmlTag( "vBCIS"        , ::nVbcis)                                                                         // Valor da Base de Cálculo do Imposto Seletivo
+             ::cXml  += ::XmlTag( "pIS"          , ::nPisis)                                                                         // Alíquota do Imposto Seletivo
+             ::cXml  += ::XmlTag( "pISEspec"     , ::nPisespec, 4)                                                                   // Alíquota específica por unidade de medida apropriada
+             ::cXml  += ::XmlTag( "uTrib"        , Left(::cUtrib_is, 6))                                                             // Unidade de Medida Tributável
+             ::cXml  += ::XmlTag( "qTrib"        , ::nQtrib_is, 4)                                                                   // Quantidade Tributável
+             ::cXml  += ::XmlTag( "vIS"          , Round((::nVbcis * ::nQtrib_is) * (::nPisis / 100)), 2)                                     // Valor do Imposto Seletivo
+             ::nVis_t+= Round((::nVbcis * ::nQtrib_is) * (::nPisis / 100)), 2)
       ::cXml+= "</IS>"
    Endif 
 Return (Nil)
