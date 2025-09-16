@@ -673,7 +673,7 @@ Return (Nil)
 METHOD fCria_Compragov()
    If !Empty(::cTpcompragov)
       ::cXml+= "<gCompraGov>"                                                                                                    
-             ::cXml+= ::XmlTag( "tpCompraGov" , Iif(!(::cTpcompragov $ [1_2_3_4]), [1], Left(::cTpcompragov, 1)))                        // 1=União 2=Estado 3=Distrito Federal 4=Município
+             ::cXml+= ::XmlTag( "tpCompraGov" , Iif(!(::cTpcompragov $ [1_2_3_4]), [1], Left(::cTpcompragov, 1)))                // 1=União 2=Estado 3=Distrito Federal 4=Município
              ::cXml+= ::XmlTag( "pRedutor"    , ::nPredutor, 4)                            
       ::cXml+= "</gCompraGov>"
    Endif                                                                             
@@ -682,45 +682,45 @@ Return (Nil)
 * -----------------> Metodo para gerar a tag do emitente <-------------------- *
 METHOD fCria_Emitente()
    ::cXml+= "<emit>"                                                                                                             // Início da TAG (emit)
-          ::cXml+= ::XmlTag( "CNPJ" , Left(::SoNumeroCnpj(::cCnpj), 14))                                                             // CNPJ do Emitente
-          ::cXml+= ::XmlTag( "xNome" , Left(::fRetiraAcento(::cXnomee), 60))                                                         // Razão Social emitente
+          ::cXml+= ::XmlTag( "CNPJ" , Left(::SoNumeroCnpj(::cCnpj), 14))                                                         // CNPJ do Emitente
+          ::cXml+= ::XmlTag( "xNome" , Left(::fRetiraAcento(::cXnomee), 60))                                                     // Razão Social emitente
 
           If !Empty(::cXfant)
-             ::cXml+= ::XmlTag( "xFant" , Left(::fRetiraAcento(::cXfant), 60))                                                       // Nome Fantasia Emitente
+             ::cXml+= ::XmlTag( "xFant" , Left(::fRetiraAcento(::cXfant), 60))                                                   // Nome Fantasia Emitente
           Endif 
 
           ::cXml+= "<enderEmit>"
-                 ::cXml+= ::XmlTag( "xLgr"    , Left(::fRetiraAcento(::cXlgre), 60))                                                 // Endereço Emitente
-                 ::cXml+= ::XmlTag( "nro"     , Left(::cNroe, 60))                                                                 // Número do Endereço do Emitente
+                 ::cXml+= ::XmlTag( "xLgr"    , Left(::fRetiraAcento(::cXlgre), 60))                                             // Endereço Emitente
+                 ::cXml+= ::XmlTag( "nro"     , Left(::cNroe, 60))                                                               // Número do Endereço do Emitente
 
                  If !Empty(::cXcple)
                     ::cXml+= ::XmlTag( "xCpl" , Left(::fRetiraAcento(::cXcple), 60))
                  Endif 
 
-                 ::cXml+= ::XmlTag( "xBairro" , Left(::fRetiraAcento(::cXBairroe), 60))                                              // Bairro do Emitente
-                 ::cXml+= ::XmlTag( "cMun"    , Left(::SoNumero(::cMunfg), 7))                                                       // Código IBGE do emitente
-                 ::cXml+= ::XmlTag( "xMun"    , Left(::fRetiraAcento(::cXmune), 60))                                                 // Cidade do Emitente
-      	         ::cXml+= ::XmlTag( "UF"      , Left(::cUfE, 2))                                                                   // UF do Emitente
-     	         ::cXml+= ::XmlTag( "CEP"     , Left(::SoNumero(::cCepe), 8))                                                        // CEP do Emitente
-    	         ::cXml+= ::XmlTag( "cPais"   , Left(::cPais, 4))                                                                  // Código do País emitente
-    	         ::cXml+= ::XmlTag( "xPais"   , Left(::fRetiraAcento(::cXpaise), 60))                                                // País Emitente da NF
+                 ::cXml+= ::XmlTag( "xBairro" , Left(::fRetiraAcento(::cXBairroe), 60))                                          // Bairro do Emitente
+                 ::cXml+= ::XmlTag( "cMun"    , Left(::SoNumero(::cMunfg), 7))                                                   // Código IBGE do emitente
+                 ::cXml+= ::XmlTag( "xMun"    , Left(::fRetiraAcento(::cXmune), 60))                                             // Cidade do Emitente
+      	         ::cXml+= ::XmlTag( "UF"      , Left(::cUfE, 2))                                                                 // UF do Emitente
+     	         ::cXml+= ::XmlTag( "CEP"     , Left(::SoNumero(::cCepe), 8))                                                    // CEP do Emitente
+    	         ::cXml+= ::XmlTag( "cPais"   , Left(::cPais, 4))                                                                // Código do País emitente
+    	         ::cXml+= ::XmlTag( "xPais"   , Left(::fRetiraAcento(::cXpaise), 60))                                            // País Emitente da NF
 
                  If !Empty(::SoNumero(::cFonee))
-	                ::cXml+= ::XmlTag( "fone"    , Left(::SoNumero(::cFonee), 14))                                                   // Telefone do Emitente
+	                ::cXml+= ::XmlTag( "fone"    , Left(::SoNumero(::cFonee), 14))                                           // Telefone do Emitente
                  Endif 
           ::cXml+= "</enderEmit>"
           
-          ::cXml+= ::XmlTag( "IE" , Left(::SoNumero(::cIee), 14))                                                                    // Inscrição Estadual do Emitente
+          ::cXml+= ::XmlTag( "IE" , Left(::SoNumero(::cIee), 14))                                                                // Inscrição Estadual do Emitente
 
           If !Empty(::cIme)                                                                                                      // Não obrigatório
-             ::cXml+= ::XmlTag( "IM" , Left(::SoNumero(::cIme), 15))                                                                 // Inscrição Municipal do Emitente
+             ::cXml+= ::XmlTag( "IM" , Left(::SoNumero(::cIme), 15))                                                             // Inscrição Municipal do Emitente
           Endif 
 
           If !Empty(::cCnaee)                                                                                                    // Não obrigatório
-             ::cXml+= ::XmlTag( "CNAE" , Left(::SoNumero(::cCnaee), 7))                                                              // CNAE do Emitente
+             ::cXml+= ::XmlTag( "CNAE" , Left(::SoNumero(::cCnaee), 7))                                                          // CNAE do Emitente
           Endif 
 
-          ::cXml+= ::XmlTag( "CRT" , Iif(Val(::cCrt) <= 1 .or. !(::cCrt $ [1_2_3]), [1], ::cCrt))                                  // Códigos de Detalhamento do Regime e da Situação TABELA A – Código de Regime Tributário – CRT
+          ::cXml+= ::XmlTag( "CRT" , Iif(Val(::cCrt) <= 1 .or. !(::cCrt $ [1_2_3]), [1], ::cCrt))                                // Códigos de Detalhamento do Regime e da Situação TABELA A – Código de Regime Tributário – CRT
                                                                                                                                  // 1 – Simples Nacional
                                                                                                                                  // 2 – Simples Nacional – excesso de sublimite da receita bruta
                                                                                                                                  // 3 – Regime Normal NOTAS EXPLICATIVAS
@@ -1342,12 +1342,11 @@ METHOD fCria_ProdutoIpi()
 
              If ::cCstipi $ [00_49_50_99]
                 ::cXml+= "<IPITrib>"                                                                                             // Grupo do CST 00, 49, 50 e 99
-                       ::cXml+= ::XmlTag( "CST"  , Iif(!(::cCstipi $ [00_49_50_99]), [00], Left(::cCstipi, 2)))                    // Código da situação tributária do IPI 00=Entrada com recuperação de crédito 49=Outras entradas 50=Saída tributada 99=Outras saídas
-                       ::cXml+= ::XmlTag( "vBC"  , ::nVbcipi)
-                       ::cXml+= ::XmlTag( "pIPI" , ::nPipi, 4)
-                       ::cXml+= ::XmlTag( "vIPI" , ::nVipi)
+                       ::cXml   += ::XmlTag( "CST"  , Iif(!(::cCstipi $ [00_49_50_99]), [00], Left(::cCstipi, 2)))                    // Código da situação tributária do IPI 00=Entrada com recuperação de crédito 49=Outras entradas 50=Saída tributada 99=Outras saídas
+                       ::cXml   += ::XmlTag( "vBC"  , ::nVbcipi)
+                       ::cXml   += ::XmlTag( "pIPI" , ::nPipi, 4)
+                       ::cXml   += ::XmlTag( "vIPI" , ::nVipi)
                        ::nVipi_t+= ::nVipi // já acumula o valor dos produtos para os totais
-
                 ::cXml+= "</IPITrib>"
              Endif 
 
