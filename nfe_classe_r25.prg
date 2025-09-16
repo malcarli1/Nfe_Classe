@@ -18,27 +18,27 @@
 
 CLASS Malc_GeraXml
    // Configurações iniciais básicas
-   VAR cXml                    AS Character INIT []                              // xml gerado
-   VAR cUf                     AS Character INIT [35]                            // Grupo B // SP = 35
-   VAR cNf                     AS Character INIT []                              // Grupo B
-   VAR cCnpj                   AS Character INIT []                              // Cnpj/Cpf Emitente
-   VAR cAmbiente               AS Character INIT [2]                             // Ambiente de Homologação 
+   VAR cXml                    AS Character INIT []                               // xml gerado
+   VAR cUf                     AS Character INIT [35]                             // Grupo B  // SP = 35
+   VAR cNf                     AS Character INIT []                               // Grupo B
+   VAR cCnpj                   AS Character INIT []                               // Cnpj/Cpf Emitente
+   VAR cAmbiente               AS Character INIT [2]                              // Ambiente de Homologação 
    VAR cSerie                  AS Character INIT [1]
-   VAR cModelo                 AS Character INIT [55]                            // 55 Nfe ou 65 nfce
+   VAR cModelo                 AS Character INIT [55]                             // 55 Nfe ou 65 nfce
    VAR cNrdoc                  AS Character INIT [] 
-   VAR cVersao                 AS Character INIT [4.00]                          // Grupo A
-   VAR cId                     AS Character INIT []                              // Grupo A
-   VAR cCertNomecer            AS Character INIT []                              // Nome do certificado retornado
-   VAR cCertEmissor            AS Character INIT []                              // Nome do Emissor do certificado retornado
-   VAR dCertDataini            AS Date      INIT CToD( [] )                      // Data Inicial de Validade do certificado retornado
-   VAR dCertDatafim            AS Date      INIT CToD( [] )                      // Data Final de Validade do certificado retornado
-   VAR cCertImprDig            AS Character INIT []                              // Impressão Digital do certificado retornado
-   VAR cCertSerial             AS Character INIT []                              // Número Serial do certificado retornado
-   VAR nCertVersao             AS Num       INIT 0                               // Versão do certificado retornado
-   VAR lCertInstall            AS Logical   INIT .F.                             // Verifica se o Certificado está Instalado no Repositório do Windows
-   VAR lCertVencido            AS Logical   INIT .F.                             // Verifica se o Certificado está Vencido
+   VAR cVersao                 AS Character INIT [4.00]                           // Grupo A
+   VAR cId                     AS Character INIT []                               // Grupo A
+   VAR cCertNomecer            AS Character INIT []                               // Nome do certificado retornado
+   VAR cCertEmissor            AS Character INIT []                               // Nome do Emissor do certificado retornado
+   VAR dCertDataini            AS Date      INIT CToD( [] )                       // Data Inicial de Validade do certificado retornado
+   VAR dCertDatafim            AS Date      INIT CToD( [] )                       // Data Final de Validade do certificado retornado
+   VAR cCertImprDig            AS Character INIT []                               // Impressão Digital do certificado retornado
+   VAR cCertSerial             AS Character INIT []                               // Número Serial do certificado retornado
+   VAR nCertVersao             AS Num       INIT 0                                // Versão do certificado retornado
+   VAR lCertInstall            AS Logical   INIT .F.                              // Verifica se o Certificado está Instalado no Repositório do Windows
+   VAR lCertVencido            AS Logical   INIT .F.                              // Verifica se o Certificado está Vencido
 
-   // Tag ide - Grupo B
+    // Tag ide - Grupo B
    VAR cNatop                  AS Character INIT [] 
    VAR cMunfg                  AS Character INIT [] 
    VAR dDataE                  AS Date      INIT Date()
@@ -161,7 +161,7 @@ CLASS Malc_GeraXml
    VAR nNitemped               AS Num       INIT 0                                            // Grupo I05
    VAR cNfci                   AS Character INIT []                               // Grupo I07
 
-   // TAG DI - Grupo I01 - Configuracoes para IMPORTACAO CFOP com início "3"   // Colaboração Rubens Aluotto - 16/06/2025
+   // TAG DI - Grupo I01 - Configuracoes para IMPORTACAO CFOP com início "3"      // Colaboração Rubens Aluotto - 16/06/2025
    VAR cNdi                    AS Character INIT [] 
    VAR dDdi                    AS Date      INIT CToD( [] )
    VAR cXlocdesemb             AS Character INIT [] 
@@ -175,14 +175,14 @@ CLASS Malc_GeraXml
    VAR cCexportador            AS Character INIT [] 
 
    // TAG adi - Grupo I01 - Grupo de Adições (SubGrupo da TAG DI) 
-   VAR nNadicao                AS Num       INIT 0                                           // Número da Adição 
-   VAR nNseqadic               AS Num       INIT 0                                           // Número sequencial do ítem dentro da Adição
-   VAR cCfabricante            AS Character INIT []                                      // Código do fabricante estrangeiro, usado nos sistemas internos de informação do emitente da NF-e 
-   VAR nVdescdi                AS Num       INIT 0                                           // Valor do desconto do item da DI – Adição
-   VAR cNdraw                  AS Character INIT []                                      // Número do ato concessório de Drawback (O número do Ato Concessório de Suspensão deve ser preenchido com 11 dígitos (AAAANNNNNND)
-   VAR nNre                    AS Num       INIT 0                                           // Número do Registro de Exportação
-   VAR cChnfe                  AS Character INIT []                                      // Chave de Acesso da NF-e recebida para exportação NF-e recebida com fim específico de exportação. No caso de operação com CFOP 3.503, informar a chave de acesso da NF-e que efetivou a exportação 
-   VAR nQexport                AS Num       INIT 0                                           // Quantidade do item realmente exportado A unidade de medida desta quantidade é a unidade de comercialização deste item. No caso de operação com CFOP 3.503, informar a quantidade de mercadoria devolvida
+   VAR nNadicao                AS Num       INIT 0                                // Número da Adição 
+   VAR nNseqadic               AS Num       INIT 0                                // Número sequencial do ítem dentro da Adição
+   VAR cCfabricante            AS Character INIT []                               // Código do fabricante estrangeiro, usado nos sistemas internos de informação do emitente da NF-e 
+   VAR nVdescdi                AS Num       INIT 0                                // Valor do desconto do item da DI – Adição
+   VAR cNdraw                  AS Character INIT []                               // Número do ato concessório de Drawback (O número do Ato Concessório de Suspensão deve ser preenchido com 11 dígitos (AAAANNNNNND)
+   VAR nNre                    AS Num       INIT 0                                // Número do Registro de Exportação
+   VAR cChnfe                  AS Character INIT []                               // Chave de Acesso da NF-e recebida para exportação NF-e recebida com fim específico de exportação. No caso de operação com CFOP 3.503, informar a chave de acesso da NF-e que efetivou a exportação 
+   VAR nQexport                AS Num       INIT 0                                // Quantidade do item realmente exportado A unidade de medida desta quantidade é a unidade de comercialização deste item. No caso de operação com CFOP 3.503, informar a quantidade de mercadoria devolvida
 
    // Grupo JA. Detalhamento Específico de Veículos novos
    VAR cTpOp                   AS Character INIT [] 
@@ -244,7 +244,7 @@ CLASS Malc_GeraXml
    VAR nPcredsn                AS Num       INIT 0
    VAR nVcredicmssn            AS Num       INIT 0
 
-   // Tag Grupo NA. ICMS para a UF de destino                                  // Marcelo Brigatti
+   // Tag Grupo NA. ICMS para a UF de destino                                     // Marcelo Brigatti
    VAR nVbcufdest              AS Num       INIT 0
    VAR nVbcfcpufdest           AS Num       INIT 0
    VAR nPfcpufdest             AS Num       INIT 0
@@ -264,11 +264,11 @@ CLASS Malc_GeraXml
    VAR nPipi                   AS Num       INIT 0
 
    // Imposto de Importação 
-   // TAG II - Grupo P - Grupo Imposto de Importação                           // (Informar apenas quando o item for sujeito ao II) 
-   VAR nVbci                   AS Num       INIT 0                               // Valor BC do Imposto de Importação
-   VAR nVdespadu               AS Num       INIT 0                               // Valor despesas aduaneiras
-   VAR nVii                    AS Num       INIT 0                               // Valor Imposto de Importação
-   VAR nViof                   AS Num       INIT 0                               // Valor Imposto sobre Operações Financeiras 
+   // TAG II - Grupo P - Grupo Imposto de Importação                              // (Informar apenas quando o item for sujeito ao II) 
+   VAR nVbci                   AS Num       INIT 0                                // Valor BC do Imposto de Importação
+   VAR nVdespadu               AS Num       INIT 0                                // Valor despesas aduaneiras
+   VAR nVii                    AS Num       INIT 0                                // Valor Imposto de Importação
+   VAR nViof                   AS Num       INIT 0                                // Valor Imposto sobre Operações Financeiras 
 
    // Tag Pis/Cofins - Grupo Q e S
    VAR cCstPis                 AS Character INIT []                               // (01, 02) CSTs do PIS são mutuamente exclusivas só pode existir um tipo
@@ -313,9 +313,9 @@ CLASS Malc_GeraXml
    VAR nVipidevol              AS Num       INIT 0
    VAR nVOutro_t               AS Num       INIT 0
    VAR nVnf                    AS Num       INIT 0
-   VAR nVtottrib               AS Num       INIT 0                                            // Grupo M
-   VAR nVtottribt              AS Num       INIT 0                                            // Grupo Totais
-   VAR lVtottrib               AS Logical   INIT .T.                                          // Variável para permitir ou não informar os valores dos tributos na informação adicional dos itens 
+   VAR nVtottrib               AS Num       INIT 0                                // Grupo M
+   VAR nVtottribt              AS Num       INIT 0                                // Grupo Totais
+   VAR lVtottrib               AS Logical   INIT .T.                              // Variável para permitir ou não informar os valores dos tributos na informação adicional dos itens 
 
    // Tag transp - Grupo X
    VAR cModFrete               AS Character INIT [] 
@@ -350,7 +350,7 @@ CLASS Malc_GeraXml
    VAR cXpag                   AS Character INIT [] 
    VAR nVpag                   AS Num       INIT 0
    VAR nVtroco                 AS Num       INIT 0
-   VAR nTpintegra              AS Num       INIT 0                                            // 1=Pagamento integrado com o sistema de automação da empresa (Ex.: equipamento TEF, Comércio Eletrônico) | 2= Pagamento não integrado com o sistema de automação da empresa 
+   VAR nTpintegra              AS Num       INIT 0                                // 1=Pagamento integrado com o sistema de automação da empresa (Ex.: equipamento TEF, Comércio Eletrônico) | 2= Pagamento não integrado com o sistema de automação da empresa 
    VAR cCnpjpag                AS Character INIT [] 
    VAR cTband                  AS Character INIT [] 
    VAR cAut                    AS Character INIT [] 
@@ -363,7 +363,7 @@ CLASS Malc_GeraXml
    VAR cInfcpl                 AS Character INIT []                               // Grupo Z - infCpl
    VAR cInfFisc                AS Character INIT []                               // Grupo Z - infAdFisco
 
-   // TAG exporta - Grupo ZA - Configuracoes para EXPORTACAO CFOP com início "7" // Colaboração Rubens Aluotto - 16/06/2025
+   // TAG exporta - Grupo ZA - Configuracoes para EXPORTACAO CFOP com início "7"  // Colaboração Rubens Aluotto - 16/06/2025
    VAR cUfSaidapais            AS Character INIT [] 
    VAR cXlocexporta            AS Character INIT [] 
    VAR cXlocdespacho           AS Character INIT [] 
@@ -375,21 +375,21 @@ CLASS Malc_GeraXml
    VAR cRespfone               AS Character INIT [] 
 
    // Configuração Básica de Indicadores da RTC para Classtrib
-   VAR cTipoDeAliquota         AS Character INIT [1] // 1 - Padrão, 2 - Uniforme setorial, 3 - Uniforme nacional (referência), 4 - Fixa, 5 - Sem alíquota, 6 - Uniforme setorial
-   VAR cPredibs                AS Character INIT []  // "", "30", "40", "50", "60", "70", "80", "100"
-   VAR cPredcbs                AS Character INIT []  // "", "30", "40", "50", "60", "70", "80", "100"
-   VAR cInd_RedutorBC          AS Character INIT []  // "", "S", "N"
-   VAR cInd_gTribRegular       AS Character INIT []  // "", "0", "1"
-   VAR cInd_CredPres           AS Character INIT []  // "", "1"
-   VAR cIndMono                AS Character INIT []  // "", "0", "1"
-   VAR cIndMonoReten           AS Character INIT []  // "", "0", "1"
-   VAR cIndMonoRet             AS Character INIT []  // "", "0", "1"
-   VAR cIndMonoDif             AS Character INIT []  // "", "0", "1"
-   VAR cCredito_para           AS Character INIT []  // 1 - "", 2 - Fornecedor, 3 - Adquirente. Crédito Presumido de IBS\nArt. 447. Fica concedido ao contribuinte sujeito ao regime regular do IBS e habilitado nos termos do art. 442 desta Lei Complementar crédito presumido de IBS relativo à aquisição de bem material industrializado de origem nacional contemplado pela redução a zero da alíquota do IBS nos termos do art. 445 desta Lei Complementar,
-                                                     // 4 - Adquirente. Art. 168. Alíquota fixa por produto,
-                                                     // 5 - Adquirente. UTILIZADO SOMENTE NA VENDA, É O ÚNICO CASO.  Art. 171. Fase de transição e após da transição,
-                                                     // 6 - Adquirente. Art. 168.  cCredPres 1,
-                                                     // 7 - Fornecedor: Única situação: Regime automotivo - projetos incentivados, observado o art. 312 da Lei Complementar nº 214, de 2025.  cCredPress 5",
+   VAR cTipoDeAliquota         AS Character INIT [1]                              // 1 - Padrão, 2 - Uniforme setorial, 3 - Uniforme nacional (referência), 4 - Fixa, 5 - Sem alíquota, 6 - Uniforme setorial
+   VAR cPredibs                AS Character INIT []                               // "", "30", "40", "50", "60", "70", "80", "100"
+   VAR cPredcbs                AS Character INIT []                               // "", "30", "40", "50", "60", "70", "80", "100"
+   VAR cInd_RedutorBC          AS Character INIT []                               // "", "S", "N"
+   VAR cInd_gTribRegular       AS Character INIT []                               // "", "0", "1"
+   VAR cInd_CredPres           AS Character INIT []                               // "", "1"
+   VAR cIndMono                AS Character INIT []                               // "", "0", "1"
+   VAR cIndMonoReten           AS Character INIT []                               // "", "0", "1"
+   VAR cIndMonoRet             AS Character INIT []                               // "", "0", "1"
+   VAR cIndMonoDif             AS Character INIT []                               // "", "0", "1"
+   VAR cCredito_para           AS Character INIT []                               // 1 - "", 2 - Fornecedor, 3 - Adquirente. Crédito Presumido de IBS\nArt. 447. Fica concedido ao contribuinte sujeito ao regime regular do IBS e habilitado nos termos do art. 442 desta Lei Complementar crédito presumido de IBS relativo à aquisição de bem material industrializado de origem nacional contemplado pela redução a zero da alíquota do IBS nos termos do art. 445 desta Lei Complementar,
+                                                                                  // 4 - Adquirente. Art. 168. Alíquota fixa por produto,
+                                                                                  // 5 - Adquirente. UTILIZADO SOMENTE NA VENDA, É O ÚNICO CASO.  Art. 171. Fase de transição e após da transição,
+                                                                                  // 6 - Adquirente. Art. 168.  cCredPres 1,
+                                                                                  // 7 - Fornecedor: Única situação: Regime automotivo - projetos incentivados, observado o art. 312 da Lei Complementar nº 214, de 2025.  cCredPress 5",
 
    // TAG is - Reforma tributária
    VAR cClasstribis            AS Character INIT [] 
@@ -403,7 +403,7 @@ CLASS Malc_GeraXml
    // TAG Ibscbs - Reforma tributária
    VAR cCclasstrib             AS Character INIT [] 
    VAR nVbcibs                 AS Num       INIT 0
-   VAR nPibsuf                 AS Num       INIT 0.1 // fixo para 2026 depois vai mudar
+   VAR nPibsuf                 AS Num       INIT 0.1                              // fixo para 2026 depois vai mudar
    VAR nPdifgibuf              AS Num       INIT 0
    VAR nVdevtribgibuf          AS Num       INIT 0
    VAR nPredaliqgibuf          AS Num       INIT 0
@@ -414,14 +414,14 @@ CLASS Malc_GeraXml
    VAR nVdevtribgibsmun        AS Num       INIT 0
    VAR nPredaliqibsmun         AS Num       INIT 0
    VAR nVibsmun                AS Num       INIT 0
-   VAR nPcbs                   AS Num       INIT 0.9 // fixo para 2026 depois vai mudar
+   VAR nPcbs                   AS Num       INIT 0.9                              // fixo para 2026 depois vai mudar
    VAR nPpDifgcbs              AS Num       INIT 0
    VAR nVcbsopgcbs             AS Num       INIT 0
    VAR nVdevtribgcbs           AS Num       INIT 0
    VAR nPredaliqgcbs           AS Num       INIT 0
    VAR nVcbs                   AS Num       INIT 0
-   VAR nVibs_c                 AS Num       INIT 0   // tag gTransfCred
-   VAR nVcbs_c                 AS Num       INIT 0   // tag gTransfCred
+   VAR nVibs_c                 AS Num       INIT 0                                // tag gTransfCred
+   VAR nVcbs_c                 AS Num       INIT 0                                // tag gTransfCred
    VAR nPaliqefetregibsuf      AS Num       INIT 0
    VAR nVtribregibsuf          AS Num       INIT 0
    VAR nPaliqefetregibsMun     AS Num       INIT 0
@@ -439,6 +439,7 @@ CLASS Malc_GeraXml
    VAR nVfcp                   AS Num       INIT 0
 
    // Tag ISTot - Reforma tributária
+   VAR lGeraTotalRtc           AS Logical   INIT .T.                              // Variável provisória pois está atualmente solicitando rtc em homologação, mas não em produção
    VAR nVis_t                  AS Num       INIT 0
    VAR nVbcibscbs_t            AS Num       INIT 0
    VAR nVdifgibsuf_t           AS Num       INIT 0
@@ -493,13 +494,13 @@ CLASS Malc_GeraXml
    METHOD fCria_ChaveAcesso()
    METHOD fCria_Ide()
    METHOD fCria_AddNfref()
-   METHOD fCria_Compragov()                                                    // Reforma tributária
+   METHOD fCria_Compragov()                                                       // Reforma tributária
    METHOD fCria_Autxml()
    METHOD fCria_Emitente()
    METHOD fCria_Destinatario()
-   METHOD fCria_Endereco()                                                     // cTipo = entrega ou retirada
-   METHOD fCria_Retirada()                                                     // gerar e manter a compatibilidade com o método endereco
-   METHOD fCria_Entrega()                                                      // gerar e manter a compatibilidade com o método endereco
+   METHOD fCria_Endereco()                                                        // cTipo = entrega ou retirada
+   METHOD fCria_Retirada()                                                        // gerar e manter a compatibilidade com o método endereco
+   METHOD fCria_Entrega()                                                         // gerar e manter a compatibilidade com o método endereco
    METHOD fCria_Produto() 
    METHOD fCria_ProdutoIcms()
    METHOD fCria_ProdutoIcms_Na()
@@ -512,11 +513,11 @@ CLASS Malc_GeraXml
    METHOD fCria_ProdArmamento()
    METHOD fCria_ProdCombustivel()
    METHOD fCria_ProdutoII()
-   METHOD fCria_ProdutoIs()                                                    // Reforma tributária
-   METHOD fCria_ProdutoIbscbs()                                                // Reforma tributária
+   METHOD fCria_ProdutoIs()                                                       // Reforma tributária
+   METHOD fCria_ProdutoIbscbs()                                                   // Reforma tributária
    METHOD fCria_Totais()
-   METHOD fCria_TotaisRtc()                                                    // Reforma tributária
-   METHOD fCria_Gibscbsmono()                                                  // Reforma tributária
+   METHOD fCria_TotaisRtc()                                                       // Reforma tributária
+   METHOD fCria_Gibscbsmono()                                                     // Reforma tributária
    METHOD fCria_Transportadora() 
    METHOD fCria_Cobranca()
    METHOD fCria_Pagamento()
@@ -524,20 +525,20 @@ CLASS Malc_GeraXml
    METHOD fCria_Responsavel()
    METHOD fCria_Fechamento()
 
-   METHOD fRetiraSinal()                                                       // cStr , cEliminar
-   METHOD fRetiraAcento()                                                      // cStr 
-   METHOD XmlTag()                                                             // cTag, xValue, nDecimals, lConvert
-   METHOD DateXml()                                                            // dDate
-   METHOD StringXML()                                                          // cTexto
-   METHOD DateTimeXml()                                                        // dDate, cTime, cUF, lUTC, cUserTimeZone
-   METHOD DomingoDePascoa()                                                    // nAno
-   METHOD TercaDeCarnaval()                                                    // nAno
-   METHOD HorarioVeraoInicio()                                                 // nAno
-   METHOD HorarioVeraoTermino()                                                // nAno
-   METHOD CalculaDigito()                                                      // cNumero, cModulo
-   METHOD SoNumero()                                                           // cTxt
-   METHOD SoNumeroCnpj()                                                       // cTxt
-   METHOD LimpaPropriedadesImposto()                                           // Jair  Barreto
+   METHOD fRetiraSinal()                                                          // cStr , cEliminar
+   METHOD fRetiraAcento()                                                         // cStr 
+   METHOD XmlTag()                                                                // cTag, xValue, nDecimals, lConvert
+   METHOD DateXml()                                                               // dDate
+   METHOD StringXML()                                                             // cTexto
+   METHOD DateTimeXml()                                                           // dDate, cTime, cUF, lUTC, cUserTimeZone
+   METHOD DomingoDePascoa()                                                       // nAno
+   METHOD TercaDeCarnaval()                                                       // nAno
+   METHOD HorarioVeraoInicio()                                                    // nAno
+   METHOD HorarioVeraoTermino()                                                   // nAno
+   METHOD CalculaDigito()                                                         // cNumero, cModulo
+   METHOD SoNumero()                                                              // cTxt
+   METHOD SoNumeroCnpj()                                                          // cTxt
+   METHOD LimpaPropriedadesImposto()                                              // Jair  Barreto
    METHOD fCertificadopfx()
 ENDCLASS
 
@@ -1150,54 +1151,54 @@ METHOD fCria_ProdutoIcms()
           Do Case
              Case ::cCsticms == [000]
                   ::cXml+= "<ICMS00>"
-                         ::cXml+= ::XmlTag( "orig"  , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
-                         ::cXml+= ::XmlTag( "CST"   , SubStr(::cCsticms, 2, 2))
-                         ::cXml+= ::XmlTag( "modBC" , [3] )                                                                        // Modalidade de determinação da BC do ICMS. 0=Margem Valor Agregado (%); 1=Pauta (Valor);2=Preço Tabelado Máx. (valor); 3=Valor da operação.
-                         ::cXml+= ::XmlTag( "vBC"   , ::nVbc)
-                         ::cXml+= ::XmlTag( "pICMS" , ::nPicms, 4)
-                         ::cXml+= ::XmlTag( "vICMS" , Iif(::nVicms == 0, ::nVicms:= Round(::nVbc / ::nPicms , 2), ::nVicms))
+                         ::cXml    += ::XmlTag( "orig"  , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
+                         ::cXml    += ::XmlTag( "CST"   , SubStr(::cCsticms, 2, 2))
+                         ::cXml    += ::XmlTag( "modBC" , [3] )                                                                        // Modalidade de determinação da BC do ICMS. 0=Margem Valor Agregado (%); 1=Pauta (Valor);2=Preço Tabelado Máx. (valor); 3=Valor da operação.
+                         ::cXml    += ::XmlTag( "vBC"   , ::nVbc)
+                         ::cXml    += ::XmlTag( "pICMS" , ::nPicms, 4)
+                         ::cXml    += ::XmlTag( "vICMS" , Iif(::nVicms == 0, ::nVicms:= Round(::nVbc / ::nPicms , 2), ::nVicms))
                          ::nVbc_t  += ::nVbc   // já acumula o valor da base de cálculo para os totais
                          ::nVicms_t+= ::nVicms // já acumula o valor do icms para os totais
                    ::cXml+= "</ICMS00>"
              Case ::cCsticms == [010]
                    ::cXml+= "<ICMS10>"
-                         ::cXml+= ::XmlTag( "orig"    , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
-                         ::cXml+= ::XmlTag( "CST"     , SubStr(::cCsticms, 2, 2))
-                         ::cXml+= ::XmlTag( "modBC"   , Iif(!(::cModbc $ [0_1_2_3]), [0], Left(::cModbc, 1)))          // Modalidade de determinação da BC do ICMS. 0=Margem Valor Agregado (%); 1=Pauta (Valor);2=Preço Tabelado Máx. (valor); 3=Valor da operação.
-                         ::cXml+= ::XmlTag( "vBC"     , ::nVbc)
-                         ::cXml+= ::XmlTag( "pICMS"   , ::nPicms, 4)
-                         ::cXml+= ::XmlTag( "vICMS"   , Iif(::nVicms == 0, ::nVicms:= Round(::nVbc / ::nPicms , 2), ::nVicms))
-                         ::cXml+= ::XmlTag( "modBCST" , Iif(!(::cModbcst $ [0_1_2_3_4_5_6]), [3], Left(::cModbcst, 1))) // Modalidade de determinação da BC do ICMS ST. 0=Preço tabelado ou máximo sugerido, 1=Lista Negativa (valor), 2=Lista Positiva (valor);3=Lista Neutra (valor), 4=Margem Valor Agregado (%), 5=Pauta (valor), 6 = Valor da Operação (NT 2019.001)
-                         ::cXml+= ::XmlTag( "pMVAST"  , ::nPmvast, 4)
-                         ::cXml+= ::XmlTag( "vBCST"   , ::nVbcst)
-                         ::cXml+= ::XmlTag( "pICMSST" , ::nPicmst, 4)
-                         ::cXml+= ::XmlTag( "vICMSST" , Iif(::nVicmsst == 0, ::nVicmsst:= Round(::nVbcst / ::nPicmst , 2), ::nVicmsst))
+                         ::cXml    += ::XmlTag( "orig"    , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
+                         ::cXml    += ::XmlTag( "CST"     , SubStr(::cCsticms, 2, 2))
+                         ::cXml    += ::XmlTag( "modBC"   , Iif(!(::cModbc $ [0_1_2_3]), [0], Left(::cModbc, 1)))          // Modalidade de determinação da BC do ICMS. 0=Margem Valor Agregado (%); 1=Pauta (Valor);2=Preço Tabelado Máx. (valor); 3=Valor da operação.
+                         ::cXml    += ::XmlTag( "vBC"     , ::nVbc)
+                         ::cXml    += ::XmlTag( "pICMS"   , ::nPicms, 4)
+                         ::cXml    += ::XmlTag( "vICMS"   , Iif(::nVicms == 0, ::nVicms:= Round(::nVbc / ::nPicms , 2), ::nVicms))
+                         ::cXml    += ::XmlTag( "modBCST" , Iif(!(::cModbcst $ [0_1_2_3_4_5_6]), [3], Left(::cModbcst, 1))) // Modalidade de determinação da BC do ICMS ST. 0=Preço tabelado ou máximo sugerido, 1=Lista Negativa (valor), 2=Lista Positiva (valor);3=Lista Neutra (valor), 4=Margem Valor Agregado (%), 5=Pauta (valor), 6 = Valor da Operação (NT 2019.001)
+                         ::cXml    += ::XmlTag( "pMVAST"  , ::nPmvast, 4)
+                         ::cXml    += ::XmlTag( "vBCST"   , ::nVbcst)
+                         ::cXml    += ::XmlTag( "pICMSST" , ::nPicmst, 4)
+                         ::cXml    += ::XmlTag( "vICMSST" , Iif(::nVicmsst == 0, ::nVicmsst:= Round(::nVbcst / ::nPicmst , 2), ::nVicmsst))
                          ::nVbc_t  += ::nVbc    // já acumula o valor da base de cálculo para os totais
                          ::nVbcst_t+= ::nVbcst  // já acumula o valor dos base de cálculo da subs. tributária para os totais
                          ::nVicms_t+= ::nVicms  // já acumula o valor do icms para os totais
                    ::cXml+= "</ICMS10>"
              Case ::cCsticms == [020]
                    ::cXml+= "<ICMS20>"
-                         ::cXml+= ::XmlTag( "orig"   , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
-                         ::cXml+= ::XmlTag( "CST"    , SubStr(::cCsticms, 2, 2))
-                         ::cXml+= ::XmlTag( "modBC"  , [3] )                                                                       // Modalidade de determinação da BC do ICMS. 0=Margem Valor Agregado (%); 1=Pauta (Valor);2=Preço Tabelado Máx. (valor); 3=Valor da operação.
-                         ::cXml+= ::XmlTag( "pRedBC" , ::nPredbc, 4)
-                         ::cXml+= ::XmlTag( "vBC"    , ::nVbc)
-                         ::cXml+= ::XmlTag( "pICMS"  , ::nPicms, 4)
-                         ::cXml+= ::XmlTag( "vICMS" , If(::nVicms == 0, ::nVicms:= Round(::nVbc / ::nPicms , 2), ::nVicms))
+                         ::cXml    += ::XmlTag( "orig"   , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
+                         ::cXml    += ::XmlTag( "CST"    , SubStr(::cCsticms, 2, 2))
+                         ::cXml    += ::XmlTag( "modBC"  , [3] )                                                                       // Modalidade de determinação da BC do ICMS. 0=Margem Valor Agregado (%); 1=Pauta (Valor);2=Preço Tabelado Máx. (valor); 3=Valor da operação.
+                         ::cXml    += ::XmlTag( "pRedBC" , ::nPredbc, 4)
+                         ::cXml    += ::XmlTag( "vBC"    , ::nVbc)
+                         ::cXml    += ::XmlTag( "pICMS"  , ::nPicms, 4)
+                         ::cXml    += ::XmlTag( "vICMS" , If(::nVicms == 0, ::nVicms:= Round(::nVbc / ::nPicms , 2), ::nVicms))
                          ::nVbc_t  += ::nVbc   // já acumula o valor da base de cálculo para os totais
                          ::nVicms_t+= ::nVicms // já acumula o valor do icms para os totais
                    ::cXml+= "</ICMS20>"
              Case ::cCsticms == [030]
                    ::cXml+= "<ICMS30>"
-                         ::cXml+= ::XmlTag( "orig"     , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
-                         ::cXml+= ::XmlTag( "CST"      , SubStr(::cCsticms, 2, 2))
-                         ::cXml+= ::XmlTag( "modBCST"  , "3" )                                                                     // Modalidade de determinação da BC do ICMS. 0=Margem Valor Agregado (%); 1=Pauta (Valor);2=Preço Tabelado Máx. (valor); 3=Valor da operação.
-                         ::cXml+= ::XmlTag( "pMVAST"   , ::nPmvast, 4)
-                         ::cXml+= ::XmlTag( "pRedBCST" , ::nPredbcst, 4)
-                         ::cXml+= ::XmlTag( "vBCST"    , ::nVbct)
-                         ::cXml+= ::XmlTag( "pICMSST"  , ::nPicmst, 4)
-                         ::cXml+= ::XmlTag( "vICMSST"  , Iif(::nVicmsst == 0, ::nVicmsst:= Round(::nVbcst / ::nPicmst , 2), ::nVicmsst))
+                         ::cXml    += ::XmlTag( "orig"     , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
+                         ::cXml    += ::XmlTag( "CST"      , SubStr(::cCsticms, 2, 2))
+                         ::cXml    += ::XmlTag( "modBCST"  , "3" )                                                                     // Modalidade de determinação da BC do ICMS. 0=Margem Valor Agregado (%); 1=Pauta (Valor);2=Preço Tabelado Máx. (valor); 3=Valor da operação.
+                         ::cXml    += ::XmlTag( "pMVAST"   , ::nPmvast, 4)
+                         ::cXml    += ::XmlTag( "pRedBCST" , ::nPredbcst, 4)
+                         ::cXml    += ::XmlTag( "vBCST"    , ::nVbct)
+                         ::cXml    += ::XmlTag( "pICMSST"  , ::nPicmst, 4)
+                         ::cXml    += ::XmlTag( "vICMSST"  , Iif(::nVicmsst == 0, ::nVicmsst:= Round(::nVbcst / ::nPicmst , 2), ::nVicmsst))
                          ::nVbcst_t+= ::nVbcst // já acumula o valor dos base de cálculo da subs. tributária para os totais
                    ::cXml+= "</ICMS30>"
              Case ::cCsticms $ [040_041_050_141_241_140_240]
@@ -1221,35 +1222,35 @@ METHOD fCria_ProdutoIcms()
                    ::cXml+= "</ICMS60>"
              Case ::cCsticms == [070]
                    ::cXml+= "<ICMS70>"
-                         ::cXml+= ::XmlTag( "orig"    , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
-                         ::cXml+= ::XmlTag( "CST"     , SubStr(::cCsticms, 2, 2))
-                         ::cXml+= ::XmlTag( "modBCST" , "3" )                                                                      // Modalidade de determinação da BC do ICMS. 0=Margem Valor Agregado (%); 1=Pauta (Valor);2=Preço Tabelado Máx. (valor); 3=Valor da operação.
-                         ::cXml+= ::XmlTag( "pRedBC"  , ::nPredbc, 4)
-                         ::cXml+= ::XmlTag( "vBC"     , ::nVbc)
-                         ::cXml+= ::XmlTag( "pICMS"   , ::nPicms, 4)
-                         ::cXml+= ::XmlTag( "vICMS" , If(::nVicms == 0, ::nVicms:= Round(::nVbc / ::nPicms , 2), ::nVicms))
-                         ::cXml+= ::XmlTag( "modBCST" , "0")
-                         ::cXml+= ::XmlTag( "pMVAST"  , ::nPmvast, 4)
-                         ::cXml+= ::XmlTag( "vBCST"   , ::nVbcst)
-                         ::cXml+= ::XmlTag( "pICMSST" , ::nPicmst, 4)
-                         ::cXml+= ::XmlTag( "vICMSST" , Iif(::nVicmsst == 0, ::nVicmsst:= Round(::nVbcst / ::nPicmst , 2), ::nVicmsst))
-                         ::cXml+= ::XmlTag( "pBCOp"   , 1, 4)
-                         ::cXml+= ::XmlTag( "UFST"    , Left(::cUfd, 2))
+                         ::cXml    += ::XmlTag( "orig"    , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
+                         ::cXml    += ::XmlTag( "CST"     , SubStr(::cCsticms, 2, 2))
+                         ::cXml    += ::XmlTag( "modBCST" , "3" )                                                                      // Modalidade de determinação da BC do ICMS. 0=Margem Valor Agregado (%); 1=Pauta (Valor);2=Preço Tabelado Máx. (valor); 3=Valor da operação.
+                         ::cXml    += ::XmlTag( "pRedBC"  , ::nPredbc, 4)
+                         ::cXml    += ::XmlTag( "vBC"     , ::nVbc)
+                         ::cXml    += ::XmlTag( "pICMS"   , ::nPicms, 4)
+                         ::cXml    += ::XmlTag( "vICMS" , If(::nVicms == 0, ::nVicms:= Round(::nVbc / ::nPicms , 2), ::nVicms))
+                         ::cXml    += ::XmlTag( "modBCST" , "0")
+                         ::cXml    += ::XmlTag( "pMVAST"  , ::nPmvast, 4)
+                         ::cXml    += ::XmlTag( "vBCST"   , ::nVbcst)
+                         ::cXml    += ::XmlTag( "pICMSST" , ::nPicmst, 4)
+                         ::cXml    += ::XmlTag( "vICMSST" , Iif(::nVicmsst == 0, ::nVicmsst:= Round(::nVbcst / ::nPicmst , 2), ::nVicmsst))
+                         ::cXml    += ::XmlTag( "pBCOp"   , 1, 4)
+                         ::cXml    += ::XmlTag( "UFST"    , Left(::cUfd, 2))
                          ::nVbc_t  += ::nVbc    // já acumula o valor da base de cálculo para os totais
                          ::nVbcst_t+= ::nVbcst  // já acumula o valor dos base de cálculo da subs. tributária para os totais
                          ::nVicms_t+= ::nVicms  // já acumula o valor do icms para os totais
                    ::cXml+= "</ICMS70>"
              Case ::cCsticms == [090]
                    ::cXml+= "<ICMS90>"
-                         ::cXml+= ::XmlTag( "orig"    , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
-                         ::cXml+= ::XmlTag( "CST"     , SubStr(::cCsticms, 2, 2))
-                         ::cXml+= ::XmlTag( "modBC"   , "3" )                                                                      // Modalidade de determinação da BC do ICMS. 0=Margem Valor Agregado (%); 1=Pauta (Valor);2=Preço Tabelado Máx. (valor); 3=Valor da operação.
+                         ::cXml    += ::XmlTag( "orig"    , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
+                         ::cXml    += ::XmlTag( "CST"     , SubStr(::cCsticms, 2, 2))
+                         ::cXml    += ::XmlTag( "modBC"   , "3" )                                                                      // Modalidade de determinação da BC do ICMS. 0=Margem Valor Agregado (%); 1=Pauta (Valor);2=Preço Tabelado Máx. (valor); 3=Valor da operação.
                          If !Empty(::nPredbc)
-                            ::cXml+= ::XmlTag( "pRedBC"  , ::nPredbc, 4)
+                            ::cXml += ::XmlTag( "pRedBC"  , ::nPredbc, 4)
                          Endif
-                         ::cXml+= ::XmlTag( "vBC"     , ::nVbc)
-                         ::cXml+= ::XmlTag( "pICMS"   , ::nPicms, 4)
-                         ::cXml+= ::XmlTag( "vICMS"   , If(::nVicms == 0, ::nVicms:= Round(::nVbc / ::nPicms , 2), ::nVicms))
+                         ::cXml    += ::XmlTag( "vBC"     , ::nVbc)
+                         ::cXml    += ::XmlTag( "pICMS"   , ::nPicms, 4)
+                         ::cXml    += ::XmlTag( "vICMS"   , If(::nVicms == 0, ::nVicms:= Round(::nVbc / ::nPicms , 2), ::nVicms))
                          ::nVbc_t  += ::nVbc    // já acumula o valor da base de cálculo para os totais
                          ::nVicms_t+= ::nVicms  // já acumula o valor do icms para os totais
                    ::cXml+= "</ICMS90>"
@@ -1295,16 +1296,16 @@ METHOD fCria_ProdutoIcms()
                         
                          // Verifica se tem valor do ICMS
                          If ::nVicms # 0
-                            ::cXml+= ::XmlTag( "modBC"       , Iif(!(::cModbc $ [0_1_2_3]), [0], Left(::cModbc, 1)))   // Modalidade de determinação da BC do ICMS. 0=Margem Valor Agregado (%); 1=Pauta (Valor);2=Preço Tabelado Máx. (valor); 3=Valor da operação.
-                            ::cXml+= ::XmlTag( "vBC"         , ::nVbc)
-                            ::cXml+= ::XmlTag( "pICMS"       , ::nPicms, 4)
-                            ::cXml+= ::XmlTag( "vICMS"       , If(::nVicms == 0, ::nVicms:= Round(::nVbc / ::nPicms , 2), ::nVicms))
-                            ::cXml+= ::XmlTag( "modBCST"     , Iif(!(::cModbcst $ [0_1_2_3_4_5_6]), [3], Left(::cModbcst, 1)))  // Modalidade de determinação da BC do ICMS ST. 0=Preço tabelado ou máximo sugerido, 1=Lista Negativa (valor), 2=Lista Positiva (valor);3=Lista Neutra (valor), 4=Margem Valor Agregado (%), 5=Pauta (valor), 6 = Valor da Operação (NT 2019.001)
-                            ::cXml+= ::XmlTag( "vBCST"       , ::nVbcst)
-                            ::cXml+= ::XmlTag( "pICMSST"     , ::nPicmst, 4)
-                            ::cXml+= ::XmlTag( "vICMSST"     , Iif(::nVicmsst == 0, ::nVicmsst:= Round(::nVbcst / ::nPicmst , 2), ::nVicmsst))
-                            ::cXml+= ::XmlTag( "pCredSN"     , ::nPcredsn, 4)
-                            ::cXml+= ::XmlTag( "vCredICMSSN" , ::nVcredicmssn)
+                            ::cXml    += ::XmlTag( "modBC"       , Iif(!(::cModbc $ [0_1_2_3]), [0], Left(::cModbc, 1)))   // Modalidade de determinação da BC do ICMS. 0=Margem Valor Agregado (%); 1=Pauta (Valor);2=Preço Tabelado Máx. (valor); 3=Valor da operação.
+                            ::cXml    += ::XmlTag( "vBC"         , ::nVbc)
+                            ::cXml    += ::XmlTag( "pICMS"       , ::nPicms, 4)
+                            ::cXml    += ::XmlTag( "vICMS"       , If(::nVicms == 0, ::nVicms:= Round(::nVbc / ::nPicms , 2), ::nVicms))
+                            ::cXml    += ::XmlTag( "modBCST"     , Iif(!(::cModbcst $ [0_1_2_3_4_5_6]), [3], Left(::cModbcst, 1)))  // Modalidade de determinação da BC do ICMS ST. 0=Preço tabelado ou máximo sugerido, 1=Lista Negativa (valor), 2=Lista Positiva (valor);3=Lista Neutra (valor), 4=Margem Valor Agregado (%), 5=Pauta (valor), 6 = Valor da Operação (NT 2019.001)
+                            ::cXml    += ::XmlTag( "vBCST"       , ::nVbcst)
+                            ::cXml    += ::XmlTag( "pICMSST"     , ::nPicmst, 4)
+                            ::cXml    += ::XmlTag( "vICMSST"     , Iif(::nVicmsst == 0, ::nVicmsst:= Round(::nVbcst / ::nPicmst , 2), ::nVicmsst))
+                            ::cXml    += ::XmlTag( "pCredSN"     , ::nPcredsn, 4)
+                            ::cXml    += ::XmlTag( "vCredICMSSN" , ::nVcredicmssn)
                             ::nVbc_t  += ::nVbc     // já acumula o valor da base de cálculo para os totais
                             ::nVbcst_t+= ::nVbcst   // já acumula o valor dos base de cálculo da subs. tributária para os totais
                             ::nVicms_t+= ::nVicms   // já acumula o valor do icms para os totais
@@ -1318,15 +1319,15 @@ Return (Nil)
 METHOD fCria_ProdutoIcms_Na()  //Grupo NA. ICMS para a UF de destino
    If !Empty(::nVbcufdest)
       ::cXml+= "<ICMSUFDest>"
-             ::cXml+= ::XmlTag( "vBCUFDest"      , ::nVbcufdest)                                                                   // Valor da BC do ICMS na UF de destino
-             ::cXml+= ::XmlTag( "vBCFCPUFDest"   , ::nVbcfcpufdest)                                                                // Valor da Base de Cálculo do FCP na UF de destino. (Incluído na NT2016.002)
-             ::cXml+= ::XmlTag( "pFCPUFDest"     , ::nPfcpufdest, 4)                                                               // Percentual adicional inserido na alíquota interna da UF de destino, relativo ao Fundo de Combate à Pobreza (FCP) naquela UF
-             ::cXml+= ::XmlTag( "pICMSUFDest"    , ::nPicmsufdest, 4)                                                              // Alíquota adotada nas operações internas na UF de destino para o produto / mercadoria. A alíquota do Fundo de Combate a Pobreza, se existente para o produto / mercadoria, deve ser informada no campo próprio (pFCPUFDest) não devendo ser somada à essa alíquota interna.
-             ::cXml+= ::XmlTag( "pICMSInter"     , ::nPicmsinter)                                                                  // Alíquota interestadual das UF envolvidas: - 4% alíquota interestadual para produtos importados; - 7% para os Estados de origem do Sul e Sudeste (exceto ES), destinado para os Estados do Norte, Nordeste, Centro- Oeste e Espírito Santo; - 12% para os demais casos.
-             ::cXml+= ::XmlTag( "pICMSInterPart" , ::nPicmsinterpart, 4)                                                           // Percentual de ICMS Interestadual para a UF de destino: - 40% em 2016; - 60% em 2017; - 80% em 2018; - 100% a partir de 2019.
-             ::cXml+= ::XmlTag( "vFCPUFDest"     , ::nVfcpufdest)                                                                  // Valor do ICMS relativo ao Fundo de Combate à Pobreza (FCP) da UF de destino. (Atualizado na NT2016.002)
-             ::cXml+= ::XmlTag( "vICMSUFDest"    , ::nVicmsufdest)                                                                 // Valor do ICMS Interestadual para a UF de destino, já considerando o valor do ICMS relativo ao Fundo de Combate à Pobreza naquela UF.
-             ::cXml+= ::XmlTag( "vICMSUFRemet"   , ::nVicmsufremet)                                                                // Valor do ICMS Interestadual para a UF do remetente. Nota: A partir de 2019, este valor será zero.
+             ::cXml           += ::XmlTag( "vBCUFDest"      , ::nVbcufdest)                                                                   // Valor da BC do ICMS na UF de destino
+             ::cXml           += ::XmlTag( "vBCFCPUFDest"   , ::nVbcfcpufdest)                                                                // Valor da Base de Cálculo do FCP na UF de destino. (Incluído na NT2016.002)
+             ::cXml           += ::XmlTag( "pFCPUFDest"     , ::nPfcpufdest, 4)                                                               // Percentual adicional inserido na alíquota interna da UF de destino, relativo ao Fundo de Combate à Pobreza (FCP) naquela UF
+             ::cXml           += ::XmlTag( "pICMSUFDest"    , ::nPicmsufdest, 4)                                                              // Alíquota adotada nas operações internas na UF de destino para o produto / mercadoria. A alíquota do Fundo de Combate a Pobreza, se existente para o produto / mercadoria, deve ser informada no campo próprio (pFCPUFDest) não devendo ser somada à essa alíquota interna.
+             ::cXml           += ::XmlTag( "pICMSInter"     , ::nPicmsinter)                                                                  // Alíquota interestadual das UF envolvidas: - 4% alíquota interestadual para produtos importados; - 7% para os Estados de origem do Sul e Sudeste (exceto ES), destinado para os Estados do Norte, Nordeste, Centro- Oeste e Espírito Santo; - 12% para os demais casos.
+             ::cXml           += ::XmlTag( "pICMSInterPart" , ::nPicmsinterpart, 4)                                                           // Percentual de ICMS Interestadual para a UF de destino: - 40% em 2016; - 60% em 2017; - 80% em 2018; - 100% a partir de 2019.
+             ::cXml           += ::XmlTag( "vFCPUFDest"     , ::nVfcpufdest)                                                                  // Valor do ICMS relativo ao Fundo de Combate à Pobreza (FCP) da UF de destino. (Atualizado na NT2016.002)
+             ::cXml           += ::XmlTag( "vICMSUFDest"    , ::nVicmsufdest)                                                                 // Valor do ICMS Interestadual para a UF de destino, já considerando o valor do ICMS relativo ao Fundo de Combate à Pobreza naquela UF.
+             ::cXml           += ::XmlTag( "vICMSUFRemet"   , ::nVicmsufremet)                                                                // Valor do ICMS Interestadual para a UF do remetente. Nota: A partir de 2019, este valor será zero.
              ::nVfcpufdest_t  += ::nVfcpufdest     // já acumula o valor para os totais
              ::nVicmsufdest_t += ::Vicmsufdest     // já acumula o valor para os totais
              ::nVicmsufremet_t+= ::nVicmsufremet   // já acumula o valor para os totais
@@ -1702,7 +1703,9 @@ METHOD fCria_Totais()
           ::cXml+= "</ICMSTot>"
    ::cXml+= "</total>"
 
-   ::fCria_TotaisRtc() 
+   If ::lGeraTotalRtc
+      ::fCria_TotaisRtc() 
+   Endif
 Return (Nil)
 
 * --------------> Metodo para gerar a tag de Total RTC da NFe <--------------- *
