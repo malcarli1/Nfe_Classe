@@ -4,7 +4,7 @@
  * OBJETIVO : Gerar Xml de Nfe/Nfce                                          *
  * AUTOR    : Marcelo Antonio Lázzaro Carli                                  *
  * DATA     : 23.06.2025                                                     *
- * ULT. ALT.: 26.08.2025                                                     *
+ * ULT. ALT.: 17.09.2025                                                     *
  *****************************************************************************/
 #include <minigui.ch>
 
@@ -420,4 +420,4 @@ Static Procedure fGerarxml()
    WaitWindow()
 Return (Nil)
 
-#include <nfe_classe_r25.prg>
+#include <nfe_classe.prg>
