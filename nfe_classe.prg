@@ -9,7 +9,7 @@
  *          : Maurílio Franchin Júnior                                       *
  *          : Jair Barreto                                                   *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 16.09.2025                                                     *
+ * ULT. ALT.: 17.09.2025                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 
@@ -439,7 +439,6 @@ CLASS Malc_GeraXml
    VAR nVfcp                   AS Num       INIT 0
 
    // Tag ISTot - Reforma tributária
-   VAR lGeraTotalRtc           AS Logical   INIT .T.                              // Variável provisória pois está atualmente solicitando rtc em homologação, mas não em produção
    VAR nVis_t                  AS Num       INIT 0
    VAR nVbcibscbs_t            AS Num       INIT 0
    VAR nVdifgibsuf_t           AS Num       INIT 0
@@ -1698,7 +1697,7 @@ METHOD fCria_Totais()
           ::cXml+= "</ICMSTot>"
    ::cXml+= "</total>"
 
-   If ::lGeraTotalRtc
+   If !Empty(::cCclasstrib)
       ::fCria_TotaisRtc() 
    Endif
 Return (Nil)
