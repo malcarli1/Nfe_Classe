@@ -9,7 +9,7 @@
  *          : Maurílio Franchin Júnior                                       *
  *          : Jair Barreto                                                   *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 17.09.2025                                                     *
+ * ULT. ALT.: 29.09.2025                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 
@@ -950,7 +950,7 @@ METHOD fCria_Produto()
                     ::cXml+= ::XmlTag( "CEST"  , Left(::SoNumero(::cCest), 7))
                  Endif 
 
-                 ::cXml   += ::XmlTag( "CFOP"   , Left(::SoNumero(::cCfOp), 4))
+                 ::cXml    += ::XmlTag( "CFOP"  , Left(::SoNumero(::cCfOp), 4))
                  ::cXml    += ::XmlTag( "uCom"  , Left(::cUcom, 6))
                  ::cXml    += ::XmlTag( "qCom"  , ::nQcom, 4)
                  ::cXml    += ::XmlTag( "vUnCom", ::nVuncom, 10)
@@ -1022,7 +1022,7 @@ METHOD fCria_Produto()
                  ::fCria_ProdutoIbscbs()
           ::cXml+= "</imposto>"
 
-          If Len(AllTrim(::cInfadprod)) > 0
+          If !Empty(::cInfadprod))
              ::cXml+= ::XmlTag( "infAdProd", Left( ::cInfadprod, 500))
           Else
              If ::lVtottrib == .T. .and. ::nVtottrib # 0                                                                         // lei transparência informações adicionais do produtos
@@ -1116,10 +1116,9 @@ Return (Nil)
 
 * ----------------> Metodo para gerar a tag de combustíveis <----------------- *
 METHOD fCria_ProdCombustivel()                                                                                // Marcelo de Paula, Marcelo Brigatti
-   Local cGrupoANP:= [1662,2662,5651,5652,5653,5654,5655,5656,5657,5658,5659,5660,5661,5662,5663,5664,5665,5666,5667,6651,6652,6653,6654,6655,6656,6657,6658,6659,6660,6661,6662,6663,6664,6665,6666,6667,7651,7654,7667]
 
    // Número ANP para combustíveis
-   If ::cCfOp $ cGrupoANP
+   If ::cCfOp $ [1662_2662_5651_5652_5653_5654_5655_5656_5657_5658_5659_5660_5661_5662_5663_5664_5665_5666_5667_6651_6652_6653_6654_6655_6656_6657_6658_6659_6660_6661_6662_6663_6664_6665_6666_6667_7651_7654_7667]
       ::cXml+= "<comb>"
              ::cXml+= ::XmlTag( "cProdANP" , Left(::SoNumero(::cCprodanp), 9))                                                       // Código de produto da ANP
              ::cXml+= ::XmlTag( "descANP"  , Left(::cDescanp, 95))                                                                 // Descrição do produto conforme ANP
@@ -1374,7 +1373,7 @@ Return (Nil)
 * ----------------------> Metodo para gerar a tag IBSCBS <-------------------- *
 METHOD fCria_ProdutoIbscbs()  // Reforma tributária
    If !Empty(::cCclasstrib)
-      If Left(::cCclasstrib, 3) $ [000-200-410-510-620] .or. (Left(::cCclasstrib, 3) $ [550-800] .and. ::cModelo # [65])
+      If Left(::cCclasstrib, 3) $ [000_200_410_510_620] .or. (Left(::cCclasstrib, 3) $ [550_800] .and. ::cModelo # [65])
 
          ::cXml+= "<IBSCBS>"
                 ::cXml+= ::XmlTag( "CST"       , Left(::cCclasstrib, 3))
