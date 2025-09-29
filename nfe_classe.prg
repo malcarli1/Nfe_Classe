@@ -1022,7 +1022,7 @@ METHOD fCria_Produto()
                  ::fCria_ProdutoIbscbs()
           ::cXml+= "</imposto>"
 
-          If !Empty(::cInfadprod))
+          If !Empty(::cInfadprod)
              ::cXml+= ::XmlTag( "infAdProd", Left( ::cInfadprod, 500))
           Else
              If ::lVtottrib == .T. .and. ::nVtottrib # 0                                                                         // lei transparência informações adicionais do produtos
