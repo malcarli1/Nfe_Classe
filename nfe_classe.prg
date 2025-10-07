@@ -9,7 +9,7 @@
  *          : Maurílio Franchin Júnior                                       *
  *          : Jair Barreto                                                   *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 29.09.2025                                                     *
+ * ULT. ALT.: 07.10.2025                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 
@@ -409,7 +409,7 @@ CLASS Malc_GeraXml
    VAR nPredaliqgibuf          AS Num       INIT 0
    VAR nVibsuf                 AS Num       INIT 0
    VAR nPibsmun                AS Num       INIT 0
-   VAR nPifgibsmun             AS Num       INIT 0
+   VAR nPdifgibsmun            AS Num       INIT 0
    VAR nVcbop                  AS Num       INIT 0
    VAR nVdevtribgibsmun        AS Num       INIT 0
    VAR nPredaliqibsmun         AS Num       INIT 0
@@ -1414,11 +1414,11 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
                        ::cXml+= "<gIBSMun>"
                               ::cXml+= ::XmlTag( "pIBSMun" , ::nPibsmun, 4)
 
-                              If ::nPifgibsmun # 0 .and. Left(::cCclasstrib, 3) == [510]
+                              If ::nPdifgibsmun # 0 .and. Left(::cCclasstrib, 3) == [510]
                                  ::cXml+= "<gDif>"
-                                        ::cXml           += ::XmlTag( "pDif"   , ::nPifgibsmun, 4)
-                                        ::cXml           += ::XmlTag( "vDif"   , Round(::nVbcibs * (::nPibsmun / 100) * (::nPifgibsmun / 100), 2) ) 
-                                        ::nVdDifgibsmun_t+= Round(::nVbcibs * (::nPibsmun / 100) * (::nPifgibsmun / 100), 2)  // já acumula o valor os totais
+                                        ::cXml           += ::XmlTag( "pDif"   , ::nPdifgibsmun, 4)
+                                        ::cXml           += ::XmlTag( "vDif"   , Round(::nVbcibs * (::nPibsmun / 100) * (::nPdifgibsmun / 100), 2) ) 
+                                        ::nVdDifgibsmun_t+= Round(::nVbcibs * (::nPibsmun / 100) * (::nPdifgibsmun / 100), 2)  // já acumula o valor os totais
                                  ::cXml+= "</gDif>"
                               Endif
 
