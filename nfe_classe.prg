@@ -401,42 +401,42 @@ CLASS Malc_GeraXml
    VAR nQtrib_is               AS Num       INIT 0
 
    // TAG Ibscbs - Reforma tributária
-   VAR cCclasstrib             AS Character INIT [] 
-   VAR nVbcibs                 AS Num       INIT 0
-   VAR nPibsuf                 AS Num       INIT 0.1                              // fixo para 2026 depois vai mudar
-   VAR nPdifgibuf              AS Num       INIT 0
-   VAR nVdevtribgibuf          AS Num       INIT 0
-   VAR nPredaliqgibuf          AS Num       INIT 0
-   VAR nVibsuf                 AS Num       INIT 0
-   VAR nPibsmun                AS Num       INIT 0
-   VAR nPdifgibsmun            AS Num       INIT 0
-   VAR nVcbop                  AS Num       INIT 0
-   VAR nVdevtribgibsmun        AS Num       INIT 0
-   VAR nPredaliqibsmun         AS Num       INIT 0
-   VAR nVibsmun                AS Num       INIT 0
-   VAR nPcbs                   AS Num       INIT 0.9                              // fixo para 2026 depois vai mudar
-   VAR nPpDifgcbs              AS Num       INIT 0
-   VAR nVcbsopgcbs             AS Num       INIT 0
-   VAR nVdevtribgcbs           AS Num       INIT 0
-   VAR nPredaliqgcbs           AS Num       INIT 0
-   VAR nVcbs                   AS Num       INIT 0
-   VAR nVibs_c                 AS Num       INIT 0                                // tag gTransfCred
-   VAR nVcbs_c                 AS Num       INIT 0                                // tag gTransfCred
-   VAR nPaliqefetregibsuf      AS Num       INIT 0
-   VAR nVtribregibsuf          AS Num       INIT 0
-   VAR nPaliqefetregibsMun     AS Num       INIT 0
-   VAR nVtribregibsMun         AS Num       INIT 0
-   VAR nPaliqefetregcbs        AS Num       INIT 0
-   VAR nVtribregcbs            AS Num       INIT 0
-   VAR cCredPresgibs           AS Character INIT [] 
-   VAR nPcredpresgibs          AS Num       INIT 0
-   VAR nVcredpresgibs          AS Num       INIT 0
-   VAR cCredPrescbs            AS Character INIT [] 
-   VAR nPcredprescbs           AS Num       INIT 0
-   VAR nVcredprescbs           AS Num       INIT 0
-   VAR nVissqn                 AS Num       INIT 0
-   VAR nVServs                 AS Num       INIT 0
-   VAR nVfcp                   AS Num       INIT 0
+   VAR cCclasstrib             AS Character INIT []                                                                     // Código da Classificação Tributária do IBS/CBS                                                                                             
+   VAR nVbcibs                 AS Num       INIT 0                                                                      // Valor da Base de cálculo comum a IBS/CBS                                                                                                  
+   VAR nPibsuf                 AS Num       INIT 0.1                              // fixo para 2026 depois vai mudar    // Alíquota do IBS Estadual                                                                                                                  
+   VAR nPdifgibuf              AS Num       INIT 0                                                                      // Percentual de diferimento                                                                                                                 
+   VAR nVdevtribgibuf          AS Num       INIT 0                                                                      // Valor do diferimento                                                                                                                      
+   VAR nPredaliqgibuf          AS Num       INIT 0                                                                      // Percentual da redução de Alíquota do cClassTrib                                                                                                                                             7  Valor do tributo devolvido. No fornecimento de energia elétrica, água, esgoto e gás natural e em outras hipóteses definidas no regulamento
+   VAR nVibsuf                 AS Num       INIT 0                                                                      // Valor do IBS de competência da UF                                                                                                                                   
+   VAR nPibsmun                AS Num       INIT 0                                                                      // Alíquota do IBS Municipal                                                                                                                               
+   VAR nPdifgibsmun            AS Num       INIT 0                                                                      // Percentual de diferimento                                                                                                                               
+   VAR nVcbop                  AS Num       INIT 0                                                                      //                                                                                                                                     
+   VAR nVdevtribgibsmun        AS Num       INIT 0                                                                      //                                                                                                                           
+   VAR nPredaliqibsmun         AS Num       INIT 0                                                                      // Percentual da redução de Alíquota do cClassTrib                             
+   VAR nVibsmun                AS Num       INIT 0                                                                      // Valor do IBS de competência do município                                                                                                                   
+   VAR nPcbs                   AS Num       INIT 0.9                              // fixo para 2026 depois vai mudar    // Alíquota da CBS                                                                                                                                            
+   VAR nPpDifgcbs              AS Num       INIT 0                                                                      // Percentual de diferimento                                                                                                                                                                                                                                            
+   VAR nVcbsopgcbs             AS Num       INIT 0                                                                      // Valor do diferimento                                                                                                                                     
+   VAR nVdevtribgcbs           AS Num       INIT 0                                                                      // Valor da CBS devolvida. No fornecimento de energia elétrica, água, esgoto e gás natural e em outras hipóteses definidas no regulamento                   
+   VAR nPredaliqgcbs           AS Num       INIT 0                                                                      // Percentual da redução de Alíquota do cClassTrib                                                                                                          
+   VAR nVcbs                   AS Num       INIT 0                                                                      // Valor da CBS                                                                                                                                             
+   VAR nVibs_c                 AS Num       INIT 0                                // tag gTransfCred                    // 
+   VAR nVcbs_c                 AS Num       INIT 0                                // tag gTransfCred                    // 
+   VAR nPaliqefetregibsuf      AS Num       INIT 0                                                                      // Alíquota efetiva da UF Informado a Alíquota caso não cumprida a condição resolutória/suspensiva                                                          
+   VAR nVtribregibsuf          AS Num       INIT 0                                                                      // Informado como seria o valor do Tributo da UF caso não cumprida a condição resolutória/suspensiva                                                        
+   VAR nPaliqefetregibsMun     AS Num       INIT 0                                                                      // Alíquota efetiva do Município Informado a Alíquota caso não cumprida a condição resolutória/suspensiva                                                   
+   VAR nVtribregibsMun         AS Num       INIT 0                                                                      // Informado como seria o valor do Tributo do Município caso não cumprida a condição resolutória/suspensiva                                                 
+   VAR nPaliqefetregcbs        AS Num       INIT 0                                                                      // Alíquota efetiva da CBS Informado a Alíquota caso não cumprida a condição resolutória/suspensiva                                                         
+   VAR nVtribregcbs            AS Num       INIT 0                                                                      // Informado como seria o valor do Tributo CBS caso não cumprida a condição resolutória/suspensiva                                                          
+   VAR cCredPresgibs           AS Character INIT []                                                                     // Código do Crédito Presumido (ver Tabela)                                                                                                                 
+   VAR nPcredpresgibs          AS Num       INIT 0                                                                      // Percentual de crédito presumido                                                                                                                          
+   VAR nVcredpresgibs          AS Num       INIT 0                                                                      // Valor do crédito presumido                                                                                                                               
+   VAR cCredPrescbs            AS Character INIT []                                                                     // Código do Crédito Presumido (ver Tabela)                                                                                                                 
+   VAR nPcredprescbs           AS Num       INIT 0                                                                      // Percentual de crédito presumido                                                                                                                          
+   VAR nVcredprescbs           AS Num       INIT 0                                                                      // Valor do crédito presumido                                                                                                                 
+   VAR nVissqn                 AS Num       INIT 0                                                                      //   
+   VAR nVServs                 AS Num       INIT 0                                                                      //   
+   VAR nVfcp                   AS Num       INIT 0                                                                      // 
 
    // Tag ISTot - Reforma tributária
    VAR nVis_t                  AS Num       INIT 0
