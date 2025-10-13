@@ -1505,7 +1505,7 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
                                  ::nVcredprescondsuscbs_t+= ::nVcredprescondsuscbs   // já acumula o valor os totais
                           ::cXml+= "</gCBSCredPres>"
                        Endif
-/*
+*/
                 ::cXml+= "</gIBSCBS>"
           ::cXml+= "</IBSCBS>"
 
