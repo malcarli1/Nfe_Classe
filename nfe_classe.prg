@@ -9,7 +9,7 @@
  *          : Maurílio Franchin Júnior                                       *
  *          : Jair Barreto                                                   *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 07.10.2025                                                     *
+ * ULT. ALT.: 13.10.2025                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 
@@ -607,9 +607,9 @@ METHOD fCria_Ide()
           Endif 
 
           If ::cFinnfe == [6]                                                                                                    // Nota de Débito
-             ::cXml+= ::XmlTag( "tpNFDebito"  , Iif(!(::tpNFDebito $ [01_02_03_04_05_06_07]), [01], Left(::tpNFDebito, 2)))        // 01=Transferência de créditos para Cooperativas; 02=Anulação de Crédito por Saídas Imunes/Isentas; 03=Débitos de notas fiscais não processadas na apuração; 04=Multa e juros; 05=Transferência de crédito de sucessão; 06=Pagamento antecipado; 07=Perda em estoque                                                      
+             ::cXml+= ::XmlTag( "tpNFDebito"  , Iif(!(::tpNFDebito $ [01_02_03_04_05_06_07_08]), [01], Left(::tpNFDebito, 2)))        // 01=Transferência de créditos para Cooperativas; 02=Anulação de Crédito por Saídas Imunes/Isentas; 03=Débitos de notas fiscais não processadas na apuração; 04=Multa e juros; 05=Transferência de crédito de sucessão; 06=Pagamento antecipado; 07=Perda em estoque                                                      
           Elseif ::cFinnfe == [5]                                                                                                // Nota de Crédito
-             ::cXml+= ::XmlTag( "tpNFCredito" , Iif(!(::tpNFCredito $ [01_02_03]), [01], Left(::tpNFCredito, 2)))                  // 01 = Multa e juros; 02 = Apropriação de crédito presumido de IBS sobre o saldo devedor na ZFM (art. 450, § 1º, LC 214/25); 03 = Retorno 
+             ::cXml+= ::XmlTag( "tpNFCredito" , Iif(!(::tpNFCredito $ [01_02_03_04_05]), [01], Left(::tpNFCredito, 2)))                  // 01 = Multa e juros; 02 = Apropriação de crédito presumido de IBS sobre o saldo devedor na ZFM (art. 450, § 1º, LC 214/25); 03 = Retorno 
           Endif 
 
           If ::cAmbiente == [2] .or. ::cModelo == [65]
@@ -1360,7 +1360,7 @@ METHOD fCria_ProdutoIs()                                                        
              ::cXml  += ::XmlTag( "CSTIS"        , Left(::cClasstribis, 3))                                                          // Utilizar tabela CÓDIGO DE CLASSIFICAÇÃO TRIBUTÁRIA DO IMPOSTO SELETIVO
              ::cXml  += ::XmlTag( "cClasstribis" , Left(::cClasstribis, 6))                                                          // Utilizar tabela CÓDIGO DE CLASSIFICAÇÃO TRIBUTÁRIA DO IMPOSTO SELETIVO
              ::cXml  += ::XmlTag( "vBCIS"        , ::nVbcis)                                                                         // Valor da Base de Cálculo do Imposto Seletivo
-             ::cXml  += ::XmlTag( "pIS"          , ::nPisis)                                                                         // Alíquota do Imposto Seletivo
+             ::cXml  += ::XmlTag( "pIS"          , ::nPisis, 4)                                                                         // Alíquota do Imposto Seletivo
              ::cXml  += ::XmlTag( "pISEspec"     , ::nPisespec, 4)                                                                   // Alíquota específica por unidade de medida apropriada
              ::cXml  += ::XmlTag( "uTrib"        , Left(::cUtrib_is, 6))                                                             // Unidade de Medida Tributável
              ::cXml  += ::XmlTag( "qTrib"        , ::nQtrib_is, 4)                                                                   // Quantidade Tributável
@@ -1483,6 +1483,7 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
                           ::cXml+= "</gTribRegular>"
                        Endif
 
+/* não usado mais aqui
                        If !Empty(::cCredPresgibs) .and. ::cCredPresgibs $ [1_2_3_4_5] .and. ::cModelo == [55]
                           ::cXml+= "<gIBSCredPres>"
                                  ::cXml                  += ::XmlTag( "cCredPres" , Left(::cCredPresgibs, 2))
@@ -1504,6 +1505,7 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
                                  ::nVcredprescondsuscbs_t+= ::nVcredprescondsuscbs   // já acumula o valor os totais
                           ::cXml+= "</gCBSCredPres>"
                        Endif
+/*
                 ::cXml+= "</gIBSCBS>"
           ::cXml+= "</IBSCBS>"
 
