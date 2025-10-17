@@ -1,6 +1,6 @@
 /*****************************************************************************
  * SISTEMA  : GERAL                                                          *
- * PROGRAMA : NFE_CLASSE.PRG   		                                     *
+ * PROGRAMA : NFE_CLASSE.PRG                                                 *
  * OBJETIVO : CLASSE PARA GERAÇÃO DE XML DE DFE'S - NFE(55) E NFCE(65)       *
  * AUTOR    : Marcelo Antonio Lázzaro Carli                                  *
  * ALTERADO : Rubens Aluotto                                                 *
@@ -9,7 +9,7 @@
  *          : Maurílio Franchin Júnior                                       *
  *          : Jair Barreto                                                   *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 13.10.2025                                                     *
+ * ULT. ALT.: 17.10.2025                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 
@@ -178,7 +178,7 @@ CLASS Malc_GeraXml
    VAR nNadicao                AS Num       INIT 0                                // Número da Adição 
    VAR nNseqadic               AS Num       INIT 0                                // Número sequencial do ítem dentro da Adição
    VAR cCfabricante            AS Character INIT []                               // Código do fabricante estrangeiro, usado nos sistemas internos de informação do emitente da NF-e 
-   VAR nVdescdi                AS Num       INIT 0                                // Valor do desconto do item da DI – Adição
+   VAR nVdescdi                AS Num       INIT 0                                // Valor do desconto do item da DI ? Adição
    VAR cNdraw                  AS Character INIT []                               // Número do ato concessório de Drawback (O número do Ato Concessório de Suspensão deve ser preenchido com 11 dígitos (AAAANNNNNND)
    VAR nNre                    AS Num       INIT 0                                // Número do Registro de Exportação
    VAR cChnfe                  AS Character INIT []                               // Chave de Acesso da NF-e recebida para exportação NF-e recebida com fim específico de exportação. No caso de operação com CFOP 3.503, informar a chave de acesso da NF-e que efetivou a exportação 
@@ -568,76 +568,76 @@ Return (::cId:= cKey + ::CalculaDigito(cKey, [11]))
 * ------------> Metodo para gerar a tag de identificação da NFe <------------- *
 METHOD fCria_Ide()
    ::cXml+= "<ide>"                                                                                                              // Início da TAG (ide)
-          ::cXml+= ::XmlTag( "cUF"    , Left(::cUf, 2))                                                                            // UF do Emitente no caso SP = 35
-          ::cXml+= ::XmlTag( "cNF"    , Padl(Alltrim(::cNrdoc), 8, [0]))                                                           // Controle da Nota ou número do pedido
-          ::cXml+= ::XmlTag( "natOp"  , Left(::fRetiraAcento(::cNatop), 60))                                                         // Natureza da Operação
-          ::cXml+= ::XmlTag( "mod"    , Iif(!(::cModelo $ [55_65]), [55], Left(::cModelo, 2)))                                     // Modelo do Documento 55 - Nfe ou 65 Nfce
-          ::cXml+= ::XmlTag( "serie"  , Iif(Empty(::cSerie), [1], Left(::cSerie, 3)))                                              // Série 
-          ::cXml+= ::XmlTag( "nNF"    , Left(::cNf, 9))                                                                            // Número da Nota Fiscal
-          ::cXml+= ::XmlTag( "dhEmi"  , ::DateTimeXml(::dDataE, ::cTimeE))                                                           // Data Emissão Formato yyyy-mm-dd
+          ::cXml+= ::XmlTag( "cUF"    , Left(::cUf, 2))                                                                          // UF do Emitente no caso SP = 35
+          ::cXml+= ::XmlTag( "cNF"    , Padl(Alltrim(::cNrdoc), 8, [0]))                                                         // Controle da Nota ou número do pedido
+          ::cXml+= ::XmlTag( "natOp"  , Left(::fRetiraAcento(::cNatop), 60))                                                     // Natureza da Operação
+          ::cXml+= ::XmlTag( "mod"    , Iif(!(::cModelo $ [55_65]), [55], Left(::cModelo, 2)))                                   // Modelo do Documento 55 - Nfe ou 65 Nfce
+          ::cXml+= ::XmlTag( "serie"  , Iif(Empty(::cSerie), [1], Left(::cSerie, 3)))                                            // Série 
+          ::cXml+= ::XmlTag( "nNF"    , Left(::cNf, 9))                                                                          // Número da Nota Fiscal
+          ::cXml+= ::XmlTag( "dhEmi"  , ::DateTimeXml(::dDataE, ::cTimeE))                                                       // Data Emissão Formato yyyy-mm-dd
 
           If !Empty(::dDataS)
              If ::cModelo # [65]
-                ::cXml+= ::XmlTag( "dhSaiEnt" , ::DateTimeXml(::dDataS, ::cTimeS))                                                   // Data da Saída da mercadoria
+                ::cXml+= ::XmlTag( "dhSaiEnt" , ::DateTimeXml(::dDataS, ::cTimeS))                                                // Data da Saída da mercadoria
              Endif 
           Endif  
  
-          ::cXml+= ::XmlTag( "tpNF"     , Iif(!(::cTpnf $ [0_1]), [0], Left(::cTpnf, 1)))                                          // Tipo de Emissão da NF  0 - Entrada, 1 - Saída, 2 - Saída-Devolução, 3 - Saída-Garantia
-          ::cXml+= ::XmlTag( "idDest"   , Iif(!(::cIdest $ [1_2_3]), [1], Left(::cIdest, 1)))                                      // Identificador de Local de destino da operação (1 - Interna, 2 - Interestadual, 3 - Exterior)
-          ::cXml+= ::XmlTag( "cMunFG"   , Left(::cMunfg, 7))                                                                       // IBGE do Emitente
+          ::cXml+= ::XmlTag( "tpNF"     , Iif(!(::cTpnf $ [0_1]), [0], Left(::cTpnf, 1)))                                        // Tipo de Emissão da NF  0 - Entrada, 1 - Saída, 2 - Saída-Devolução, 3 - Saída-Garantia
+          ::cXml+= ::XmlTag( "idDest"   , Iif(!(::cIdest $ [1_2_3]), [1], Left(::cIdest, 1)))                                    // Identificador de Local de destino da operação (1 - Interna, 2 - Interestadual, 3 - Exterior)
+          ::cXml+= ::XmlTag( "cMunFG"   , Left(::cMunfg, 7))                                                                     // IBGE do Emitente
 
           If ::cIndpres == [5]                                                                                                   
-             ::cXml+= ::XmlTag( "cMunFGIBS", Left(::cMunfg, 7))                                                                    // Informar o município de ocorrência do fato gerador do fato gerador do IBS / CBS. Campo preenchido somente quando “indPres = 5 (Operação presencial, fora do estabelecimento)”, e não tiver endereço do destinatário (Grupo: E05) ou Local de entrega (Grupo: G01).
+             ::cXml+= ::XmlTag( "cMunFGIBS", Left(::cMunfg, 7))                                                                  // Informar o município de ocorrência do fato gerador do fato gerador do IBS / CBS. Campo preenchido somente quando ?indPres = 5 (Operação presencial, fora do estabelecimento)?, e não tiver endereço do destinatário (Grupo: E05) ou Local de entrega (Grupo: G01).
           Endif 
 
           If ::cModelo == [65]
              ::cXml+= ::XmlTag( "tpImp" , Iif(!(::cTpimp $ [4_5]), [4], Left(::cTpimp, 1))) 
           Elseif ::cModelo == [55]
-             ::cXml+= ::XmlTag( "tpImp" , Iif(!(::cTpimp $ [0_1_2_3]), [1], Left(::cTpimp, 1)))                                    // Tipo de Impressão 0 - Sem geração de DANFE; 1 - DANFE normal, Retrato; 2 - DANFE normal, Paisagem; 3 - DANFE Simplificado; 4 - DANFE NFC-e; 5 - DANFE NFC-e em mensagem eletrônica
+             ::cXml+= ::XmlTag( "tpImp" , Iif(!(::cTpimp $ [0_1_2_3]), [1], Left(::cTpimp, 1)))                                  // Tipo de Impressão 0 - Sem geração de DANFE; 1 - DANFE normal, Retrato; 2 - DANFE normal, Paisagem; 3 - DANFE Simplificado; 4 - DANFE NFC-e; 5 - DANFE NFC-e em mensagem eletrônica
           Endif 
 
-          ::cXml+= ::XmlTag( "tpEmis"   , Iif(!(::cTpemis $ [1_2_3_4_5_6_7_9]), [1], Left(::cTpemis, 1)))                          // 1=Emissão normal (não em contingência); 2=Contingência FS-IA, com impressão do DANFE em Formulário de Segurança - Impressor Autônomo; 3=Contingência SCAN (Sistema de Contingência do Ambiente Nacional); *Desativado * NT 2015/002 4=Contingência EPEC (Evento Prévio da Emissão em Contingência); 5=Contingência FS-DA, com impressão do DANFE em Formulário de Segurança - Documento Auxiliar; 6=Contingência SVC-AN (SEFAZ Virtual de Contingência do AN); 7=Contingência SVC-RS (SEFAZ Virtual de Contingência do RS); 9=Contingência off-line da NFC-e;
-          ::cXml+= ::XmlTag( "cDV"      , Right(::cId, 1))                                                                         // Dígito da Chave de Acesso
-          ::cXml+= ::XmlTag( "tpAmb"    , Iif(Empty(::cAmbiente), [2], Left(::cAmbiente, 1)))                                      // Identificação do Ambiente  1 - Produção,  2 - Homologação
+          ::cXml+= ::XmlTag( "tpEmis"   , Iif(!(::cTpemis $ [1_2_3_4_5_6_7_9]), [1], Left(::cTpemis, 1)))                        // 1=Emissão normal (não em contingência); 2=Contingência FS-IA, com impressão do DANFE em Formulário de Segurança - Impressor Autônomo; 3=Contingência SCAN (Sistema de Contingência do Ambiente Nacional); *Desativado * NT 2015/002 4=Contingência EPEC (Evento Prévio da Emissão em Contingência); 5=Contingência FS-DA, com impressão do DANFE em Formulário de Segurança - Documento Auxiliar; 6=Contingência SVC-AN (SEFAZ Virtual de Contingência do AN); 7=Contingência SVC-RS (SEFAZ Virtual de Contingência do RS); 9=Contingência off-line da NFC-e;
+          ::cXml+= ::XmlTag( "cDV"      , Right(::cId, 1))                                                                       // Dígito da Chave de Acesso
+          ::cXml+= ::XmlTag( "tpAmb"    , Iif(Empty(::cAmbiente), [2], Left(::cAmbiente, 1)))                                    // Identificação do Ambiente  1 - Produção,  2 - Homologação
 
           If ::cModelo == [65]
-             ::cXml+= ::XmlTag( "finNFe", [1])                                                                                     // 1 - NF-e normal; 2 - NF-e complementar; 3 - NF-e de ajuste; 4 - Devolução de mercadoria; 5 - Nota de crédito; 6 - Nota de débito
+             ::cXml+= ::XmlTag( "finNFe", [1])                                                                                   // 1 - NF-e normal; 2 - NF-e complementar; 3 - NF-e de ajuste; 4 - Devolução de mercadoria; 5 - Nota de crédito; 6 - Nota de débito
           Elseif ::cModelo == [55]
-             ::cXml+= ::XmlTag( "finNFe", Iif(!(::cFinnfe $ [1_2_3_4_5_6]), [1], Left(::cFinnfe, 1)))                              // 1 - NF-e normal; 2 - NF-e complementar; 3 - NF-e de ajuste; 4 - Devolução de mercadoria; 5 - Nota de crédito; 6 - Nota de débito
+             ::cXml+= ::XmlTag( "finNFe", Iif(!(::cFinnfe $ [1_2_3_4_5_6]), [1], Left(::cFinnfe, 1)))                            // 1 - NF-e normal; 2 - NF-e complementar; 3 - NF-e de ajuste; 4 - Devolução de mercadoria; 5 - Nota de crédito; 6 - Nota de débito
           Endif 
 
           If ::cFinnfe == [6]                                                                                                    // Nota de Débito
-             ::cXml+= ::XmlTag( "tpNFDebito"  , Iif(!(::tpNFDebito $ [01_02_03_04_05_06_07_08]), [01], Left(::tpNFDebito, 2)))        // 01=Transferência de créditos para Cooperativas; 02=Anulação de Crédito por Saídas Imunes/Isentas; 03=Débitos de notas fiscais não processadas na apuração; 04=Multa e juros; 05=Transferência de crédito de sucessão; 06=Pagamento antecipado; 07=Perda em estoque                                                      
+             ::cXml+= ::XmlTag( "tpNFDebito"  , Iif(!(::tpNFDebito $ [01_02_03_04_05_06_07]), [01], Left(::tpNFDebito, 2)))      // 01=Transferência de créditos para Cooperativas; 02=Anulação de Crédito por Saídas Imunes/Isentas; 03=Débitos de notas fiscais não processadas na apuração; 04=Multa e juros; 05=Transferência de crédito de sucessão; 06=Pagamento antecipado; 07=Perda em estoque                                                      
           Elseif ::cFinnfe == [5]                                                                                                // Nota de Crédito
-             ::cXml+= ::XmlTag( "tpNFCredito" , Iif(!(::tpNFCredito $ [01_02_03_04_05]), [01], Left(::tpNFCredito, 2)))                  // 01 = Multa e juros; 02 = Apropriação de crédito presumido de IBS sobre o saldo devedor na ZFM (art. 450, § 1º, LC 214/25); 03 = Retorno 
+             ::cXml+= ::XmlTag( "tpNFCredito" , Iif(!(::tpNFCredito $ [01_02_03]), [01], Left(::tpNFCredito, 2)))                // 01 = Multa e juros; 02 = Apropriação de crédito presumido de IBS sobre o saldo devedor na ZFM (art. 450, § 1º, LC 214/25); 03 = Retorno 
           Endif 
 
           If ::cAmbiente == [2] .or. ::cModelo == [65]
-             ::cXml+= ::XmlTag( "indFinal" , [1])                                                                                  // Indica operação com consumidor final (0 - Não ; 1 - Consumidor Final)
+             ::cXml+= ::XmlTag( "indFinal" , [1])                                                                                // Indica operação com consumidor final (0 - Não ; 1 - Consumidor Final)
           Else
-             ::cXml+= ::XmlTag( "indFinal" , Iif(!(::cIndfinal $ [0_1]), [0], Left(::cIndfinal, 1)))                               // Indica operação com consumidor final (0 - Não ; 1 - Consumidor Final)
+             ::cXml+= ::XmlTag( "indFinal" , Iif(!(::cIndfinal $ [0_1]), [0], Left(::cIndfinal, 1)))                             // Indica operação com consumidor final (0 - Não ; 1 - Consumidor Final)
           Endif 
 
-          ::cXml+= ::XmlTag( "indPres"  , Iif(!(::cIndpres $ [0_1_2_3_4_5_9]), [0], Left(::cIndpres, 1)))                          // Indicador de Presença do comprador no estabelecimento comercial no momento da operação.
+          ::cXml+= ::XmlTag( "indPres"  , Iif(!(::cIndpres $ [0_1_2_3_4_5_9]), [0], Left(::cIndpres, 1)))                        // Indicador de Presença do comprador no estabelecimento comercial no momento da operação.
                                                                                                                                  // 1 - Operação presencial;
                                                                                                                                  // 2 - Não presencial, internet;
                                                                                                                                  // 3 - Não presencial, tele-atendimento;
                                                                                                                                  // 4 - NFC-e entrega em domicílio;
                                                                                                                                  // 5 - Operação presencial, fora do estabelecimento; (incluído NT2016.002)
                                                                                                                                  // 9 - Não presencial, outros.
-          If !(::cIndpres $ [0_1_5])                                                                                             // Se Informado indicativo de presença, tag: indPres, DIFERENTE de 2, 3, 4 ou 9 – Proibido o preenchimento do campo Indicativo do Intermediador (tag: indIntermed)
-             ::cXml+= ::XmlTag( "indIntermed" , Iif(!(::cIndintermed $ [0_1]), [0], Left(::cIndintermed, 1)))                      // Indicador de intermediador/marketplace, 0 - Operação sem intermediador (em site ou plataforma própria), 1 - Operação em site ou plataforma de terceiros (intermediadores/marketplace)
+          If !(::cIndpres $ [0_1_5])                                                                                             // Se Informado indicativo de presença, tag: indPres, DIFERENTE de 2, 3, 4 ou 9 ? Proibido o preenchimento do campo Indicativo do Intermediador (tag: indIntermed)
+             ::cXml+= ::XmlTag( "indIntermed" , Iif(!(::cIndintermed $ [0_1]), [0], Left(::cIndintermed, 1)))                    // Indicador de intermediador/marketplace, 0 - Operação sem intermediador (em site ou plataforma própria), 1 - Operação em site ou plataforma de terceiros (intermediadores/marketplace)
           Endif 
 
           ::cXml+= ::XmlTag( "procEmi"  , Iif(!(::cProcemi $ [0_1_2_3]), [1], Left(::cProcemi, 1)))                                // 0 - emissão de NF-e com aplicativo do contribuinte;
                                                                                                                                  // 1 - emissão de NF-e avulsa pelo Fisco;
                                                                                                                                  // 2 - emissão de NF-e avulsa, pelo contribuinte com seu certificado digital, através do site do Fisco;
                                                                                                                                  // 3 - emissão NF-e pelo contribuinte com aplicativo fornecido pelo Fisco.
-          ::cXml+= ::XmlTag( "verProc"  , Left(::cVerproc, 20))                                                                    // Informar a versão do aplicativo emissor de NF-e.
+          ::cXml+= ::XmlTag( "verProc"  , Left(::cVerproc, 20))                                                                  // Informar a versão do aplicativo emissor de NF-e.
 
           If ::cTpemis # [1]                                                                                                     // 1 - Emissão normal (não em contingência
-             ::cXml+= ::XmlTag( "dhCont" , ::DateTimeXml(::dDhcont, ::cTimeE))                                                       // Data-hora contingência       FSDA - tpEmis = 5
-             ::cXml+= ::XmlTag( "xJust"  , Left(::cXjust, 256))                                                                    // Justificativa contingência   FSDA - tpEmis = 5
+             ::cXml+= ::XmlTag( "dhCont" , ::DateTimeXml(::dDhcont, ::cTimeE))                                                   // Data-hora contingência       FSDA - tpEmis = 5
+             ::cXml+= ::XmlTag( "xJust"  , Left(::cXjust, 256))                                                                  // Justificativa contingência   FSDA - tpEmis = 5
           Endif 
 
           If ::cModelo == [55]
@@ -647,7 +647,7 @@ METHOD fCria_Ide()
 Return (Nil)
 
 * -----------------> Metodo para gerar   AS referências da NF <----------------- *
-METHOD fCria_AddNfref()                                                                                       // Marcelo Brigatti
+METHOD fCria_AddNfref()                                                                                                          // Marcelo Brigatti
    If !Empty(::cRefnfe) .and. ::cModelo == [55] .and. (::cFinnfe == [2] .or. ::cFinnfe == [4])
       If "</ide><NFref>" $ ::cXml
          ::cXml:= StrTran(::cXml, "</ide><NFref>", "<NFref>")
@@ -706,7 +706,7 @@ METHOD fCria_Emitente()
     	         ::cXml+= ::XmlTag( "xPais"   , Left(::fRetiraAcento(::cXpaise), 60))                                            // País Emitente da NF
 
                  If !Empty(::SoNumero(::cFonee))
-	                ::cXml+= ::XmlTag( "fone"    , Left(::SoNumero(::cFonee), 14))                                           // Telefone do Emitente
+	                ::cXml+= ::XmlTag( "fone"    , Left(::SoNumero(::cFonee), 14))                                               // Telefone do Emitente
                  Endif 
           ::cXml+= "</enderEmit>"
           
@@ -720,10 +720,10 @@ METHOD fCria_Emitente()
              ::cXml+= ::XmlTag( "CNAE" , Left(::SoNumero(::cCnaee), 7))                                                          // CNAE do Emitente
           Endif 
 
-          ::cXml+= ::XmlTag( "CRT" , Iif(Val(::cCrt) <= 1 .or. !(::cCrt $ [1_2_3]), [1], ::cCrt))                                // Códigos de Detalhamento do Regime e da Situação TABELA A – Código de Regime Tributário – CRT
-                                                                                                                                 // 1 – Simples Nacional
-                                                                                                                                 // 2 – Simples Nacional – excesso de sublimite da receita bruta
-                                                                                                                                 // 3 – Regime Normal NOTAS EXPLICATIVAS
+          ::cXml+= ::XmlTag( "CRT" , Iif(Val(::cCrt) <= 1 .or. !(::cCrt $ [1_2_3]), [1], ::cCrt))                                // Códigos de Detalhamento do Regime e da Situação TABELA A ? Código de Regime Tributário ? CRT
+                                                                                                                                 // 1 ? Simples Nacional
+                                                                                                                                 // 2 ? Simples Nacional ? excesso de sublimite da receita bruta
+                                                                                                                                 // 3 ? Regime Normal NOTAS EXPLICATIVAS
    ::cXml+= "</emit>"                                                                                                            // Final da TAG Emitente
 Return (Nil)
 
@@ -739,9 +739,9 @@ METHOD fCria_Destinatario()
 
       // CNPJ/CPF
       If !Empty(::cCnpjd)
-         If Len(::SoNumeroCnpj(::cCnpjd)) < 14     // Pessoa Física - CPF
+         If Len(::SoNumeroCnpj(::cCnpjd)) < 14                                                                                   // Pessoa Física - CPF
             ::cXml+= ::XmlTag("CPF", Left(::SoNumeroCnpj(::cCnpjd), 11))
-         Else                                     // Pessoa Jurídica - CNPJ
+         Else                                                                                                                    // Pessoa Jurídica - CNPJ
             ::cXml+= ::XmlTag("CNPJ", Left(::SoNumeroCnpj(::cCnpjd), 14))
          Endif
       Endif
@@ -752,9 +752,9 @@ METHOD fCria_Destinatario()
       Endif
 
       // Nome
-      If ::cAmbiente == [2]   // Homologação
+      If ::cAmbiente == [2]                                                                                                      // Homologação
          ::cXml+= ::XmlTag("xNome", "NF-E EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL")
-      Elseif !Empty(::cXnomed)   // Produção: só se tiver nome
+      Elseif !Empty(::cXnomed)                                                                                                   // Produção: só se tiver nome
          ::cXml+= ::XmlTag("xNome", Left(::fRetiraAcento(::cXnomed), 60))
       Endif
 
@@ -940,10 +940,10 @@ METHOD fCria_Produto()
                     ::cXml+= ::XmlTag( "xProd" , Left(::fRetiraAcento(::cXprod), 120))
                  Endif 
 
-                 ::cXml+= ::XmlTag( "NCM"      , Iif(Empty(::cNcm), [00], Left(::cNcm, 8)))                                        // Obrigatória informação do NCM completo (8 dígitos). Nota: Em caso de item de serviço ou item que não tenham produto (ex. transferência de crédito, crédito do ativo imobilizado, etc.), informar o valor 00 (dois zeros). (NT 2014/004)
+                 ::cXml+= ::XmlTag( "NCM"      , Iif(Empty(::cNcm), [00], Left(::cNcm, 8)))                                      // Obrigatória informação do NCM completo (8 dígitos). Nota: Em caso de item de serviço ou item que não tenham produto (ex. transferência de crédito, crédito do ativo imobilizado, etc.), informar o valor 00 (dois zeros). (NT 2014/004)
 
         	 If Len(::cNcm) > 8
-        	    ::cXml+= ::XmlTag( "EXTIPI" , [0] + Right(::cNcm, 2))                                                              // Excessão de IPI 
+        	    ::cXml+= ::XmlTag( "EXTIPI" , [0] + Right(::cNcm, 2))                                                            // Excessão de IPI 
         	 Endif    
 
                  If !Empty(::cCest)
@@ -955,7 +955,7 @@ METHOD fCria_Produto()
                  ::cXml    += ::XmlTag( "qCom"  , ::nQcom, 4)
                  ::cXml    += ::XmlTag( "vUnCom", ::nVuncom, 10)
                  ::cXml    += ::XmlTag( "vProd" , ::nVprod:= Round(::nQcom * ::nVuncom, 2))
-                 ::nVprod_t+= ::nVprod      // já acumula o valor dos produtos para os totais
+                 ::nVprod_t+= ::nVprod                                                                                           // já acumula o valor dos produtos para os totais
 
 		 If !Empty(::cEantrib)
                     ::cXml+= ::XmlTag( "cEANTrib" , Left(::cEantrib, 14))
@@ -970,32 +970,32 @@ METHOD fCria_Produto()
                  If !Empty(::nVfrete)
                     ::cXml += ::XmlTag( "vFrete", ::nVfrete)
                  Endif 
-                 ::nVFrete_t+= ::nVfrete // já acumula o valor dos fretes para os totais
+                 ::nVFrete_t+= ::nVfrete                                                                                         // já acumula o valor dos fretes para os totais
 
                  If !Empty(::nVseg)
                     ::cXml+= ::XmlTag( "vSeg"  , ::nVseg)
                  Endif 
-                 ::nVseg_t+= ::nVseg    // já acumula o valor dos seguros para os totais
+                 ::nVseg_t+= ::nVseg                                                                                             // já acumula o valor dos seguros para os totais
 
                  If !Empty(::nVdesc)
                     ::cXml += ::XmlTag( "vDesc" , ::nVdesc)
                  Endif 
-                 ::nVDesc_t+= ::nVdesc  // já acumula o valor dos descontos para os totais
+                 ::nVDesc_t+= ::nVdesc                                                                                           // já acumula o valor dos descontos para os totais
 
                  If !Empty(::nVoutro)
                     ::cXml  += ::XmlTag( "vOutro" , ::nVoutro)
                  Endif 
-                 ::nVOutro_t+= ::nVoutro // já acumula o valor dos descontos para os totais
+                 ::nVOutro_t+= ::nVoutro                                                                                         // já acumula o valor dos descontos para os totais
  
-                 ::cXml+= ::XmlTag( "indTot", Iif(!(::cIndtot $ [0_1]), [0], Left(::cIndtot, 1)))                                  // Indica se valor do Item (vProd) entra no valor total da NF-e (vProd). 0=Valor do item (vProd) não compõe o valor total da NF-e 1=Valor do item (vProd) compõe o valor total da NF-e (vProd) (v2.0)
+                 ::cXml+= ::XmlTag( "indTot", Iif(!(::cIndtot $ [0_1]), [0], Left(::cIndtot, 1)))                                // Indica se valor do Item (vProd) entra no valor total da NF-e (vProd). 0=Valor do item (vProd) não compõe o valor total da NF-e 1=Valor do item (vProd) compõe o valor total da NF-e (vProd) (v2.0)
 
                  If !Empty(::cXped)                                                                                              // Marcelo Brigatti 
-                    ::cXml+= ::XmlTag( "xPed"      , Left(::cXped, 15))                                                            // número do pedido de compra
-                    ::cXml+= ::XmlTag( "nItemPed"  , ::SoNumero(::nNitemped), 6)                                                     // número do ítem do pedido de compra 
+                    ::cXml+= ::XmlTag( "xPed"      , Left(::cXped, 15))                                                          // número do pedido de compra
+                    ::cXml+= ::XmlTag( "nItemPed"  , ::SoNumero(::nNitemped), 6)                                                 // número do ítem do pedido de compra 
                  Endif   
 
                  If !Empty(::cNfci)                
-                    ::cXml+= ::XmlTag( "nFCI"      , Left(::cNfci, 36))                                                            // Informação relacionada com a Resolução 13/2012 do Senado Federal. Formato: Algarismos, letras maiúsculas de "A" a "F" e o caractere hífen. Exemplo: B01F70AF-10BF-4B1F-848C-65FF57F616FE
+                    ::cXml+= ::XmlTag( "nFCI"      , Left(::cNfci, 36))                                                          // Informação relacionada com a Resolução 13/2012 do Senado Federal. Formato: Algarismos, letras maiúsculas de "A" a "F" e o caractere hífen. Exemplo: B01F70AF-10BF-4B1F-848C-65FF57F616FE
                  Endif   
 
                  ::fCria_ProdCombustivel()                                                                                       // somente 1 vez correto aqui 1-1
@@ -1011,7 +1011,7 @@ METHOD fCria_Produto()
           ::cXml+= "<imposto>"                                                                                                   // BLOCO M - IMPOSTOS
                  If ::nVtottrib > 0 .and. SubStr(::cCfOp, 2, 3) # [010]                                                          // lei transparência
                     ::cXml      += ::XmlTag("vTotTrib", ::nVtottrib)
-                    ::nVtottribt+= ::nVtottrib   // já acumula o valor dos tributos para os totais
+                    ::nVtottribt+= ::nVtottrib                                                                                   // já acumula o valor dos tributos para os totais
                  Endif 
 
                  ::fCria_ProdutoIcms()
@@ -1037,7 +1037,7 @@ METHOD fCria_ProdVeiculo()  // Grupo JA. Detalhamento Específico de Veículos nov
    If !Empty(::cChassi)
       ::cXml+= "<veicProd>"
              ::cXml+= ::XmlTag( "tpOp"         , Iif(!(::cTpOp $ [0_1_2_3]), [0], Left(::cTpOp, 1)))                                                              // 1=Venda concessionária, 2=Faturamento direto para consumidor final 3=Venda direta para grandes consumidores (frotista, governo, ...) 0=Outros
-             ::cXml+= ::XmlTag( "chassi"       , Left(::SoNumero(::cChassi), 17))                                                                                   // Chassi do veículo - VIN (código-identificação-veículo)
+             ::cXml+= ::XmlTag( "chassi"       , Left(::SoNumero(::cChassi), 17))                                                                                 // Chassi do veículo - VIN (código-identificação-veículo)
              ::cXml+= ::XmlTag( "cCor"         , Left(::cCor, 4))                                                                                                 // Cor - Código de cada montadora
              ::cXml+= ::XmlTag( "xCor"         , Left(::cXcor, 40))                                                                                               // Descrição da Cor 
              ::cXml+= ::XmlTag( "pot"          , Left(::cPot, 4))                                                                                                 // Potência Motor (CV)             
@@ -1072,10 +1072,10 @@ METHOD fCria_ProdArmamento()  // Tag arma - Grupo L. Detalhamento Específico de 
          cTexto:= fRemoveDet(::cXml, ::nItem)
 
          cTexto1+= "<arma>"
-                cTexto1+= ::XmlTag( "tpArma" , Iif(!(::cTparma $ [0_1]), [0], Left(::cTparma, 1)))                                 // Indicador do tipo de arma de fogo 0=Uso permitido; 1=Uso restrito
-                cTexto1+= ::XmlTag( "nSerie" , Left(::cNserie_a, 15))                                                              // Número de série da arma
-                cTexto1+= ::XmlTag( "nCano"  , Left(::cNcano, 15))                                                                 // Número de série do cano
-                cTexto1+= ::XmlTag( "descr"  , Left(::fRetiraAcento(::cDescr_a), 256))                                               // Descrição completa da arma, compreendendo: calibre, marca, capacidade, tipo de funcionamento, comprimento e demais elementos que permitam a sua perfeita identificação.
+                cTexto1+= ::XmlTag( "tpArma" , Iif(!(::cTparma $ [0_1]), [0], Left(::cTparma, 1)))                               // Indicador do tipo de arma de fogo 0=Uso permitido; 1=Uso restrito
+                cTexto1+= ::XmlTag( "nSerie" , Left(::cNserie_a, 15))                                                            // Número de série da arma
+                cTexto1+= ::XmlTag( "nCano"  , Left(::cNcano, 15))                                                               // Número de série do cano
+                cTexto1+= ::XmlTag( "descr"  , Left(::fRetiraAcento(::cDescr_a), 256))                                           // Descrição completa da arma, compreendendo: calibre, marca, capacidade, tipo de funcionamento, comprimento e demais elementos que permitam a sua perfeita identificação.
          cTexto1+= "</arma>"
 
          cTexto := StrTran(cTexto, "</prod>", cTexto1 + "</prod>")
@@ -1103,35 +1103,35 @@ Return (cTxtXml)
 METHOD fCria_ProdMedicamento() // Grupo K. Detalhamento Específico de Medicamento e de matérias-primas farmacêuticas
    If !Empty(::nVpmc)
       ::cXml+= "<med>"
-             ::cXml+= ::XmlTag( "cProdANVISA"       , Left(::cProdanvisa, 13))                                                     // Código de Produto da ANVISA - Utilizar o número do registro ANVISA ou preencher com o literal “ISENTO”, no caso de medicamento isento de registro na ANVISA. (Incluído na NT2016.002. Atualizado na NT 2018.005)
+             ::cXml+= ::XmlTag( "cProdANVISA"       , Left(::cProdanvisa, 13))                                                   // Código de Produto da ANVISA - Utilizar o número do registro ANVISA ou preencher com o literal ?ISENTO?, no caso de medicamento isento de registro na ANVISA. (Incluído na NT2016.002. Atualizado na NT 2018.005)
 
              If !Empty(::cXmotivoisencao)
-                ::cXml+= ::XmlTag( "xMotivoIsencao" , Left(::cXmotivoisencao, 255))                                                // Motivo da isenção da ANVISA - Obs.: Para medicamento isento de registro na ANVISA, informar o número da decisão que o isenta, como por exemplo o número da Resolução da Diretoria Colegiada da ANVISA (RDC). (Criado na NT 2018.005) 
+                ::cXml+= ::XmlTag( "xMotivoIsencao" , Left(::cXmotivoisencao, 255))                                              // Motivo da isenção da ANVISA - Obs.: Para medicamento isento de registro na ANVISA, informar o número da decisão que o isenta, como por exemplo o número da Resolução da Diretoria Colegiada da ANVISA (RDC). (Criado na NT 2018.005) 
              Endif 
 
-             ::cXml+= ::XmlTag( "vPMC"              , ::nVpmc)                                                                     // Preço máximo consumidor
+             ::cXml+= ::XmlTag( "vPMC"              , ::nVpmc)                                                                   // Preço máximo consumidor
       ::cXml+= "</med>"
    Endif 
 Return (Nil)
 
 * ----------------> Metodo para gerar a tag de combustíveis <----------------- *
-METHOD fCria_ProdCombustivel()                                                                                // Marcelo de Paula, Marcelo Brigatti
+METHOD fCria_ProdCombustivel()                                                                                                   // Marcelo de Paula, Marcelo Brigatti
 
    // Número ANP para combustíveis
    If ::cCfOp $ [1662_2662_5651_5652_5653_5654_5655_5656_5657_5658_5659_5660_5661_5662_5663_5664_5665_5666_5667_6651_6652_6653_6654_6655_6656_6657_6658_6659_6660_6661_6662_6663_6664_6665_6666_6667_7651_7654_7667]
       ::cXml+= "<comb>"
-             ::cXml+= ::XmlTag( "cProdANP" , Left(::SoNumero(::cCprodanp), 9))                                                       // Código de produto da ANP
-             ::cXml+= ::XmlTag( "descANP"  , Left(::cDescanp, 95))                                                                 // Descrição do produto conforme ANP
+             ::cXml+= ::XmlTag( "cProdANP" , Left(::SoNumero(::cCprodanp), 9))                                                   // Código de produto da ANP
+             ::cXml+= ::XmlTag( "descANP"  , Left(::cDescanp, 95))                                                               // Descrição do produto conforme ANP
              If ::nQtemp > 0
-                ::cXml+= ::XmlTag( "qTemp" , ::nQtemp, 4)                                                                          // Quantidade de combustível faturada à temperatura ambiente.
+                ::cXml+= ::XmlTag( "qTemp" , ::nQtemp, 4)                                                                        // Quantidade de combustível faturada à temperatura ambiente.
              EndIf   
              ::cXml+= ::XmlTag( "UFCons"   , Left(::cUfd, 2))
 
              If ::nQbcprod  > 0
                     ::cXml+= "<CIDE>"
-                           ::cXml+= ::XmlTag( "qBCProd"    , ::nQbcprod, 4)                                                        // Informar a BC da CIDE em quantidade
-                           ::cXml+= ::XmlTag( "vAliqProd"  , ::nValiqprod, 4)                                                      // Informar o valor da alíquota em reais da CIDE
-                           ::cXml+= ::XmlTag( "vCIDE"      , ::nVcide)                                                             // Informar o valor da CIDE
+                           ::cXml+= ::XmlTag( "qBCProd"    , ::nQbcprod, 4)                                                      // Informar a BC da CIDE em quantidade
+                           ::cXml+= ::XmlTag( "vAliqProd"  , ::nValiqprod, 4)                                                    // Informar o valor da alíquota em reais da CIDE
+                           ::cXml+= ::XmlTag( "vCIDE"      , ::nVcide)                                                           // Informar o valor da CIDE
                     ::cXml+= "</CIDE>"
              Endif 
       ::cXml+= "</comb>"
@@ -1146,162 +1146,165 @@ METHOD fCria_ProdutoIcms()
                   ::cXml+= "<ICMS00>"
                          ::cXml    += ::XmlTag( "orig"  , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
                          ::cXml    += ::XmlTag( "CST"   , SubStr(::cCsticms, 2, 2))
-                         ::cXml    += ::XmlTag( "modBC" , [3] )                                                                        // Modalidade de determinação da BC do ICMS. 0=Margem Valor Agregado (%); 1=Pauta (Valor);2=Preço Tabelado Máx. (valor); 3=Valor da operação.
+                         ::cXml    += ::XmlTag( "modBC" , Iif(!(::cModbc $ [0_1_2_3]), [0], Left(::cModbc, 1)))                  // Modalidade de determinação da BC do ICMS. 0=Margem Valor Agregado (%); 1=Pauta (Valor);2=Preço Tabelado Máx. (valor); 3=Valor da operação.
                          ::cXml    += ::XmlTag( "vBC"   , ::nVbc)
                          ::cXml    += ::XmlTag( "pICMS" , ::nPicms, 4)
                          ::cXml    += ::XmlTag( "vICMS" , ::nVicms:= Round(::nVbc * (::nPicms / 100), 2) )
-                         ::nVbc_t  += ::nVbc   // já acumula o valor da base de cálculo para os totais
-                         ::nVicms_t+= ::nVicms // já acumula o valor do icms para os totais
+                         ::nVbc_t  += ::nVbc                                                                                     // já acumula o valor da base de cálculo para os totais
+                         ::nVicms_t+= ::nVicms                                                                                   // já acumula o valor do icms para os totais
                    ::cXml+= "</ICMS00>"
              Case ::cCsticms == [010]
                    ::cXml+= "<ICMS10>"
                          ::cXml    += ::XmlTag( "orig"    , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
                          ::cXml    += ::XmlTag( "CST"     , SubStr(::cCsticms, 2, 2))
-                         ::cXml    += ::XmlTag( "modBC"   , Iif(!(::cModbc $ [0_1_2_3]), [0], Left(::cModbc, 1)))          // Modalidade de determinação da BC do ICMS. 0=Margem Valor Agregado (%); 1=Pauta (Valor);2=Preço Tabelado Máx. (valor); 3=Valor da operação.
+                         ::cXml    += ::XmlTag( "modBC"   , Iif(!(::cModbc $ [0_1_2_3]), [0], Left(::cModbc, 1)))                // Modalidade de determinação da BC do ICMS. 0=Margem Valor Agregado (%); 1=Pauta (Valor);2=Preço Tabelado Máx. (valor); 3=Valor da operação.
                          ::cXml    += ::XmlTag( "vBC"     , ::nVbc)
                          ::cXml    += ::XmlTag( "pICMS"   , ::nPicms, 4)
                          ::cXml    += ::XmlTag( "vICMS"   , ::nVicms:= Round(::nVbc * (::nPicms / 100), 2) )
-                         ::cXml    += ::XmlTag( "modBCST" , Iif(!(::cModbcst $ [0_1_2_3_4_5_6]), [3], Left(::cModbcst, 1))) // Modalidade de determinação da BC do ICMS ST. 0=Preço tabelado ou máximo sugerido, 1=Lista Negativa (valor), 2=Lista Positiva (valor);3=Lista Neutra (valor), 4=Margem Valor Agregado (%), 5=Pauta (valor), 6 = Valor da Operação (NT 2019.001)
+                         ::cXml    += ::XmlTag( "modBCST" , Iif(!(::cModbcst $ [0_1_2_3_4_5_6]), [3], Left(::cModbcst, 1)))      // Modalidade de determinação da BC do ICMS ST. 0=Preço tabelado ou máximo sugerido, 1=Lista Negativa (valor), 2=Lista Positiva (valor);3=Lista Neutra (valor), 4=Margem Valor Agregado (%), 5=Pauta (valor), 6 = Valor da Operação (NT 2019.001)
                          ::cXml    += ::XmlTag( "pMVAST"  , ::nPmvast, 4)
                          ::cXml    += ::XmlTag( "vBCST"   , ::nVbcst)
                          ::cXml    += ::XmlTag( "pICMSST" , ::nPicmst, 4)
                          ::cXml    += ::XmlTag( "vICMSST" , ::nVicmsst:= Round(::nVbcst * (::nPicmst / 100), 2) )
-                         ::nVbc_t  += ::nVbc    // já acumula o valor da base de cálculo para os totais
-                         ::nVbcst_t+= ::nVbcst  // já acumula o valor dos base de cálculo da subs. tributária para os totais
-                         ::nVicms_t+= ::nVicms  // já acumula o valor do icms para os totais
+                         ::nVbc_t  += ::nVbc                                                                                     // já acumula o valor da base de cálculo para os totais
+                         ::nVbcst_t+= ::nVbcst                                                                                   // já acumula o valor dos base de cálculo da subs. tributária para os totais
+                         ::nVicms_t+= ::nVicms                                                                                   // já acumula o valor do icms para os totais
                    ::cXml+= "</ICMS10>"
              Case ::cCsticms == [020]
                    ::cXml+= "<ICMS20>"
                          ::cXml    += ::XmlTag( "orig"   , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
                          ::cXml    += ::XmlTag( "CST"    , SubStr(::cCsticms, 2, 2))
-                         ::cXml    += ::XmlTag( "modBC"  , [3] )                                                                       // Modalidade de determinação da BC do ICMS. 0=Margem Valor Agregado (%); 1=Pauta (Valor);2=Preço Tabelado Máx. (valor); 3=Valor da operação.
+                         ::cXml    += ::XmlTag( "modBC"  , Iif(!(::cModbc $ [0_1_2_3]), [0], Left(::cModbc, 1)))                 // Modalidade de determinação da BC do ICMS. 0=Margem Valor Agregado (%); 1=Pauta (Valor);2=Preço Tabelado Máx. (valor); 3=Valor da operação.
                          ::cXml    += ::XmlTag( "pRedBC" , ::nPredbc, 4)
                          ::cXml    += ::XmlTag( "vBC"    , ::nVbc)
                          ::cXml    += ::XmlTag( "pICMS"  , ::nPicms, 4)
                          ::cXml    += ::XmlTag( "vICMS"  , ::nVicms:= Round(::nVbc * (::nPicms / 100), 2) )
-                         ::nVbc_t  += ::nVbc   // já acumula o valor da base de cálculo para os totais
-                         ::nVicms_t+= ::nVicms // já acumula o valor do icms para os totais
+                         ::nVbc_t  += ::nVbc                                                                                     // já acumula o valor da base de cálculo para os totais
+                         ::nVicms_t+= ::nVicms                                                                                   // já acumula o valor do icms para os totais
                    ::cXml+= "</ICMS20>"
              Case ::cCsticms == [030]
                    ::cXml+= "<ICMS30>"
                          ::cXml    += ::XmlTag( "orig"     , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
                          ::cXml    += ::XmlTag( "CST"      , SubStr(::cCsticms, 2, 2))
-                         ::cXml    += ::XmlTag( "modBCST"  , "3" )                                                                     // Modalidade de determinação da BC do ICMS. 0=Margem Valor Agregado (%); 1=Pauta (Valor);2=Preço Tabelado Máx. (valor); 3=Valor da operação.
+                         ::cXml    += ::XmlTag( "modBCST"  , Iif(!(::cModbcst $ [0_1_2_3_4_5_6]), [3], Left(::cModbcst, 1)))     // Modalidade de determinação da BC do ICMS ST. 0=Preço tabelado ou máximo sugerido, 1=Lista Negativa (valor), 2=Lista Positiva (valor);3=Lista Neutra (valor), 4=Margem Valor Agregado (%), 5=Pauta (valor), 6 = Valor da Operação (NT 2019.001)
                          ::cXml    += ::XmlTag( "pMVAST"   , ::nPmvast, 4)
                          ::cXml    += ::XmlTag( "pRedBCST" , ::nPredbcst, 4)
                          ::cXml    += ::XmlTag( "vBCST"    , ::nVbct)
                          ::cXml    += ::XmlTag( "pICMSST"  , ::nPicmst, 4)
                          ::cXml    += ::XmlTag( "vICMSST"  , ::nVicmsst:= Round(::nVbcst * (::nPicmst / 100), 2) )
-                         ::nVbcst_t+= ::nVbcst // já acumula o valor dos base de cálculo da subs. tributária para os totais
+                         ::nVbcst_t+= ::nVbcst                                                                                   // já acumula o valor dos base de cálculo da subs. tributária para os totais
                    ::cXml+= "</ICMS30>"
              Case ::cCsticms $ [040_041_050_141_241_140_240]
                    ::cXml+= "<ICMS40>"
-                         ::cXml+= ::XmlTag( "orig" , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
-                         ::cXml+= ::XmlTag( "CST"  , SubStr(::cCsticms, 2, 2))
+                         ::cXml    += ::XmlTag( "orig"       , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
+                         ::cXml    += ::XmlTag( "CST"        , SubStr(::cCsticms, 2, 2))
                    ::cXml+= "</ICMS40>"
              Case ::cCsticms == [051]
                    ::cXml+= "<ICMS51>"
-                         ::cXml+= ::XmlTag( "orig" , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
-                         ::cXml+= ::XmlTag( "CST"  , SubStr(::cCsticms, 2, 2))
+                         ::cXml    += ::XmlTag( "orig"       , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
+                         ::cXml    += ::XmlTag( "CST"        , SubStr(::cCsticms, 2, 2))
                    ::cXml+= "</ICMS51>"
              Case ::cCsticms == [060]
                    ::cXml+= "<ICMS60>"
-                         ::cXml+= ::XmlTag( "orig"           , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
-                         ::cXml+= ::XmlTag( "CST"            , "60")
-                         ::cXml+= ::XmlTag( "vBCSTRet"       , 0)
-                         ::cXml+= ::XmlTag( "pST"            , 0, 4)
-                         ::cXml+= ::XmlTag( "vICMSSubstituto", 0)
-                         ::cXml+= ::XmlTag( "vICMSSTRet"     , 0)
+                         ::cXml    += ::XmlTag( "orig"           , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
+                         ::cXml    += ::XmlTag( "CST"            , "60")
+                         ::cXml    += ::XmlTag( "modBC"          , Iif(!(::cModbc $ [0_1_2_3]), [0], Left(::cModbc, 1)))         // Modalidade de determinação da BC do ICMS. 0=Margem Valor Agregado (%); 1=Pauta (Valor);2=Preço Tabelado Máx. (valor); 3=Valor da operação.
+                         ::cXml    += ::XmlTag( "vBCSTRet"       , 0)
+                         ::cXml    += ::XmlTag( "pST"            , 0, 4)
+                         ::cXml    += ::XmlTag( "vICMSSubstituto", 0)
+                         ::cXml    += ::XmlTag( "vICMSSTRet"     , 0)
                    ::cXml+= "</ICMS60>"
              Case ::cCsticms == [070]
                    ::cXml+= "<ICMS70>"
                          ::cXml    += ::XmlTag( "orig"    , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
                          ::cXml    += ::XmlTag( "CST"     , SubStr(::cCsticms, 2, 2))
-                         ::cXml    += ::XmlTag( "modBCST" , "3" )                                                                      // Modalidade de determinação da BC do ICMS. 0=Margem Valor Agregado (%); 1=Pauta (Valor);2=Preço Tabelado Máx. (valor); 3=Valor da operação.
+                         ::cXml    += ::XmlTag( "modBC"   , Iif(!(::cModbc $ [0_1_2_3]), [0], Left(::cModbc, 1)))                // Modalidade de determinação da BC do ICMS. 0=Margem Valor Agregado (%); 1=Pauta (Valor);2=Preço Tabelado Máx. (valor); 3=Valor da operação.
                          ::cXml    += ::XmlTag( "pRedBC"  , ::nPredbc, 4)
                          ::cXml    += ::XmlTag( "vBC"     , ::nVbc)
                          ::cXml    += ::XmlTag( "pICMS"   , ::nPicms, 4)
                          ::cXml    += ::XmlTag( "vICMS"   , ::nVicms:= Round(::nVbc * (::nPicms / 100), 2) )
-                         ::cXml    += ::XmlTag( "modBCST" , "0")
+                         ::cXml    += ::XmlTag( "modBCST" , Iif(!(::cModbcst $ [0_1_2_3_4_5]), [3], Left(::cModbcst, 1)))        // Modalidade de determinação da BC do ICMS ST. 0=Preço tabelado ou máximo sugerido, 1=Lista Negativa (valor), 2=Lista Positiva (valor);3=Lista Neutra (valor), 4=Margem Valor Agregado (%), 5=Pauta (valor) // Só até o 5 aqui
                          ::cXml    += ::XmlTag( "pMVAST"  , ::nPmvast, 4)
                          ::cXml    += ::XmlTag( "vBCST"   , ::nVbcst)
                          ::cXml    += ::XmlTag( "pICMSST" , ::nPicmst, 4)
                          ::cXml    += ::XmlTag( "vICMSST" , ::nVicmsst:= Round(::nVbcst * (::nPicmst / 100), 2) )
                          ::cXml    += ::XmlTag( "pBCOp"   , 1, 4)
                          ::cXml    += ::XmlTag( "UFST"    , Left(::cUfd, 2))
-                         ::nVbc_t  += ::nVbc    // já acumula o valor da base de cálculo para os totais
-                         ::nVbcst_t+= ::nVbcst  // já acumula o valor dos base de cálculo da subs. tributária para os totais
-                         ::nVicms_t+= ::nVicms  // já acumula o valor do icms para os totais
+                         ::nVbc_t  += ::nVbc                                                                                     // já acumula o valor da base de cálculo para os totais
+                         ::nVbcst_t+= ::nVbcst                                                                                   // já acumula o valor dos base de cálculo da subs. tributária para os totais
+                         ::nVicms_t+= ::nVicms                                                                                   // já acumula o valor do icms para os totais
                    ::cXml+= "</ICMS70>"
              Case ::cCsticms == [090]
                    ::cXml+= "<ICMS90>"
                          ::cXml    += ::XmlTag( "orig"    , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
                          ::cXml    += ::XmlTag( "CST"     , SubStr(::cCsticms, 2, 2))
-                         ::cXml    += ::XmlTag( "modBC"   , "3" )                                                                      // Modalidade de determinação da BC do ICMS. 0=Margem Valor Agregado (%); 1=Pauta (Valor);2=Preço Tabelado Máx. (valor); 3=Valor da operação.
+                         ::cXml    += ::XmlTag( "modBC"   , Iif(!(::cModbc $ [0_1_2_3]), [0], Left(::cModbc, 1)))                // Modalidade de determinação da BC do ICMS. 0=Margem Valor Agregado (%); 1=Pauta (Valor);2=Preço Tabelado Máx. (valor); 3=Valor da operação.
                          If !Empty(::nPredbc)
                             ::cXml += ::XmlTag( "pRedBC"  , ::nPredbc, 4)
                          Endif
                          ::cXml    += ::XmlTag( "vBC"     , ::nVbc)
                          ::cXml    += ::XmlTag( "pICMS"   , ::nPicms, 4)
                          ::cXml    += ::XmlTag( "vICMS"   , ::nVicms:= Round(::nVbc * (::nPicms / 100), 2) )
-                         ::nVbc_t  += ::nVbc    // já acumula o valor da base de cálculo para os totais
-                         ::nVicms_t+= ::nVicms  // já acumula o valor do icms para os totais
+                         ::nVbc_t  += ::nVbc                                                                                     // já acumula o valor da base de cálculo para os totais
+                         ::nVicms_t+= ::nVicms                                                                                   // já acumula o valor do icms para os totais
                    ::cXml+= "</ICMS90>"
              Case ::cCsticms == [101]
                    ::cXml+= "<ICMSSN101>"
-                         ::cXml+= ::XmlTag( "orig"        , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
-                         ::cXml+= ::XmlTag( "CSOSN"       , ::cCsticms)
-                         ::cXml+= ::XmlTag( "pCredSN"     , ::nPcredsn, 4)
-                         ::cXml+= ::XmlTag( "vCredICMSSN" , ::nVcredicmssn)
+                         ::cXml    += ::XmlTag( "orig"        , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
+                         ::cXml    += ::XmlTag( "CSOSN"       , ::cCsticms)
+                         ::cXml    += ::XmlTag( "pCredSN"     , ::nPcredsn, 4)
+                         ::cXml    += ::XmlTag( "vCredICMSSN" , ::nVcredicmssn)
                    ::cXml+= "</ICMSSN101>"
              Case ::cCsticms $ [102_103_300_400]
                    ::cXml+= "<ICMSSN102>"
-                         ::cXml+= ::XmlTag( "orig"  , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
-                         ::cXml+= ::XmlTag( "CSOSN" , ::cCsticms)
+                         ::cXml    += ::XmlTag( "orig"        , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
+                         ::cXml    += ::XmlTag( "CSOSN"       , ::cCsticms)
                    ::cXml+= "</ICMSSN102>"
              Case ::cCsticms == [201]
                    ::cXml+= "<ICMSSN201>"
-                         ::cXml+= ::XmlTag( "orig"  , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
-                         ::cXml+= ::XmlTag( "CSOSN" , ::cCsticms)
+                         ::cXml    += ::XmlTag( "orig"        , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
+                         ::cXml    += ::XmlTag( "CSOSN"       , ::cCsticms)
+                         ::cXml    += ::XmlTag( "modBCST"     , Iif(!(::cModbcst $ [0_1_2_3_4_5]), [3], Left(::cModbcst, 1)))    // Modalidade de determinação da BC do ICMS ST. 0=Preço tabelado ou máximo sugerido, 1=Lista Negativa (valor), 2=Lista Positiva (valor);3=Lista Neutra (valor), 4=Margem Valor Agregado (%), 5=Pauta (valor) // Só até o 5 aqui
                    ::cXml+= "</ICMSSN201>"
              Case ::cCsticms $ [202_203]
                    ::cXml+= "<ICMSSN202>"
-                         ::cXml+= ::XmlTag( "orig"  , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
-                         ::cXml+= ::XmlTag( "CSOSN" , ::cCsticms)
+                         ::cXml    += ::XmlTag( "orig"        , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
+                         ::cXml    += ::XmlTag( "CSOSN"       , ::cCsticms)
+                         ::cXml    += ::XmlTag( "modBCST"     , Iif(!(::cModbcst $ [0_1_2_3_4_5]), [3], Left(::cModbcst, 1)))    // Modalidade de determinação da BC do ICMS ST. 0=Preço tabelado ou máximo sugerido, 1=Lista Negativa (valor), 2=Lista Positiva (valor);3=Lista Neutra (valor), 4=Margem Valor Agregado (%), 5=Pauta (valor) // Só até o 5 aqui
                    ::cXml+= "</ICMSSN202>"
              Case ::cCsticms == [500]
                    ::cXml+= "<ICMSSN500>"
-                         ::cXml+= ::XmlTag( "orig"           , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
-                         ::cXml+= ::XmlTag( "CSOSN"          , ::cCsticms)
-                         ::cXml+= ::XmlTag( "vBCSTRet"       , 0)
-                         ::cXml+= ::XmlTag( "pST"            , 0, 4)
-                         ::cXml+= ::XmlTag( "vICMSSubstituto", 0)
-                         ::cXml+= ::XmlTag( "vICMSSTRet"     , 0)
-                         ::cXml+= ::XmlTag( "pRedBCEfet"     , 0, 4)
-                         ::cXml+= ::XmlTag( "vBCEfet"        , 0)
-                         ::cXml+= ::XmlTag( "pICMSEfet"      , 0, 4)
-                         ::cXml+= ::XmlTag( "vICMSEfet"      , 0)
+                         ::cXml    += ::XmlTag( "orig"           , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
+                         ::cXml    += ::XmlTag( "CSOSN"          , ::cCsticms)
+                         ::cXml    += ::XmlTag( "vBCSTRet"       , 0)
+                         ::cXml    += ::XmlTag( "pST"            , 0, 4)
+                         ::cXml    += ::XmlTag( "vICMSSubstituto", 0)
+                         ::cXml    += ::XmlTag( "vICMSSTRet"     , 0)
+                         ::cXml    += ::XmlTag( "pRedBCEfet"     , 0, 4)
+                         ::cXml    += ::XmlTag( "vBCEfet"        , 0)
+                         ::cXml    += ::XmlTag( "pICMSEfet"      , 0, 4)
+                         ::cXml    += ::XmlTag( "vICMSEfet"      , 0)
                     ::cXml+= "</ICMSSN500>"
              Case ::cCsticms == [900]
                    ::cXml+= "<ICMSSN900>"
-                         ::cXml+= ::XmlTag( "orig"           , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
-                         ::cXml+= ::XmlTag( "CSOSN"          , Left(::cCsticms, 3))
+                         ::cXml    += ::XmlTag( "orig"           , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
+                         ::cXml    += ::XmlTag( "CSOSN"          , Left(::cCsticms, 3))
                         
                          // Verifica se tem valor do ICMS
                          If ::nVicms # 0
-                            ::cXml    += ::XmlTag( "modBC"       , Iif(!(::cModbc $ [0_1_2_3]), [0], Left(::cModbc, 1)))   // Modalidade de determinação da BC do ICMS. 0=Margem Valor Agregado (%); 1=Pauta (Valor);2=Preço Tabelado Máx. (valor); 3=Valor da operação.
+                            ::cXml    += ::XmlTag( "modBC"       , Iif(!(::cModbc $ [0_1_2_3]), [0], Left(::cModbc, 1)))         // Modalidade de determinação da BC do ICMS. 0=Margem Valor Agregado (%); 1=Pauta (Valor);2=Preço Tabelado Máx. (valor); 3=Valor da operação.
                             ::cXml    += ::XmlTag( "vBC"         , ::nVbc)
                             ::cXml    += ::XmlTag( "pICMS"       , ::nPicms, 4)
                             ::cXml    += ::XmlTag( "vICMS"       , ::nVicms:= Round(::nVbc * (::nPicms / 100), 2) )
-                            ::cXml    += ::XmlTag( "modBCST"     , Iif(!(::cModbcst $ [0_1_2_3_4_5_6]), [3], Left(::cModbcst, 1)))  // Modalidade de determinação da BC do ICMS ST. 0=Preço tabelado ou máximo sugerido, 1=Lista Negativa (valor), 2=Lista Positiva (valor);3=Lista Neutra (valor), 4=Margem Valor Agregado (%), 5=Pauta (valor), 6 = Valor da Operação (NT 2019.001)
+                            ::cXml    += ::XmlTag( "modBCST"     , Iif(!(::cModbcst $ [0_1_2_3_4_5]), [3], Left(::cModbcst, 1))) // Modalidade de determinação da BC do ICMS ST. 0=Preço tabelado ou máximo sugerido, 1=Lista Negativa (valor), 2=Lista Positiva (valor);3=Lista Neutra (valor), 4=Margem Valor Agregado (%), 5=Pauta (valor) // Só até o 5 aqui
                             ::cXml    += ::XmlTag( "vBCST"       , ::nVbcst)
                             ::cXml    += ::XmlTag( "pICMSST"     , ::nPicmst, 4)
                             ::cXml    += ::XmlTag( "vICMSST"     , ::nVicmsst:= Round(::nVbcst * (::nPicmst / 100), 2) )
                             ::cXml    += ::XmlTag( "pCredSN"     , ::nPcredsn, 4)
                             ::cXml    += ::XmlTag( "vCredICMSSN" , ::nVcredicmssn)
-                            ::nVbc_t  += ::nVbc     // já acumula o valor da base de cálculo para os totais
-                            ::nVbcst_t+= ::nVbcst   // já acumula o valor dos base de cálculo da subs. tributária para os totais
-                            ::nVicms_t+= ::nVicms   // já acumula o valor do icms para os totais
+                            ::nVbc_t  += ::nVbc                                                                                  // já acumula o valor da base de cálculo para os totais
+                            ::nVbcst_t+= ::nVbcst                                                                                // já acumula o valor dos base de cálculo da subs. tributária para os totais
+                            ::nVicms_t+= ::nVicms                                                                                // já acumula o valor do icms para os totais
                          Endif 
                    ::cXml+= "</ICMSSN900>"
           Endcase
@@ -1312,18 +1315,18 @@ Return (Nil)
 METHOD fCria_ProdutoIcms_Na()  //Grupo NA. ICMS para a UF de destino
    If !Empty(::nVbcufdest)
       ::cXml+= "<ICMSUFDest>"
-             ::cXml           += ::XmlTag( "vBCUFDest"      , ::nVbcufdest)                                                                   // Valor da BC do ICMS na UF de destino
-             ::cXml           += ::XmlTag( "vBCFCPUFDest"   , ::nVbcfcpufdest)                                                                // Valor da Base de Cálculo do FCP na UF de destino. (Incluído na NT2016.002)
-             ::cXml           += ::XmlTag( "pFCPUFDest"     , ::nPfcpufdest, 4)                                                               // Percentual adicional inserido na alíquota interna da UF de destino, relativo ao Fundo de Combate à Pobreza (FCP) naquela UF
-             ::cXml           += ::XmlTag( "pICMSUFDest"    , ::nPicmsufdest, 4)                                                              // Alíquota adotada nas operações internas na UF de destino para o produto / mercadoria. A alíquota do Fundo de Combate a Pobreza, se existente para o produto / mercadoria, deve ser informada no campo próprio (pFCPUFDest) não devendo ser somada à essa alíquota interna.
-             ::cXml           += ::XmlTag( "pICMSInter"     , ::nPicmsinter)                                                                  // Alíquota interestadual das UF envolvidas: - 4% alíquota interestadual para produtos importados; - 7% para os Estados de origem do Sul e Sudeste (exceto ES), destinado para os Estados do Norte, Nordeste, Centro- Oeste e Espírito Santo; - 12% para os demais casos.
-             ::cXml           += ::XmlTag( "pICMSInterPart" , ::nPicmsinterpart, 4)                                                           // Percentual de ICMS Interestadual para a UF de destino: - 40% em 2016; - 60% em 2017; - 80% em 2018; - 100% a partir de 2019.
-             ::cXml           += ::XmlTag( "vFCPUFDest"     , ::nVfcpufdest)                                                                  // Valor do ICMS relativo ao Fundo de Combate à Pobreza (FCP) da UF de destino. (Atualizado na NT2016.002)
-             ::cXml           += ::XmlTag( "vICMSUFDest"    , ::nVicmsufdest)                                                                 // Valor do ICMS Interestadual para a UF de destino, já considerando o valor do ICMS relativo ao Fundo de Combate à Pobreza naquela UF.
-             ::cXml           += ::XmlTag( "vICMSUFRemet"   , ::nVicmsufremet)                                                                // Valor do ICMS Interestadual para a UF do remetente. Nota: A partir de 2019, este valor será zero.
-             ::nVfcpufdest_t  += ::nVfcpufdest     // já acumula o valor para os totais
-             ::nVicmsufdest_t += ::Vicmsufdest     // já acumula o valor para os totais
-             ::nVicmsufremet_t+= ::nVicmsufremet   // já acumula o valor para os totais
+             ::cXml           += ::XmlTag( "vBCUFDest"      , ::nVbcufdest)                                                      // Valor da BC do ICMS na UF de destino
+             ::cXml           += ::XmlTag( "vBCFCPUFDest"   , ::nVbcfcpufdest)                                                   // Valor da Base de Cálculo do FCP na UF de destino. (Incluído na NT2016.002)
+             ::cXml           += ::XmlTag( "pFCPUFDest"     , ::nPfcpufdest, 4)                                                  // Percentual adicional inserido na alíquota interna da UF de destino, relativo ao Fundo de Combate à Pobreza (FCP) naquela UF
+             ::cXml           += ::XmlTag( "pICMSUFDest"    , ::nPicmsufdest, 4)                                                 // Alíquota adotada nas operações internas na UF de destino para o produto / mercadoria. A alíquota do Fundo de Combate a Pobreza, se existente para o produto / mercadoria, deve ser informada no campo próprio (pFCPUFDest) não devendo ser somada à essa alíquota interna.
+             ::cXml           += ::XmlTag( "pICMSInter"     , ::nPicmsinter)                                                     // Alíquota interestadual das UF envolvidas: - 4% alíquota interestadual para produtos importados; - 7% para os Estados de origem do Sul e Sudeste (exceto ES), destinado para os Estados do Norte, Nordeste, Centro- Oeste e Espírito Santo; - 12% para os demais casos.
+             ::cXml           += ::XmlTag( "pICMSInterPart" , ::nPicmsinterpart, 4)                                              // Percentual de ICMS Interestadual para a UF de destino: - 40% em 2016; - 60% em 2017; - 80% em 2018; - 100% a partir de 2019.
+             ::cXml           += ::XmlTag( "vFCPUFDest"     , ::nVfcpufdest)                                                     // Valor do ICMS relativo ao Fundo de Combate à Pobreza (FCP) da UF de destino. (Atualizado na NT2016.002)
+             ::cXml           += ::XmlTag( "vICMSUFDest"    , ::nVicmsufdest)                                                    // Valor do ICMS Interestadual para a UF de destino, já considerando o valor do ICMS relativo ao Fundo de Combate à Pobreza naquela UF.
+             ::cXml           += ::XmlTag( "vICMSUFRemet"   , ::nVicmsufremet)                                                   // Valor do ICMS Interestadual para a UF do remetente. Nota: A partir de 2019, este valor será zero.
+             ::nVfcpufdest_t  += ::nVfcpufdest                                                                                   // já acumula o valor para os totais
+             ::nVicmsufdest_t += ::Vicmsufdest                                                                                   // já acumula o valor para os totais
+             ::nVicmsufremet_t+= ::nVicmsufremet                                                                                 // já acumula o valor para os totais
       ::cXml+= "</ICMSUFDest>"
    Endif 
 Return (Nil)
@@ -1336,11 +1339,11 @@ METHOD fCria_ProdutoIpi()
 
              If ::cCstipi $ [00_49_50_99]
                 ::cXml+= "<IPITrib>"                                                                                             // Grupo do CST 00, 49, 50 e 99
-                       ::cXml   += ::XmlTag( "CST"  , Iif(!(::cCstipi $ [00_49_50_99]), [00], Left(::cCstipi, 2)))                    // Código da situação tributária do IPI 00=Entrada com recuperação de crédito 49=Outras entradas 50=Saída tributada 99=Outras saídas
+                       ::cXml   += ::XmlTag( "CST"  , Iif(!(::cCstipi $ [00_49_50_99]), [00], Left(::cCstipi, 2)))               // Código da situação tributária do IPI 00=Entrada com recuperação de crédito 49=Outras entradas 50=Saída tributada 99=Outras saídas
                        ::cXml   += ::XmlTag( "vBC"  , ::nVbcipi)
                        ::cXml   += ::XmlTag( "pIPI" , ::nPipi, 4)
                        ::cXml   += ::XmlTag( "vIPI" , ::nVipi:= Round(::nVbcipi * (::nPipi / 100), 2))
-                       ::nVipi_t+= ::nVipi // já acumula o valor dos produtos para os totais
+                       ::nVipi_t+= ::nVipi                                                                                       // já acumula o valor dos produtos para os totais
                 ::cXml+= "</IPITrib>"
              Endif 
 
@@ -1354,17 +1357,17 @@ METHOD fCria_ProdutoIpi()
 Return (Nil)
 
 * ------------------> Metodo para gerar a tag IS = Imposto Seletivo <--------- *
-METHOD fCria_ProdutoIs()                                                                                      // Reforma tributária
+METHOD fCria_ProdutoIs()                                                                                                         // Reforma tributária
    If !Empty(::cClasstribis)
       ::cXml+= "<IS>"
-             ::cXml  += ::XmlTag( "CSTIS"        , Left(::cClasstribis, 3))                                                          // Utilizar tabela CÓDIGO DE CLASSIFICAÇÃO TRIBUTÁRIA DO IMPOSTO SELETIVO
-             ::cXml  += ::XmlTag( "cClasstribis" , Left(::cClasstribis, 6))                                                          // Utilizar tabela CÓDIGO DE CLASSIFICAÇÃO TRIBUTÁRIA DO IMPOSTO SELETIVO
-             ::cXml  += ::XmlTag( "vBCIS"        , ::nVbcis)                                                                         // Valor da Base de Cálculo do Imposto Seletivo
-             ::cXml  += ::XmlTag( "pIS"          , ::nPisis, 4)                                                                         // Alíquota do Imposto Seletivo
-             ::cXml  += ::XmlTag( "pISEspec"     , ::nPisespec, 4)                                                                   // Alíquota específica por unidade de medida apropriada
-             ::cXml  += ::XmlTag( "uTrib"        , Left(::cUtrib_is, 6))                                                             // Unidade de Medida Tributável
-             ::cXml  += ::XmlTag( "qTrib"        , ::nQtrib_is, 4)                                                                   // Quantidade Tributável
-             ::cXml  += ::XmlTag( "vIS"          , ::nVis:= Round((::nVbcis * ::nQtrib_is) * (::nPisis / 100), 2))                            // Valor do Imposto Seletivo
+             ::cXml  += ::XmlTag( "CSTIS"        , Left(::cClasstribis, 3))                                                      // Utilizar tabela CÓDIGO DE CLASSIFICAÇÃO TRIBUTÁRIA DO IMPOSTO SELETIVO
+             ::cXml  += ::XmlTag( "cClasstribis" , Left(::cClasstribis, 6))                                                      // Utilizar tabela CÓDIGO DE CLASSIFICAÇÃO TRIBUTÁRIA DO IMPOSTO SELETIVO
+             ::cXml  += ::XmlTag( "vBCIS"        , ::nVbcis)                                                                     // Valor da Base de Cálculo do Imposto Seletivo
+             ::cXml  += ::XmlTag( "pIS"          , ::nPisis)                                                                     // Alíquota do Imposto Seletivo
+             ::cXml  += ::XmlTag( "pISEspec"     , ::nPisespec, 4)                                                               // Alíquota específica por unidade de medida apropriada
+             ::cXml  += ::XmlTag( "uTrib"        , Left(::cUtrib_is, 6))                                                         // Unidade de Medida Tributável
+             ::cXml  += ::XmlTag( "qTrib"        , ::nQtrib_is, 4)                                                               // Quantidade Tributável
+             ::cXml  += ::XmlTag( "vIS"          , ::nVis:= Round((::nVbcis * ::nQtrib_is) * (::nPisis / 100), 2))               // Valor do Imposto Seletivo
              ::nVis_t+= nVis
       ::cXml+= "</IS>"
    Endif 
@@ -1382,7 +1385,7 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
                 ::cXml+= "<gIBSCBS>"
                        ::nVbcibs:= ::nVprod + ::nVServs + ::nVFrete + ::nVSeg + ::nVOutro + ::nVii - ::nVDesc - ::nVpis - ::nVCofins - ::nVicms - ::nVicmsufdest - ::nVfcp - ::nVfcpufdest - Round(::nMonoBas * ::nMonoAliq, 2) - ::nVissqn + ::nVis
                        ::cXml+= ::XmlTag( "vBC" , ::nVbcibs)
-                       ::nVbcibscbs_t+= ::nVbcibs       // já acumula o valor os totais
+                       ::nVbcibscbs_t+= ::nVbcibs                                                                                // já acumula o valor os totais
 
                        ::cXml+= "<gIBSUF>"
                               ::cXml+= ::XmlTag( "pIBSUF" , ::nPibsuf, 4)
@@ -1391,14 +1394,14 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
                                  ::cXml+= "<gDif>"
                                         ::cXml         += ::XmlTag( "pDif" , ::nPdifgibuf, 4)
                                         ::cXml         += ::XmlTag( "vDif" , Round(::nVbcibs * ::nPibsuf * (::nPdifgibuf / 100), 2) )
-                                        ::nVdifgibsuf_t+= Round(::nVbcibs * ::nPibsuf * (::nPdifgibuf / 100), 2)  // já acumula o valor os totais
+                                        ::nVdifgibsuf_t+= Round(::nVbcibs * ::nPibsuf * (::nPdifgibuf / 100), 2)                 // já acumula o valor os totais
                                  ::cXml+= "</gDif>"
                               Endif
 
                               If ::nVdevtribgibuf # 0
                                  ::cXml+= "<gDevTrib>"
                                         ::cXml             += ::XmlTag( "vDevTrib" , ::nVdevtribgibuf)
-                                        ::nVdevtribgibsuf_t+= ::nVdevtribgibuf                          // já acumula o valor os totais
+                                        ::nVdevtribgibsuf_t+= ::nVdevtribgibuf                                                   // já acumula o valor os totais
                                  ::cXml+= "</gDevTrib>"
                               Endif
 
@@ -1418,14 +1421,14 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
                                  ::cXml+= "<gDif>"
                                         ::cXml           += ::XmlTag( "pDif"   , ::nPdifgibsmun, 4)
                                         ::cXml           += ::XmlTag( "vDif"   , Round(::nVbcibs * (::nPibsmun / 100) * (::nPdifgibsmun / 100), 2) ) 
-                                        ::nVdDifgibsmun_t+= Round(::nVbcibs * (::nPibsmun / 100) * (::nPdifgibsmun / 100), 2)  // já acumula o valor os totais
+                                        ::nVdDifgibsmun_t+= Round(::nVbcibs * (::nPibsmun / 100) * (::nPdifgibsmun / 100), 2)    // já acumula o valor os totais
                                  ::cXml+= "</gDif>"
                               Endif
 
                               If ::nVdevtribgibsmun # 0
                                  ::cXml+= "<gDevTrib>"
                                         ::cXml+= ::XmlTag( "vDevTrib"  , ::nVdevtribgibsmun)
-                                        ::nVdevtribgibsmun_t+= ::nVdevtribgibsmun                          // já acumula o valor os totais
+                                        ::nVdevtribgibsmun_t+= ::nVdevtribgibsmun                                                // já acumula o valor os totais
                                  ::cXml+= "</gDevTrib>"
                               Endif
 
@@ -1437,10 +1440,10 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
                               Endif
 
                               ::cXml+= ::XmlTag( "vIBSMun" , ::nVibsmun:= Round(::nVbcibs * ::nPibsmun, 2) )
-                              ::nVibsmungibsmun_t+= ::nVibsmun                                             // já acumula o valor os totais
+                              ::nVibsmungibsmun_t+= ::nVibsmun                                                                   // já acumula o valor os totais
                        ::cXml+= "</gIBSMun>"
                        ::cXml+= ::XmlTag( "vIBS" , ::nVibsuf + ::nVibsmun )
-                       ::nVibsufgibsuf_t+= (::nVibsuf + ::nVibsmun)                                        // já acumula o valor os totais
+                       ::nVibsufgibsuf_t+= (::nVibsuf + ::nVibsmun)                                                              // já acumula o valor os totais
 
                        ::cXml+= "<gCBS>"
                               ::cXml+= ::XmlTag( "pCBS" , ::nPcbs, 4)
@@ -1455,7 +1458,7 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
                               If ::nVdevtribgcbs # 0
                                  ::cXml+= "<gDevTrib>"
                                         ::cXml+= ::XmlTag( "vDevTrib" , ::nVdevtribgcbs)
-                                        ::nVdevtribgcbs+= ::nVdevtribgcbs                                  // já acumula o valor os totais
+                                        ::nVdevtribgcbs+= ::nVdevtribgcbs                                                        // já acumula o valor os totais
                                  ::cXml+= "</gDevTrib>"
                               Endif
 
@@ -1467,7 +1470,7 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
                               Endif
 
                               ::cXml       += ::XmlTag( "vCBS" , ::nVcbs:= Round(::nVbcibs * (::nPcbs / 100), 2) )
-                              ::nVcbsgcbs_t+= ::nVcbs                                  // já acumula o valor os totais
+                              ::nVcbsgcbs_t+= ::nVcbs                                                                            // já acumula o valor os totais
                        ::cXml+= "</gCBS>"
 
                        If ::nPaliqefetregibsuf # 0 .and. Left(::cCclasstrib, 3) == [550]
@@ -1483,15 +1486,14 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
                           ::cXml+= "</gTribRegular>"
                        Endif
 
-/* não usado mais aqui
                        If !Empty(::cCredPresgibs) .and. ::cCredPresgibs $ [1_2_3_4_5] .and. ::cModelo == [55]
                           ::cXml+= "<gIBSCredPres>"
                                  ::cXml                  += ::XmlTag( "cCredPres" , Left(::cCredPresgibs, 2))
                                  ::cXml                  += ::XmlTag( "pCredPres" , ::nPcredpresgibs, 4)
                                  ::cXml                  += ::XmlTag( "vCredPres" , ::nVcredpresgibs:= Round(::nVbcibs * ::nPcredpresgibs, 2) )
-                                 ::nVcredpresgibs_t      += ::nVcredpresgibs               // já acumula o valor os totais
+                                 ::nVcredpresgibs_t      += ::nVcredpresgibs                                                     // já acumula o valor os totais
                                  ::cXml                  += ::XmlTag( "vCredPresCondSus" , ::nVcredprescondsusibs)
-                                 ::nVcredprescondsusibs_t+= ::nVcredprescondsusibs   // já acumula o valor os totais
+                                 ::nVcredprescondsusibs_t+= ::nVcredprescondsusibs                                               // já acumula o valor os totais
                            ::cXml+= "</gIBSCredPres>"
                        Endif
 
@@ -1500,12 +1502,11 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
                                  ::cXml                  += ::XmlTag( "cCredPres" , Left(::cCredPrescbs, 2))
                                  ::cXml                  += ::XmlTag( "pCredPres" , ::nPcredprescbs, 4)
                                  ::cXml                  += ::XmlTag( "vCredPres" , Round(::nVcredprescbs * ::nPcredprescbs, 2) )
-                                 ::nVcredprescbs_t       += ::nVcredprescbs                 // já acumula o valor os totais
+                                 ::nVcredprescbs_t       += ::nVcredprescbs                                                      // já acumula o valor os totais
                                  ::cXml                  += ::XmlTag( "vCredPresCondSus" , ::nVcredprescondsuscbs)
-                                 ::nVcredprescondsuscbs_t+= ::nVcredprescondsuscbs   // já acumula o valor os totais
+                                 ::nVcredprescondsuscbs_t+= ::nVcredprescondsuscbs                                               // já acumula o valor os totais
                           ::cXml+= "</gCBSCredPres>"
                        Endif
-*/
                 ::cXml+= "</gIBSCBS>"
           ::cXml+= "</IBSCBS>"
 
@@ -1532,8 +1533,8 @@ METHOD fCria_Gibscbsmono()   // Reforma tributária
              ::cXml       += ::XmlTag( "adRemCBS"        , ::nAdremcbs, 4)
              ::cXml       += ::XmlTag( "vIBSMono"        , ::nVibsmono:= Round(nQbcmono * ::nAdremibs, 2) )
              ::cXml       += ::XmlTag( "vCBSMono"        , ::nVcbsmono:= Round(nQbcmono * ::nAdremcbs, 2))
-             ::nvIBSMono_t+= ::nVibsmono                                    // já acumula o valor para os totais
-             ::nvCBSMono_t+= ::nVcbsmono                                    // já acumula o valor para os totais
+             ::nvIBSMono_t+= ::nVibsmono                                                                                         // já acumula o valor para os totais
+             ::nvCBSMono_t+= ::nVcbsmono                                                                                         // já acumula o valor para os totais
 
              If ::cIndMonoReten == [1]
                 ::cXml            += ::XmlTag( "qBCMonoReten"    , ::nQbcmonoreten, 0)
@@ -1541,8 +1542,8 @@ METHOD fCria_Gibscbsmono()   // Reforma tributária
                 ::cXml            += ::XmlTag( "vIBSMonoReten"   , ::nIbsmonoreten:= Round(::nQbcmonoreten * ::nAdremibsreten, 2) )
                 ::cXml            += ::XmlTag( "adRemCBSReten"   , ::nAdremcbsreten, 4)
                 ::cXml            += ::XmlTag( "vCBSMonoReten"   , ::nVcbsmonoreten:= Round(::nQbcmonoreten * ::nAdremcbsreten, 2) )
-                ::nvIBSMonoReten_t+= ::nVibsmonoreten                          // já acumula o valor para os totais
-                ::nvCBSMonoReten_t+= ::nVcbsmonoreten                          // já acumula o valor para os totais
+                ::nvIBSMonoReten_t+= ::nVibsmonoreten                                                                            // já acumula o valor para os totais
+                ::nvCBSMonoReten_t+= ::nVcbsmonoreten                                                                            // já acumula o valor para os totais
              Endif
 
              If ::cIndMonoRet == [1]
@@ -1551,32 +1552,32 @@ METHOD fCria_Gibscbsmono()   // Reforma tributária
                 ::cXml          += ::XmlTag( "vIBSMonoRet"     , ::nVibsmonoret:= Round(::nQbcmonoret * ::nAdremibsret, 2) )
                 ::cXml          += ::XmlTag( "adRemCBSRet"     , ::nAdremcbsret, 4)
                 ::cXml          += ::XmlTag( "vCBSMonoRet"     , ::nVcbsmonoret:= Round(::nQbcmonoret * ::nAdremcbsret, 2) )
-                ::nvIBSMonoRet_t+= ::nVibsmonoret                              // já acumula o valor para os totais
-                ::nvCBSMonoRet_t+= ::nVcbsmonoret                              // já acumula o valor para os totais
+                ::nvIBSMonoRet_t+= ::nVibsmonoret                                                                                // já acumula o valor para os totais
+                ::nvCBSMonoRet_t+= ::nVcbsmonoret                                                                                // já acumula o valor para os totais
              Endif
 
              If ::cIndMonoDif == [1]
-                ::cXml+= ::XmlTag( "pDifIBS"         , ::nPdifibs, 4)            // Percentual do diferimento do imposto monofásico. A ser aplicado em vIBSMono.
-                ::cXml+= ::XmlTag( "vIBSMonoDif"     , ::nVibsmonodif)           // Valor do IBS monofásico diferido. A ser deduzido do valor do IBS. 
-                ::cXml+= ::XmlTag( "pDifCBS"         , ::nPdifcbs, 4)            // Percentual do diferimento do imposto monofásico. A ser aplicado em vCBSMono
-                ::cXml+= ::XmlTag( "vCBSMonoDif"     , ::nVcbsmonodif)           // Valor da CBS Monofásica diferida. A ser deduzido do valor da CBS
-                ::cXml+= ::XmlTag( "vTotIBSMonoItem" , ::nVtotibsmonoItem)       // Total de IBS Monofásico. 
-                ::cXml+= ::XmlTag( "vTotCBSMonoItem" , ::nVtotcbsmonoItem)       // Total da CBS Monofásica. 
+                ::cXml+= ::XmlTag( "pDifIBS"         , ::nPdifibs, 4)                                                            // Percentual do diferimento do imposto monofásico. A ser aplicado em vIBSMono.
+                ::cXml+= ::XmlTag( "vIBSMonoDif"     , ::nVibsmonodif)                                                           // Valor do IBS monofásico diferido. A ser deduzido do valor do IBS. 
+                ::cXml+= ::XmlTag( "pDifCBS"         , ::nPdifcbs, 4)                                                            // Percentual do diferimento do imposto monofásico. A ser aplicado em vCBSMono
+                ::cXml+= ::XmlTag( "vCBSMonoDif"     , ::nVcbsmonodif)                                                           // Valor da CBS Monofásica diferida. A ser deduzido do valor da CBS
+                ::cXml+= ::XmlTag( "vTotIBSMonoItem" , ::nVtotibsmonoItem)                                                       // Total de IBS Monofásico. 
+                ::cXml+= ::XmlTag( "vTotCBSMonoItem" , ::nVtotcbsmonoItem)                                                       // Total da CBS Monofásica. 
              Endif
       ::cXml+= "</gIBSCBSMono>"
    Endif 
 Return (Nil)
 
 * ----------------> Metodo para gerar   AS tags do PIS e COFINS <--------------- *
-METHOD fCria_ProdutoPisCofins()   // Marcelo Brigatti
+METHOD fCria_ProdutoPisCofins()                                                                                                  // Marcelo Brigatti
    If !Empty(::cCstPis)
              ::cXml+= "<PIS>"
                    ::cXml+= "<PISAliq>"
-                         ::cXml   += ::XmlTag( "CST"     , Iif(!(::cCstPis $ [01_02]), [01], Left(::cCstPis, 2)))                     // 01=Operação Tributável (base de cálculo = valor da operação alíquota normal (cumulativo/não cumulativo));  02=Operação Tributável (base de cálculo = valor da operação (alíquota diferenciada))
+                         ::cXml   += ::XmlTag( "CST"     , Iif(!(::cCstPis $ [01_02]), [01], Left(::cCstPis, 2)))                // 01=Operação Tributável (base de cálculo = valor da operação alíquota normal (cumulativo/não cumulativo));  02=Operação Tributável (base de cálculo = valor da operação (alíquota diferenciada))
                          ::cXml   += ::XmlTag( "vBC"     , ::nBcPis )                   
                          ::cXml   += ::XmlTag( "pPIS"    , ::nAlPis, 4 )                 
                          ::cXml   += ::XmlTag( "vPIS"    , ::nVpis:= Round(::nBcPis * (::nAlPis / 100), 2) ) 
-                         ::nVpis_t+= ::nVpis // já acumula o valor do PIS para os totais
+                         ::nVpis_t+= ::nVpis                                                                                     // já acumula o valor do PIS para os totais
                    ::cXml+= "</PISAliq>"
              ::cXml+= "</PIS>"
              ::cXml+= "<COFINS>"
@@ -1585,32 +1586,32 @@ METHOD fCria_ProdutoPisCofins()   // Marcelo Brigatti
                          ::cXml      += ::XmlTag( "vBC"     , ::nBcCofins )                   
                          ::cXml      += ::XmlTag( "pCOFINS" , ::nAlCofins, 4 )                
                          ::cXml      += ::XmlTag( "vCOFINS" , ::nVCofins:= Round(::nBcCofins * (::nAlCofins / 100), 2) )
-                         ::nVCofins_t+= ::nVCofins // já acumula o valor do COFINS para os totais
+                         ::nVCofins_t+= ::nVCofins                                                                               // já acumula o valor do COFINS para os totais
                    ::cXml+= "</COFINSAliq>"
              ::cXml+= "</COFINS>"
    ElseIf !Empty(::cCstPisqtd)
              ::cXml+= "<PIS>"
                    ::cXml+= "<PISQtde>"
-                         ::cXml   += ::XmlTag( "CST"       , Iif(!(::cCstPisqtd $ [03]), [03], Left(::cCstPisqtd, 2)))                // Operação Tributável (base de cálculo = quantidade vendida x alíquota por unidade de produto)
-                         ::cXml   += ::XmlTag( "qBCProd"   , ::nQcom )                                                                // Quantidade do produto vendida
+                         ::cXml   += ::XmlTag( "CST"       , Iif(!(::cCstPisqtd $ [03]), [03], Left(::cCstPisqtd, 2)))           // Operação Tributável (base de cálculo = quantidade vendida x alíquota por unidade de produto)
+                         ::cXml   += ::XmlTag( "qBCProd"   , ::nQcom )                                                           // Quantidade do produto vendida
                          ::cXml   += ::XmlTag( "vAliqProd" , ::nAlPis, 4 )                
                          ::cXml   += ::XmlTag( "vPIS"      , ::nVpis:= Round(::nQcom * (::nAlPis / 100), 2) )
-                         ::nVpis_t+= ::nVpis // já acumula o valor do PIS para os totais
+                         ::nVpis_t+= ::nVpis                                                                                     // já acumula o valor do PIS para os totais
                    ::cXml+= "</PISAQtde>"
              ::cXml+= "</PIS>"
              ::cXml+= "<COFINS>"
                    ::cXml+= "<COFINSQtde>"
                          ::cXml      += ::XmlTag( "CST"       , Iif(!(::cCstCofinsqtd $ [03]), [03], Left(::cCstCofinsqtd, 2)))
-                         ::cXml      += ::XmlTag( "qBCProd"   , ::nQcom )                                                                // Quantidade do produto vendida
+                         ::cXml      += ::XmlTag( "qBCProd"   , ::nQcom )                                                        // Quantidade do produto vendida
                          ::cXml      += ::XmlTag( "vAliqProd" , ::nAlPis, 4 )                                                                             
                          ::cXml      += ::XmlTag( "vCOFINS"   , ::nVCofins:= Round(::nQcom * (::nAlCofins / 100), 2) )
-                         ::nVCofins_t+= ::nVCofins // já acumula o valor do COFINS para os totais
+                         ::nVCofins_t+= ::nVCofins                                                                               // já acumula o valor do COFINS para os totais
                    ::cXml+= "</COFINSQtde>"
              ::cXml+= "</COFINS>"
    ElseIf !Empty(::cCstPisnt)
              ::cXml+= "<PIS>"
                    ::cXml+= "<PISNT>"
-                         ::cXml+= ::XmlTag( "CST"       , Iif(!(::cCstPisnt $ [04_05_06_07_08_09]), [04], Left(::cCstPisnt, 2)))   // Código de Situação Tributária do PIS 04=Operação Tributável (tributação monofásica (alíquota zero)); 05=Operação Tributável (Substituição Tributária); 06=Operação Tributável (alíquota zero); 07=Operação Isenta da Contribuição; 08=Operação Sem Incidência da Contribuição; 09=Operação com Suspensão da Contribuição;
+                         ::cXml+= ::XmlTag( "CST"       , Iif(!(::cCstPisnt $ [04_05_06_07_08_09]), [04], Left(::cCstPisnt, 2))) // Código de Situação Tributária do PIS 04=Operação Tributável (tributação monofásica (alíquota zero)); 05=Operação Tributável (Substituição Tributária); 06=Operação Tributável (alíquota zero); 07=Operação Isenta da Contribuição; 08=Operação Sem Incidência da Contribuição; 09=Operação com Suspensão da Contribuição;
                    ::cXml+= "</PISNT>"
              ::cXml+= "</PIS>"
              ::cXml+= "<COFINS>"
@@ -1625,7 +1626,7 @@ METHOD fCria_ProdutoPisCofins()   // Marcelo Brigatti
                          ::cXml   += ::XmlTag( "vBC"     , ::nBcPis )                   
                          ::cXml   += ::XmlTag( "pPIS"    , ::nAlPis, 4 )                 
                          ::cXml   += ::XmlTag( "vPIS"    , ::nVpis:= Round(::nBcPis * (::nAlPis / 100), 2) ) 
-                         ::nVpis_t+= ::nVpis // já acumula o valor do PIS para os totais
+                         ::nVpis_t+= ::nVpis                                                                                     // já acumula o valor do PIS para os totais
                    ::cXml+= "</PISOutr>"
              ::cXml+= "</PIS>"
              ::cXml+= "<COFINS>"
@@ -1634,7 +1635,7 @@ METHOD fCria_ProdutoPisCofins()   // Marcelo Brigatti
                          ::cXml      += ::XmlTag( "vBC"       , ::nBcCofins )                   
                          ::cXml      += ::XmlTag( "pCOFINS"   , ::nAlCofins, 4 )                
                          ::cXml      += ::XmlTag( "vCOFINS"   , ::nVCofins:= Round(::nBcCofins * (::nAlCofins / 100), 2) )
-                         ::nVCofins_t+= ::nVCofins // já acumula o valor do COFINS para os totais
+                         ::nVCofins_t+= ::nVCofins                                                                               // já acumula o valor do COFINS para os totais
                    ::cXml+= "</COFINSOutr>"
              ::cXml+= "</COFINS>"
    Endif  
@@ -1649,29 +1650,29 @@ METHOD fCria_Totais()
                  ::cXml+= ::XmlTag( "vICMSDeson"   , ::nVicmsdeson_t)
 
                  If !Empty(::nVfcpufdest_t)
-                    ::cXml+= ::XmlTag( "vFCPUFDest"  , ::nVfcpufdest_t)                                                                 // Complementa o Cálculo com a Diferença de ICMS
+                    ::cXml+= ::XmlTag( "vFCPUFDest"  , ::nVfcpufdest_t)                                                          // Complementa o Cálculo com a Diferença de ICMS
                  Endif
 
                  If !Empty(::nVicmsufdest_t)
-                    ::cXml+= ::XmlTag( "vICMSUFDest" , ::nVicmsufdest_t)                                                                // Complementa o Cálculo com a Diferença de ICMS
+                    ::cXml+= ::XmlTag( "vICMSUFDest" , ::nVicmsufdest_t)                                                         // Complementa o Cálculo com a Diferença de ICMS
                  Endif
 
                  If !Empty(::nVicmsufremet_t)
-                    ::cXml+= ::XmlTag( "vICMSUFRemet", ::nVicmsufremet_t)                                                               // Complementa o Cálculo com a Diferença de ICMS
+                    ::cXml+= ::XmlTag( "vICMSUFRemet", ::nVicmsufremet_t)                                                        // Complementa o Cálculo com a Diferença de ICMS
                  Endif
 
-                 ::cXml+= ::XmlTag( "vFCP"         , ::nVfcp_t)                                                                         // Campo referente a FCP Para versão 4.0
+                 ::cXml+= ::XmlTag( "vFCP"         , ::nVfcp_t)                                                                  // Campo referente a FCP Para versão 4.0
                  ::cXml+= ::XmlTag( "vBCST"        , ::nVbcst_t)
                  ::cXml+= ::XmlTag( "vST"          , ::nVst_t)
-                 ::cXml+= ::XmlTag( "vFCPST"       , ::nVfcpst_t)                                                                       // Campo referente a FCP Para versão 4.0
-                 ::cXml+= ::XmlTag( "vFCPSTRet"    , ::nVfcpstret_t)                                                                    // Campo referente a FCP Para versão 4.0
+                 ::cXml+= ::XmlTag( "vFCPST"       , ::nVfcpst_t)                                                                // Campo referente a FCP Para versão 4.0
+                 ::cXml+= ::XmlTag( "vFCPSTRet"    , ::nVfcpstret_t)                                                             // Campo referente a FCP Para versão 4.0
 
                  If ::nMonoBas # 0
                     ::cXml+= ::XmlTag( "qBCMonoRet"   , ::nMonoBas)
                     ::cXml+= ::XmlTag( "vICMSMonoRet" , Round(::nMonoBas * ::nMonoAliq, 2))
                  Endif 
 
-                 ::cXml+= ::XmlTag( "vProd"        , ::nVprod_t)                                                                        // If(::cFinnfe == [1], 0, ::nVprod_t))
+                 ::cXml+= ::XmlTag( "vProd"        , ::nVprod_t)                                                                 // If(::cFinnfe == [1], 0, ::nVprod_t))
                  ::cXml+= ::XmlTag( "vFrete"       , ::nVFrete_t)
                  ::cXml+= ::XmlTag( "vSeg"         , ::nVSeg_t)
                  ::cXml+= ::XmlTag( "vDesc"        , ::nVDesc_t)
@@ -1685,7 +1686,7 @@ METHOD fCria_Totais()
                  If ::nVnf == 0
                     ::cXml+= ::XmlTag( "vNF"       , ::nVnf:= ::nVprod_t - ::nVDesc_t - ::nVicmsdeson_t + ::nVst_t + ::nVfcpst_t + ::nVFrete_t + ::nVSeg_t + ::nVOutro_t + ::nVii_t + ::nVipi_t + ::nVipidevol_t)
 
-                    If ::cTpOp == [2]  // Exceção 1: Faturamento direto de veículos novos: Se informada operação de Faturamento Direto para veículos novos (tpOp = 2, id:J02): 
+                    If ::cTpOp == [2]                                                                                            // Exceção 1: Faturamento direto de veículos novos: Se informada operação de Faturamento Direto para veículos novos (tpOp = 2, id:J02): 
                        ::cXml+= ::XmlTag( "vNF"    , ::nVnf:= ::nVprod_t - ::nVDesc_t - ::nVicmsdeson_t + ::nVFrete_t + ::nVSeg_t + ::nVOutro_t + ::nVii_t + ::nVipi_t)
                     Endif
                  Else
@@ -1765,12 +1766,12 @@ Return (Nil)
 METHOD fCria_Transportadora()
    If ::cModelo # [65]
       ::cXml+= "<transp>"
-             ::cXml+= ::XmlTag( "modFrete" , Iif(!(::cModFrete $ [0_1_2_3_4_9]), [0], Left(::cModFrete, 1)))                       // Modalidade do frete 0=Contratação do Frete por conta do Remetente (CIF); 1=Contratação do Frete por conta do Destinatário (FOB); 2=Contratação do Frete por conta de Terceiros; 3=Transporte Próprio por conta do Remetente; 4=Transporte Próprio por conta do Destinatário;9=Sem Ocorrência de Transporte. (Atualizado na NT2016.002)
+             ::cXml+= ::XmlTag( "modFrete" , Iif(!(::cModFrete $ [0_1_2_3_4_9]), [0], Left(::cModFrete, 1)))                     // Modalidade do frete 0=Contratação do Frete por conta do Remetente (CIF); 1=Contratação do Frete por conta do Destinatário (FOB); 2=Contratação do Frete por conta de Terceiros; 3=Transporte Próprio por conta do Remetente; 4=Transporte Próprio por conta do Destinatário;9=Sem Ocorrência de Transporte. (Atualizado na NT2016.002)
 
              If ::cModFrete # [9]
                 ::cXml+= "<transporta>"
                        If !Empty(::cXnomet)
-                          If !Empty(::cCnpjt) .and. Len(::SoNumeroCnpj(::cCnpjt)) < 14                                             // Pessoa Física - Cpf
+                          If !Empty(::cCnpjt) .and. Len(::SoNumeroCnpj(::cCnpjt)) < 14                                           // Pessoa Física - Cpf
                              ::cXml+= ::XmlTag( "CPF"  , Left(::SoNumeroCnpj(::cCnpjt), 11))
        		          Elseif !Empty(::cCnpjt)                                                                                    // Pessoa Juridica - Cnpj
                              ::cXml+= ::XmlTag( "CNPJ" , Left(::SoNumeroCnpj(::cCnpjt), 14))
@@ -1854,14 +1855,14 @@ METHOD fCria_Cobranca()  // Grupo Y. Dados da Cobrança
       Endif 
          If !("<fat>") $ ::cXml
             ::cXml+= "<fat>"
-                   ::cXml+= ::XmlTag( "nFat"     , Left(::cNfat, 60))                                                              // Número da Fatura
-                   ::cXml+= ::XmlTag( "vOrig"    , ::nVorigp)                                                                      // Valor Original da Fatura
+                   ::cXml+= ::XmlTag( "nFat"     , Left(::cNfat, 60))                                                            // Número da Fatura
+                   ::cXml+= ::XmlTag( "vOrig"    , ::nVorigp)                                                                    // Valor Original da Fatura
          
                    If !Empty(::nVdescp)
-                      ::cXml+= ::XmlTag( "vDesc" , ::nVdescp)                                                                      // Valor do desconto
+                      ::cXml+= ::XmlTag( "vDesc" , ::nVdescp)                                                                    // Valor do desconto
                    Endif 
 
-                   ::cXml+= ::XmlTag( "vLiq"     , ::nVliqup)                                                                      // Valor Líquido da Fatura
+                   ::cXml+= ::XmlTag( "vLiq"     , ::nVliqup)                                                                    // Valor Líquido da Fatura
             ::cXml+= "</fat>"
          Endif 
          If "</fat></cobr><dup>" $ ::cXml
@@ -1870,9 +1871,9 @@ METHOD fCria_Cobranca()  // Grupo Y. Dados da Cobrança
 
          If !Empty(::nVdup) .and. ::cIndPag # [0]
              ::cXml+= "<dup>"
-                    ::cXml+= ::XmlTag( "nDup"  , Left(::cNDup, 60))                                                                // Obrigatória informação do número de parcelas com 3 algarismos, sequenciais e consecutivos. Ex.: “001”,”002”,”003”,... Observação: este padrão de preenchimento será Obrigatório somente a partir de 03/09/2018
-                    ::cXml+= ::XmlTag( "dVenc" , ::DateXml(::dDvencp))                                                               // Formato: “AAAA-MM-DD”. Obrigatória a informação da data de vencimento na ordem crescente das datas. Ex.: “2018-06-01”,”2018-07-01”, “2018-08-01”,...
-                    ::cXml+= ::XmlTag( "vDup"  , ::nVdup)                                                                          // Valor da Parcela
+                    ::cXml+= ::XmlTag( "nDup"  , Left(::cNDup, 60))                                                              // Obrigatória informação do número de parcelas com 3 algarismos, sequenciais e consecutivos. Ex.: ?001?,?002?,?003?,... Observação: este padrão de preenchimento será Obrigatório somente a partir de 03/09/2018
+                    ::cXml+= ::XmlTag( "dVenc" , ::DateXml(::dDvencp))                                                           // Formato: ?AAAA-MM-DD?. Obrigatória a informação da data de vencimento na ordem crescente das datas. Ex.: ?2018-06-01?,?2018-07-01?, ?2018-08-01?,...
+                    ::cXml+= ::XmlTag( "vDup"  , ::nVdup)                                                                        // Valor da Parcela
              ::cXml+= "</dup>"
          
              If !("</vDup></dup></cobr><dup>") $ ::cXml
@@ -1895,42 +1896,42 @@ METHOD fCria_Pagamento() // Grupo YA. Informações de Pagamento
 
    ::cXml+= "<detPag>" 
           If !(::cTpag $ [90_99])
-             ::cXml+= ::XmlTag( "indPag" , Iif(!(::cIndPag $ [0_1]), [0], Left(::cIndPag, 1)))                                     // Indicação da Forma de Pagamento 0= Pagamento à Vista 1= Pagamento à Prazo (Incluído na NT2016.002)
+             ::cXml+= ::XmlTag( "indPag" , Iif(!(::cIndPag $ [0_1]), [0], Left(::cIndPag, 1)))                                   // Indicação da Forma de Pagamento 0= Pagamento à Vista 1= Pagamento à Prazo (Incluído na NT2016.002)
           Endif     
 
           ::cXml+= ::XmlTag( "tPag"      , Iif(!(::cTpag $ [01_02_03_04_05_10_11_12_13_15_16_17_18_19_90_99]), [01], Left(::cTpag, 2)))  // Meio de pagamento 01=Dinheiro 02=Cheque 03=Cartão de Crédito 04=Cartão de Débito 05=Crédito Loja 10=Vale Alimentação 11=Vale Refeição 12=Vale Presente 13=Vale Combustível 15=Boleto Bancário 16=Depósito Bancário 17=Pagamento Instantâneo (PIX) 18=Transferência bancária, Carteira Digital 19=Programa de fidelidade, Cashback, Crédito Virtual 90= Sem pagamento 99=Outros (Atualizado na NT2016.002, NT2020.006)
 
           If ::cTpag == [99]
-             ::cXml+= ::XmlTag( "xPag" , Left(::cXpag, 60))                                                                        // Descrição do meio de pagamento. Preencher informando o meio de pagamento utilizado quando o código do meio de pagamento for informado como 99-outros.
+             ::cXml+= ::XmlTag( "xPag" , Left(::cXpag, 60))                                                                      // Descrição do meio de pagamento. Preencher informando o meio de pagamento utilizado quando o código do meio de pagamento for informado como 99-outros.
           Endif  
   
           If ::cTpag # [90]
              ::cXml+= ::XmlTag( "vPag" , ::nVpag)
           Else
-             ::cXml+= ::XmlTag( "vPag" , 0)                                                                                        // Valor do Pagamento
+             ::cXml+= ::XmlTag( "vPag" , 0)                                                                                      // Valor do Pagamento
           Endif  
 
           If ::nTpintegra # 0 // não repete 
              ::cXml+= "<card>"
-                    ::cXml+= ::XmlTag( "tpIntegra" , Iif(!(Hb_Ntos(::nTpintegra) $ [1_2]), [1], Hb_Ntos(::nTpintegra, 1)))         // 1=Pagamento integrado com o sistema de automação da empresa (Ex.: equipamento TEF, Comércio Eletrônico) | 2= Pagamento não integrado com o sistema de automação da empresa 
+                    ::cXml+= ::XmlTag( "tpIntegra" , Iif(!(Hb_Ntos(::nTpintegra) $ [1_2]), [1], Hb_Ntos(::nTpintegra, 1)))       // 1=Pagamento integrado com o sistema de automação da empresa (Ex.: equipamento TEF, Comércio Eletrônico) | 2= Pagamento não integrado com o sistema de automação da empresa 
 
                     If !Empty(::cCnpjpag)
-                       ::cXml+= ::XmlTag( "CNPJ"   , Left(::SoNumeroCnpj(::cCnpjpag), 14))                                           // Informar o CNPJ da instituição de pagamento, adquirente ou subadquirente. Caso o pagamento seja processado pelo intermediador da transação, informar o CNPJ deste (Atualizado na NT 2020.006                                                       // CNPJ do Emitente
+                       ::cXml+= ::XmlTag( "CNPJ"   , Left(::SoNumeroCnpj(::cCnpjpag), 14))                                       // Informar o CNPJ da instituição de pagamento, adquirente ou subadquirente. Caso o pagamento seja processado pelo intermediador da transação, informar o CNPJ deste (Atualizado na NT 2020.006                                                       // CNPJ do Emitente
                     Endif  
   
                     If !Empty(::cTband)  
-                       ::cXml+= ::XmlTag( "tBand"  , Iif(!(::cTband $ [01_02_03_04_05_06_07_08_09_99]), [0], Left(::cTband, 2)))   // Bandeira da operadora de cartão de crédito e/ou débito 01=Visa 02=Mastercard 03=American Express 04=Sorocred 05=Diners Club 06=Elo 07=Hipercard 08=Aura 09=Cabal 99=Outros (Atualizado na NT2016.002
+                       ::cXml+= ::XmlTag( "tBand"  , Iif(!(::cTband $ [01_02_03_04_05_06_07_08_09_99]), [0], Left(::cTband, 2))) // Bandeira da operadora de cartão de crédito e/ou débito 01=Visa 02=Mastercard 03=American Express 04=Sorocred 05=Diners Club 06=Elo 07=Hipercard 08=Aura 09=Cabal 99=Outros (Atualizado na NT2016.002
                     Endif  
 
                     If !Empty(::cAut)
-                       ::cXml+= ::XmlTag( "cAut"   , Left(::cAut, 20))                                                             // Identifica o número da autorização da transação da operação com cartão de crédito e/ou débito
+                       ::cXml+= ::XmlTag( "cAut"   , Left(::cAut, 20))                                                           // Identifica o número da autorização da transação da operação com cartão de crédito e/ou débito
                     Endif  
              ::cXml+= "</card>"
           Endif   
    ::cXml+= "</detPag>" 
 
    If !Empty(::nVtroco) // não repete
-      ::cXml+= ::XmlTag( "vTroco" , ::nVtroco)                                                                                     // Valor do troco (Incluído na NT2016.002
+      ::cXml+= ::XmlTag( "vTroco" , ::nVtroco)                                                                                   // Valor do troco (Incluído na NT2016.002
    Endif  
 
    If !("</vPag></detPag></pag><detPag>") $ ::cXml .or. !("</pag>") $ ::cXml
@@ -1956,7 +1957,7 @@ METHOD fCria_Informacoes()
                 ::cInfFisc+= "DIFAL para UF Origem R$ " + NumberXml(::nVIcmsSufRemet, 2) + hb_OsNewLine()
              Endif    
 
-             If !Empty(::nVpis_t)                                                                                                  // Destaque valor do PIS/COFINS
+             If !Empty(::nVpis_t)                                                                                                // Destaque valor do PIS/COFINS
                 ::cInfFisc+= "Valor de PIS para movimento R$ " + NumberXml(::nVpis_t, 2) + hb_OsNewLine()
                 ::cInfFisc+= "Valor de COFINS para movimento R$ " + NumberXml(::nVCofins_t, 2) + hb_OsNewLine()
              Endif 
@@ -1971,47 +1972,47 @@ METHOD fCria_Informacoes()
 
           If !Empty(AllTrim(::cInfcpl))
              ::cXml+= ::XmlTag( "infCpl" , Left(::fRetiraAcento(StrTran(::cInfcpl, hb_OsNewLine(), '; ')), 5000))
-*            ::cXml+= ::XmlTag( "infCpl" , Left(CharRem("°ºª-:\(){}[]`´’'", ::fRetiraAcento(StrTran(::cInfcpl, hb_OsNewLine(), '; '))), 5000))
+*            ::cXml+= ::XmlTag( "infCpl" , Left(CharRem("°ºª-:\(){}[]`´?'", ::fRetiraAcento(StrTran(::cInfcpl, hb_OsNewLine(), '; '))), 5000))
           Endif 
    ::cXml+= "</infAdic>"
 Return (Nil)
 
 * ----------> Metodo para gerar a tag de Declaração de Importação <----------- *
-METHOD fCria_ProdImporta()                                                                                    // Colaboração Rubens Aluotto, Marcelo Brigatti
+METHOD fCria_ProdImporta()                                                                                                       // Colaboração Rubens Aluotto, Marcelo Brigatti
    If Substr(Alltrim(::cCfop), 1, 1) == [3]
       ::cXml+= "<DI>"
-             ::cXml+= ::XmlTag( "nDI" , Left(::cNdi, 12))                                                                          // número do docto de importação DI/DSI/DA - 1-10 C  
-             ::cXml+= ::XmlTag( "dDI" , ::DateXml(::dDdi))                                                                           // Data do documento de importação - AAAA-MM-DD
-             ::cXml+= ::XmlTag( "xLocDesemb" , Left(::fRetiraAcento(::cXlocdesemb), 60))                                             // Local do Desembarque da importação  
-             ::cXml+= ::XmlTag( "UFDesemb" , Left(::cUfdesemb, 2))                                                                 // sigla da UF onde ocorreu o desembaraço aduaneiro - 2 C 
-             ::cXml+= ::XmlTag( "dDesemb" , ::DateXml(::dDdesemb))                                                                   // Data do desembaraço aduaneiro - AAAA-MM-DD
-             ::cXml+= ::XmlTag( "tpViaTransp" , Iif(!(Hb_Ntos(::nTpviatransp) $ [1_2_3_4_5_6_7]), [1], Hb_Ntos(::nTpviatransp)))   // Via de transporte internacional informada na Declaração de Importação (DI)
+             ::cXml+= ::XmlTag( "nDI" , Left(::cNdi, 12))                                                                        // número do docto de importação DI/DSI/DA - 1-10 C  
+             ::cXml+= ::XmlTag( "dDI" , ::DateXml(::dDdi))                                                                       // Data do documento de importação - AAAA-MM-DD
+             ::cXml+= ::XmlTag( "xLocDesemb" , Left(::fRetiraAcento(::cXlocdesemb), 60))                                         // Local do Desembarque da importação  
+             ::cXml+= ::XmlTag( "UFDesemb" , Left(::cUfdesemb, 2))                                                               // sigla da UF onde ocorreu o desembaraço aduaneiro - 2 C 
+             ::cXml+= ::XmlTag( "dDesemb" , ::DateXml(::dDdesemb))                                                               // Data do desembaraço aduaneiro - AAAA-MM-DD
+             ::cXml+= ::XmlTag( "tpViaTransp" , Iif(!(Hb_Ntos(::nTpviatransp) $ [1_2_3_4_5_6_7]), [1], Hb_Ntos(::nTpviatransp))) // Via de transporte internacional informada na Declaração de Importação (DI)
                                                                                                                                  // 1 - marítima, 2 - fluvial, 3 - Lacustre, 4 - aérea, 5 - postal, 6 - ferrovia, 7 - rodovia
              If ::nTpviatransp == 1
-                ::cXml+= ::XmlTag( "vAFRMM" , ::nVafrmm)                                                                           //  valor somente informar no caso do tpViaTransp == 1 ( 15,2 n )
+                ::cXml+= ::XmlTag( "vAFRMM" , ::nVafrmm)                                                                         // valor somente informar no caso do tpViaTransp == 1 ( 15,2 n )
              Endif 
 
-             ::cXml+= ::XmlTag( "tpIntermedio" , Iif(!(Hb_Ntos(::nTpintermedio) $ [1_2_3]), [1], Hb_Ntos(::nTpintermedio)))        // Forma de importação quanto a intermediação. 1 - importação por conta própria, 2 - importação por conta e ordem, 3 - importação por encomenda
+             ::cXml+= ::XmlTag( "tpIntermedio" , Iif(!(Hb_Ntos(::nTpintermedio) $ [1_2_3]), [1], Hb_Ntos(::nTpintermedio)))      // Forma de importação quanto a intermediação. 1 - importação por conta própria, 2 - importação por conta e ordem, 3 - importação por encomenda
              If !(Empty(::cCnpja)) 
-                ::cXml+= ::XmlTag( "CNPJ" , Left(::SoNumeroCnpj(::cCnpja), 14))                                                      // cnpj do adquirinte ou encomendante  </CNPJ>
+                ::cXml+= ::XmlTag( "CNPJ" , Left(::SoNumeroCnpj(::cCnpja), 14))                                                  // cnpj do adquirinte ou encomendante  </CNPJ>
              Endif 
              If ::nTpintermedio # 1 .and. ::cUfterceiro # [EX]
-                ::cXml+= ::XmlTag( "UFTerceiro" , Left(::cUfterceiro, 2))                                                          // Obrigatória a informação no caso de importação por conta e ordem ou por encomenda. Não aceita o valor "EX".
+                ::cXml+= ::XmlTag( "UFTerceiro" , Left(::cUfterceiro, 2))                                                        // Obrigatória a informação no caso de importação por conta e ordem ou por encomenda. Não aceita o valor "EX".
              Endif 
  
-             ::cXml+= ::XmlTag( "cExportador" , Left(::fRetiraAcento(::cCexportador), 60))                                           // código do exportador 1-60 c  
+             ::cXml+= ::XmlTag( "cExportador" , Left(::fRetiraAcento(::cCexportador), 60))                                       // código do exportador 1-60 c  
 
              // For i:= 1 to 100
              If !Empty(::nNadicao)
                 ::cXml+= "<adi>"    // BLOCO I
-                       ::cXml+= ::XmlTag( "nAdicao" , ::nNadicao, 0)                                                               // número da adicao 1-3
-                       ::cXml+= ::XmlTag( "nSeqAdic" , ::nNseqadic, 0)                                                             // número sequencial do ítem dentro da adição 1-3
-                       ::cXml+= ::XmlTag( "cFabricante" , Left(::cCfabricante, 60))                                                // Código do fabricante estrangeiro - 1-60 c
+                       ::cXml+= ::XmlTag( "nAdicao" , ::nNadicao, 0)                                                             // número da adicao 1-3
+                       ::cXml+= ::XmlTag( "nSeqAdic" , ::nNseqadic, 0)                                                           // número sequencial do ítem dentro da adição 1-3
+                       ::cXml+= ::XmlTag( "cFabricante" , Left(::cCfabricante, 60))                                              // Código do fabricante estrangeiro - 1-60 c
                        If ::nVdescdi > 0
-                          ::cXml+= ::XmlTag( "vDescDI" , ::nVdescdi)                                                               // Valor do desconto do ítem da DI - adição n 15,2 ( se houver )
+                          ::cXml+= ::XmlTag( "vDescDI" , ::nVdescdi)                                                             // Valor do desconto do ítem da DI - adição n 15,2 ( se houver )
                        Endif    
                        If !(Empty(::cNdraw)) 
-                          ::cXml+= ::XmlTag( "nDraw" , Left(::SoNumero(::cNdraw), 11))                                               // O número do Ato Concessório de Suspensão deve ser preenchido com 11 dígitos (AAAANNNNNND) e o número do Ato Concessório de Drawback Isenção deve ser preenchido com 9 dígitos (AANNNNNND). (Observação incluída na NT 2013/005 v. 1.10)
+                          ::cXml+= ::XmlTag( "nDraw" , Left(::SoNumero(::cNdraw), 11))                                           // O número do Ato Concessório de Suspensão deve ser preenchido com 11 dígitos (AAAANNNNNND) e o número do Ato Concessório de Drawback Isenção deve ser preenchido com 9 dígitos (AANNNNNND). (Observação incluída na NT 2013/005 v. 1.10)
                        Endif    
                 ::cXml+= "</adi>"
              Endif 
@@ -2022,13 +2023,13 @@ METHOD fCria_ProdImporta()                                                      
        // Grupo I03. Produtos e Serviços / Grupo de Exportação
        If !Empty(::cNdraw)
           ::cXml+= "<detExport>"                                                                                                 // Grupo de informações de exportação para o item
-                 ::cXml+= ::XmlTag( "nDraw" , Left(::SoNumero(::cNdraw), 11))                                                        // O número do Ato Concessório de Suspensão deve ser preenchido com 11 dígitos (AAAANNNNNND) e o número do Ato Concessório de Drawback Isenção deve ser preenchido com 9 dígitos (AANNNNNND). (Observação incluída na NT 2013/005 v. 1.10)
+                 ::cXml+= ::XmlTag( "nDraw" , Left(::SoNumero(::cNdraw), 11))                                                    // O número do Ato Concessório de Suspensão deve ser preenchido com 11 dígitos (AAAANNNNNND) e o número do Ato Concessório de Drawback Isenção deve ser preenchido com 9 dígitos (AANNNNNND). (Observação incluída na NT 2013/005 v. 1.10)
           ::cXml+= "</detExport>"    
 
           ::cXml+= "<exportInd>"                                                                                                 // Grupo sobre exportação indireta
-            ::cXml+= ::XmlTag( "nRE"     , Left(::SoNumero(::nNre), 12), 0)                                                          // Número do Registro de Exportação
-            ::cXml+= ::XmlTag( "chNFe"   , Left(::cChnfe, 44))                                                                     // Chave de Acesso da NF-e recebida para exportação NF-e recebida com fim específico de exportação. No caso de operação com CFOP 3.503, informar a chave de acesso da NF-e que efetivou a exportação 
-            ::cXml+= ::XmlTag( "qExport" , ::nQexport, 4)                                                                          // Quantidade do item realmente exportado A unidade de medida desta quantidade é a unidade de comercialização deste item. No caso de operação com CFOP 3.503, informar a quantidade de mercadoria devolvida
+            ::cXml+= ::XmlTag( "nRE"     , Left(::SoNumero(::nNre), 12), 0)                                                      // Número do Registro de Exportação
+            ::cXml+= ::XmlTag( "chNFe"   , Left(::cChnfe, 44))                                                                   // Chave de Acesso da NF-e recebida para exportação NF-e recebida com fim específico de exportação. No caso de operação com CFOP 3.503, informar a chave de acesso da NF-e que efetivou a exportação 
+            ::cXml+= ::XmlTag( "qExport" , ::nQexport, 4)                                                                        // Quantidade do item realmente exportado A unidade de medida desta quantidade é a unidade de comercialização deste item. No caso de operação com CFOP 3.503, informar a quantidade de mercadoria devolvida
           ::cXml+= "</exportInd>"
        Endif 
        // Next
@@ -2036,7 +2037,7 @@ METHOD fCria_ProdImporta()                                                      
 Return (Nil)
 
 * -----------------> Metodo para gerar a tag de Exportação <------------------ *
-METHOD fCria_ProdExporta()                                                                                    // Colaboração Rubens Aluotto - 16/06/2025
+METHOD fCria_ProdExporta()                                                                                                       // Colaboração Rubens Aluotto - 16/06/2025
    If !Empty(::cUfSaidapais) .and. Substr(::SoNumero(::cCfOp), 1, 1) == [7]
       ::cXml+= "<exporta>"
              ::cXml+= ::XmlTag( "UFSaidaPais" , Left(::cUfSaidapais, 2))
@@ -2050,10 +2051,10 @@ Return (Nil)
 METHOD fCria_Responsavel()
    If !Empty(::cRespNome) .and. !Empty(::cRespcnpj) .and. !Empty(::cRespemail)
       ::cXml+= "<infRespTec>" 
-             ::cXml+= ::XmlTag( "CNPJ"     , Left(::SoNumeroCnpj(::cRespcnpj), 14))                                                  // CNPJ do Responsável Técnico
-             ::cXml+= ::XmlTag( "xContato" , Left(::fRetiraAcento(::cRespNome), 60))                                                 // Contato do Responsável Técnico
-             ::cXml+= ::XmlTag( "email"    , Left(::fRetiraAcento(::cRespemail), 60))                                                // E-mail do Responsável Técnico
-             ::cXml+= ::XmlTag( "fone"     , Left(::fRetiraSinal(::cRespfone), 14))                                                  // Telefone do Responsável Técnico
+             ::cXml+= ::XmlTag( "CNPJ"     , Left(::SoNumeroCnpj(::cRespcnpj), 14))                                              // CNPJ do Responsável Técnico
+             ::cXml+= ::XmlTag( "xContato" , Left(::fRetiraAcento(::cRespNome), 60))                                             // Contato do Responsável Técnico
+             ::cXml+= ::XmlTag( "email"    , Left(::fRetiraAcento(::cRespemail), 60))                                            // E-mail do Responsável Técnico
+             ::cXml+= ::XmlTag( "fone"     , Left(::fRetiraSinal(::cRespfone), 14))                                              // Telefone do Responsável Técnico
       ::cXml+= "</infRespTec>" 
    Endif 
 Return (Nil)
@@ -2066,12 +2067,12 @@ METHOD fCria_ProdutoII()  // Marcelo Brigatti
             ::cXml  += ::XmlTag( "vDespAdu" , ::nVdespadu )
             ::cXml  += ::XmlTag( "vII"      , ::nVii )
             ::cXml  += ::XmlTag( "vIOF"     , ::nViof )
-            ::nVii_t+= ::nVii // já acumula o valor dos produtosii para os totais
+            ::nVii_t+= ::nVii                                                                                                    // já acumula o valor dos produtosii para os totais
       ::cXml+= "</II>"
    Endif 
 Return (Nil)
 
-* -----------> Metodo para Limpar Constantes de Imposto <--------------------- * // Jair Barreto
+* -----------> Metodo para Limpar Constantes de Imposto <--------------------- *                                                 // Jair Barreto
 METHOD LimpaPropriedadesImposto()            
    ::cOrig:= ::cCsticms:= ::cModbc:= ::cModbcst:= []
    ::nVbc:= ::nPicms:= ::nVicms:= ::nPredbc:= 0
@@ -2120,12 +2121,12 @@ Return( Nil )
 
 * ----> Metodo para Retirar Caracteres/Sinais de uma String <----------------- *
 METHOD fRetiraSinal(cStr, cEliminar)
-   hb_Default(@cEliminar, "°ºª /;-:,\.(){}[]`´’' ")
+   hb_Default(@cEliminar, "°ºª /;-:,\.(){}[]`´?' ")
 Return (CharRem(cEliminar, cStr))
 
 * -----------------------> Metodo Retira acentos de uma string <-------------- *
 METHOD fRetiraAcento(cStr)
-   Local aFrom := {[Á],[À],[Â],[Ã],[Ä],[Å],[A],[A],[A],[Æ] ,[Ç],[C],[C],[É],[È],[Ê],[Ë],[E],[E],[Í],[Ì],[Î],[Ï],[L],[L],[N],[Ñ],[Ó],[Ò],[Ô],[Õ],[Ö],[Ø],[Œ] ,[R],[R],[S],[Š],[S],[T],[Ú],[Ù],[Û],[Ü],[U],[Ý],[Ÿ],[Z],[Ž],[Z],[á],[à],[â],[ã],[ä],[å],[a],[a],[a],[æ] ,[ç],[c],[c],[é],[è],[ê],[ë],[e],[e],[í],[ì],[î],[ï],[l],[l],[n],[ñ],[ó],[ò],[ô],[õ],[ö],[ø],[œ] ,[r],[r],[s],[š],[s],[t],[ú],[ù],[û],[ü],[u],[ý],[ÿ],[z],[ž],[z],[ß] ,[&],[º] ,[ª] ,[‡],[¡],[£],[ÿ],[ ],[á],[] ,[ ],[ ],[‚],[ˆ],[“],[¢],[…],[°],[A³],[A§],[Ai],[A©],[Ao.],[’],[´]}
+   Local aFrom := {[Á],[À],[Â],[Ã],[Ä],[Å],[A],[A],[A],[Æ] ,[Ç],[C],[C],[É],[È],[Ê],[Ë],[E],[E],[Í],[Ì],[Î],[Ï],[L],[L],[N],[Ñ],[Ó],[Ò],[Ô],[Õ],[Ö],[Ø],[?] ,[R],[R],[S],[?],[S],[T],[Ú],[Ù],[Û],[Ü],[U],[Ý],[?],[Z],[?],[Z],[á],[à],[â],[ã],[ä],[å],[a],[a],[a],[æ] ,[ç],[c],[c],[é],[è],[ê],[ë],[e],[e],[í],[ì],[î],[ï],[l],[l],[n],[ñ],[ó],[ò],[ô],[õ],[ö],[ø],[?] ,[r],[r],[s],[?],[s],[t],[ú],[ù],[û],[ü],[u],[ý],[ÿ],[z],[?],[z],[ß] ,[&],[º] ,[ª] ,[?],[¡],[£],[ÿ],[ ],[á],[] ,[ ],[ ],[?],[?],[?],[¢],[?],[°],[A³],[A§],[Ai],[A©],[Ao.],[?],[´]}
    Local aTo   := {[A],[A],[A],[A],[A],[A],[A],[A],[A],[AE],[C],[C],[C],[E],[E],[E],[E],[E],[E],[I],[I],[I],[I],[L],[L],[N],[N],[O],[O],[O],[O],[O],[O],[OE],[R],[R],[S],[S],[S],[T],[U],[U],[U],[U],[U],[Y],[Y],[Z],[Z],[Z],[a],[a],[a],[a],[a],[a],[a],[a],[a],[ae],[c],[c],[c],[e],[e],[e],[e],[e],[e],[i],[i],[i],[i],[l],[l],[n],[n],[o],[o],[o],[o],[o],[o],[oe],[r],[r],[s],[s],[s],[t],[u],[u],[u],[u],[u],[y],[y],[z],[z],[z],[ss],[E],[o.],[a.],[c],[i],[u],[a],[a],[a],[E],[a],[ ],[e],[e],[o],[o],[a],[],[o],[c],[a],[e],[u],[],[]}, i
 
    hb_Default( @cStr,"" )
@@ -2320,3 +2321,5 @@ METHOD SoNumeroCnpj(cTxt)
       Endif
    Next
 Return (cSoNumeros)
+
+* ---> Fim da Alteração da função original da sefazclass - ze_miscfunc.prg <-- *
