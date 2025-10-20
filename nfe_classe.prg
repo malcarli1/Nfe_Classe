@@ -243,6 +243,10 @@ CLASS Malc_GeraXml
    VAR nPredbc                 AS Num       INIT 0
    VAR nPcredsn                AS Num       INIT 0
    VAR nVcredicmssn            AS Num       INIT 0
+   VAR nVbcstret               AS Num       INIT 0
+   VAR nPst                    AS Num       INIT 0
+   VAR nVicmssubstituto        AS Num       INIT 0
+   VAR nVicmstret             AS Num       INIT 0
 
    // Tag Grupo NA. ICMS para a UF de destino                                     // Marcelo Brigatti
    VAR nVbcufdest              AS Num       INIT 0
@@ -1204,11 +1208,12 @@ METHOD fCria_ProdutoIcms()
                 Case ::cCsticms == [060]
                      ::cXml+= "<ICMS60>"
                             ::cXml    += ::XmlTag( "CST"            , SubStr(::cCsticms, 2, 2))
-                            ::cXml    += ::XmlTag( "modBC"          , Iif(!(::cModbc $ [0_1_2_3]), [0], Left(::cModbc, 1)))         // Modalidade de determinação da BC do ICMS. 0=Margem Valor Agregado (%); 1=Pauta (Valor);2=Preço Tabelado Máx. (valor); 3=Valor da operação.
-                            ::cXml    += ::XmlTag( "vBCSTRet"       , 0)
-                            ::cXml    += ::XmlTag( "pST"            , 0, 4)
-                            ::cXml    += ::XmlTag( "vICMSSubstituto", 0)
-                            ::cXml    += ::XmlTag( "vICMSSTRet"     , 0)
+                            If ::nVbcstret # 0
+                               ::cXml    += ::XmlTag( "vBCSTRet"       , ::nVbcstret)
+                               ::cXml    += ::XmlTag( "pST"            , ::nPst, 4)
+                               ::cXml    += ::XmlTag( "vICMSSubstituto", ::nVicmssubstituto)
+                               ::cXml    += ::XmlTag( "vICMSSTRet"     , ::nVicmstret)
+                            Endif
                      ::cXml+= "</ICMS60>"
                 Case ::cCsticms == [070]
                      ::cXml+= "<ICMS70>"
