@@ -1255,31 +1255,31 @@ METHOD fCria_ProdutoIcms()
                             ::nVbc_t  += ::nVbc                                                                                  // já acumula o valor da base de cálculo para os totais
                             ::nVicms_t+= ::nVicms                                                                                // já acumula o valor do icms para os totais
                      ::cXml+= "</ICMS90>"
-                Case ::cCsticms == [101] .and. ::cCrt == 1
+                Case ::cCsticms == [101] .and. ::cCrt == [1]
                      ::cXml+= "<ICMSSN101>"
                             ::cXml    += ::XmlTag( "orig"        , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
                             ::cXml    += ::XmlTag( "CSOSN"       , Left(::cCsticms, 3))
                             ::cXml    += ::XmlTag( "pCredSN"     , ::nPcredsn, 4)
                             ::cXml    += ::XmlTag( "vCredICMSSN" , ::nVcredicmssn)
                      ::cXml+= "</ICMSSN101>"
-                Case ::cCsticms $ [102_103_300_400] .and. ::cCrt == 1
+                Case ::cCsticms $ [102_103_300_400] .and. ::cCrt == [1]
                      ::cXml+= "<ICMSSN102>"
                             ::cXml    += ::XmlTag( "orig"  , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
                             ::cXml    += ::XmlTag( "CSOSN" , Left(::cCsticms, 3))
                      ::cXml+= "</ICMSSN102>"
-                Case ::cCsticms == [201] .and. ::cCrt == 1
+                Case ::cCsticms == [201] .and. ::cCrt == [1]
                      ::cXml+= "<ICMSSN201>"
                             ::cXml    += ::XmlTag( "orig"     , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
                             ::cXml    += ::XmlTag( "CSOSN"    , Left(::cCsticms, 3))
                             ::cXml    += ::XmlTag( "modBCST"  , Iif(!(::cModbcst $ [0_1_2_3_4_5]), [3], Left(::cModbcst, 1)))    // Modalidade de determinação da BC do ICMS ST. 0=Preço tabelado ou máximo sugerido, 1=Lista Negativa (valor), 2=Lista Positiva (valor);3=Lista Neutra (valor), 4=Margem Valor Agregado (%), 5=Pauta (valor) // Só até o 5 aqui
                      ::cXml+= "</ICMSSN201>"
-                Case ::cCsticms $ [202_203] .and. ::cCrt == 1
+                Case ::cCsticms $ [202_203] .and. ::cCrt == [1]
                      ::cXml+= "<ICMSSN202>"
                             ::cXml    += ::XmlTag( "orig"     , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
                             ::cXml    += ::XmlTag( "CSOSN"    , Left(::cCsticms, 3))
                             ::cXml    += ::XmlTag( "modBCST"  , Iif(!(::cModbcst $ [0_1_2_3_4_5]), [3], Left(::cModbcst, 1)))    // Modalidade de determinação da BC do ICMS ST. 0=Preço tabelado ou máximo sugerido, 1=Lista Negativa (valor), 2=Lista Positiva (valor);3=Lista Neutra (valor), 4=Margem Valor Agregado (%), 5=Pauta (valor) // Só até o 5 aqui
                      ::cXml+= "</ICMSSN202>"
-                Case ::cCsticms == [500] .and. ::cCrt == 1
+                Case ::cCsticms == [500] .and. ::cCrt == [1]
                      ::cXml+= "<ICMSSN500>"
                             ::cXml    += ::XmlTag( "orig"           , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
                             ::cXml    += ::XmlTag( "CSOSN"          , Left(::cCsticms, 3))
@@ -1292,7 +1292,7 @@ METHOD fCria_ProdutoIcms()
                             ::cXml    += ::XmlTag( "pICMSEfet"      , 0, 4)
                             ::cXml    += ::XmlTag( "vICMSEfet"      , 0)
                       ::cXml+= "</ICMSSN500>"
-                Case ::cCsticms == [900] .and. ::cCrt == 1
+                Case ::cCsticms == [900] .and. ::cCrt == [1]
                      ::cXml+= "<ICMSSN900>"
                             // Verifica se tem valor do ICMS
                             ::cXml    += ::XmlTag( "orig"  , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
