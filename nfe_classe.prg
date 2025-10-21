@@ -9,7 +9,7 @@
  *          : Maurílio Franchin Júnior                                       *
  *          : Jair Barreto                                                   *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 20.10.2025                                                     *
+ * ULT. ALT.: 21.10.2025                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 
@@ -1144,7 +1144,7 @@ Return (Nil)
 
 * --------------------> Metodo para gerar a tag do ICMS <--------------------- *
 METHOD fCria_ProdutoIcms()
-   If ::cCsticms $ [000_010_020_030_040_041_050_051_060_070_090_101_102_103_140_141_201_202_203_240_241_300_400_500_900]
+   If ::cCsticms $ [000_010_020_030_040_041_050_051_060_070_090_101_102_103_201_202_203_300_400_500_900]
       ::cXml+= "<ICMS>"                                                                                                             // BLOCO N - ICMS NORMAL E ST
              ::cXml+= ::XmlTag( "orig"  , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
 
@@ -1197,7 +1197,7 @@ METHOD fCria_ProdutoIcms()
                             ::cXml    += ::XmlTag( "vICMSST"  , ::nVicmsst:= Round(::nVbcst * (::nPicmst / 100), 2) )
                             ::nVbcst_t+= ::nVbcst                                                                                   // já acumula o valor dos base de cálculo da subs. tributária para os totais
                      ::cXml+= "</ICMS30>"
-                Case ::cCsticms $ [040_041_050_141_241_140_240]
+                Case ::cCsticms $ [040_041_050]
                      ::cXml+= "<ICMS40>"
                             ::cXml    += ::XmlTag( "CST"      , SubStr(::cCsticms, 2, 2))
                      ::cXml+= "</ICMS40>"
@@ -1247,27 +1247,27 @@ METHOD fCria_ProdutoIcms()
                             ::nVbc_t  += ::nVbc                                                                                     // já acumula o valor da base de cálculo para os totais
                             ::nVicms_t+= ::nVicms                                                                                   // já acumula o valor do icms para os totais
                      ::cXml+= "</ICMS90>"
-                Case ::cCsticms == [101]
+                Case ::cCsticms == [101] .and. ::cCrt == 1
                      ::cXml+= "<ICMSSN101>"
                             ::cXml    += ::XmlTag( "CSOSN"       , ::cCsticms)
                             ::cXml    += ::XmlTag( "pCredSN"     , ::nPcredsn, 4)
                             ::cXml    += ::XmlTag( "vCredICMSSN" , ::nVcredicmssn)
                      ::cXml+= "</ICMSSN101>"
-                Case ::cCsticms $ [102_103_300_400]
+                Case ::cCsticms $ [102_103_300_400] .and. ::cCrt == 1
                      ::cXml+= "<ICMSSN102>"
                             ::cXml    += ::XmlTag( "CSOSN"       , ::cCsticms)
                      ::cXml+= "</ICMSSN102>"
-                Case ::cCsticms == [201]
+                Case ::cCsticms == [201] .and. ::cCrt == 1
                      ::cXml+= "<ICMSSN201>"
                             ::cXml    += ::XmlTag( "CSOSN"       , ::cCsticms)
                             ::cXml    += ::XmlTag( "modBCST"     , Iif(!(::cModbcst $ [0_1_2_3_4_5]), [3], Left(::cModbcst, 1)))    // Modalidade de determinação da BC do ICMS ST. 0=Preço tabelado ou máximo sugerido, 1=Lista Negativa (valor), 2=Lista Positiva (valor);3=Lista Neutra (valor), 4=Margem Valor Agregado (%), 5=Pauta (valor) // Só até o 5 aqui
                      ::cXml+= "</ICMSSN201>"
-                Case ::cCsticms $ [202_203]
+                Case ::cCsticms $ [202_203] .and. ::cCrt == 1
                      ::cXml+= "<ICMSSN202>"
                             ::cXml    += ::XmlTag( "CSOSN"       , ::cCsticms)
                             ::cXml    += ::XmlTag( "modBCST"     , Iif(!(::cModbcst $ [0_1_2_3_4_5]), [3], Left(::cModbcst, 1)))    // Modalidade de determinação da BC do ICMS ST. 0=Preço tabelado ou máximo sugerido, 1=Lista Negativa (valor), 2=Lista Positiva (valor);3=Lista Neutra (valor), 4=Margem Valor Agregado (%), 5=Pauta (valor) // Só até o 5 aqui
                      ::cXml+= "</ICMSSN202>"
-                Case ::cCsticms == [500]
+                Case ::cCsticms == [500] .and. ::cCrt == 1
                      ::cXml+= "<ICMSSN500>"
                             ::cXml    += ::XmlTag( "CSOSN"          , ::cCsticms)
                             ::cXml    += ::XmlTag( "vBCSTRet"       , 0)
@@ -1279,7 +1279,7 @@ METHOD fCria_ProdutoIcms()
                             ::cXml    += ::XmlTag( "pICMSEfet"      , 0, 4)
                             ::cXml    += ::XmlTag( "vICMSEfet"      , 0)
                       ::cXml+= "</ICMSSN500>"
-                Case ::cCsticms == [900]
+                Case ::cCsticms == [900] .and. ::cCrt == 1
                      ::cXml+= "<ICMSSN900>"
                             ::cXml    += ::XmlTag( "CSOSN"          , Left(::cCsticms, 3))
                         
