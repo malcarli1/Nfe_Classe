@@ -845,7 +845,7 @@ METHOD fCria_Endereco(cTipo)
            cNro    := ::cNror
            cXcpl   := ::cXcplr
            cXBairro:= ::cXBairror
-           cMun    := ::cMunfg
+           cMun    := ::cCmunr
            cXMun   := ::cXmunr
            cUf     := ::cUfE
            cCep    := ::cCepr
@@ -863,7 +863,7 @@ METHOD fCria_Endereco(cTipo)
            cNro    := ::cNrog
            cXcpl   := ::cXcplg
            cXBairro:= ::cXBairrog
-           cMun    := ::cMunfg
+           cMun    := ::cCmung
            cXMun   := ::cXmung
            cUf     := ::cUfg
            cCep    := ::cCepg
