@@ -9,7 +9,7 @@
  *          : Maurílio Franchin Júnior                                       *
  *          : Jair Barreto                                                   *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 31.10.2025                                                     *
+ * ULT. ALT.: 05.11.2025                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 
@@ -244,10 +244,10 @@ CLASS Malc_GeraXml
    VAR nPredbc                 AS Num       INIT 0
    VAR nPcredsn                AS Num       INIT 0
    VAR nVcredicmssn            AS Num       INIT 0
-   VAR nVbcstret               AS Num       INIT 0
    VAR nPst                    AS Num       INIT 0
    VAR nVicmssubstituto        AS Num       INIT 0
-   VAR nVicmstret             AS Num       INIT 0
+   VAR nVbcstret               AS Num       INIT 0
+   VAR nVicmstret              AS Num       INIT 0
 
    // Tag Grupo NA. ICMS para a UF de destino                                     // Marcelo Brigatti
    VAR nVbcufdest              AS Num       INIT 0
