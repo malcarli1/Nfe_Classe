@@ -9,7 +9,7 @@
  *          : Maurílio Franchin Júnior                                       *
  *          : Jair Barreto                                                   *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 05.11.2025                                                     *
+ * ULT. ALT.: 06.11.2025                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 
@@ -263,6 +263,7 @@ CLASS Malc_GeraXml
    // Tag Ipi - Grupo O
    VAR cCEnq                   AS Character INIT [999]
    VAR cCstipi                 AS Character INIT [53]
+   VAR cCstipint               AS Character INIT []
    VAR nVipi                   AS Num       INIT 0
    VAR nVbcipi                 AS Num       INIT 0
    VAR nPipi                   AS Num       INIT 0
@@ -1339,7 +1340,7 @@ Return (Nil)
 
 * --------------------> Metodo para gerar a tag do IPI <---------------------- *
 METHOD fCria_ProdutoIpi()
-   If !Empty(::cCstipi)
+   If ( ::nVipi > 0 .or. !Empty(::cCstipint) ) .and. ::cModelo == [55]
       ::cXml+= "<IPI>"
              ::cXml+= ::XmlTag( "cEnq" , Left(::cCEnq, 3))
 
@@ -1353,9 +1354,9 @@ METHOD fCria_ProdutoIpi()
                 ::cXml+= "</IPITrib>"
              Endif 
 
-             If ::cCstipi $ [01_02_03_04_51_52_53_54_55]
+             If ::cCstipint $ [01_02_03_04_51_52_53_54_55]
                 ::cXml+= "<IPINT>"
-                       ::cXml+= ::XmlTag( "CST"  , Iif(!(::cCstipi $ [01_02_03_04_05_51_52_53_54_55]), [01], Left(::cCstipi, 2))) // Código da situação tributária do IPI 01=Entrada tributada com alíquota zero 02=Entrada isenta 03=Entrada não-tributada 04=Entrada imune 05=Entrada com suspensão 51=Saída tributada com alíquota zero 52=Saída isenta 53=Saída não-tributada 54=Saída imune 55=Saída com suspensão
+                       ::cXml+= ::XmlTag( "CST"  , Left(::cCstipint, 2)) // Código da situação tributária do IPI 01=Entrada tributada com alíquota zero 02=Entrada isenta 03=Entrada não-tributada 04=Entrada imune 05=Entrada com suspensão 51=Saída tributada com alíquota zero 52=Saída isenta 53=Saída não-tributada 54=Saída imune 55=Saída com suspensão
                 ::cXml+= "</IPINT>"
              Endif 
       ::cXml+= "</IPI>"   
