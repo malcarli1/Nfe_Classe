@@ -1856,7 +1856,7 @@ Return (Nil)
 
 * ------------------> Metodo para gerar a tag de Cobrança <------------------- *
 METHOD fCria_Cobranca()  // Grupo Y. Dados da Cobrança
-   If !Empty(::cNfat)
+   If !Empty(::cNfat) .and. ::cModelo == [55]
       If !("<cobr>") $ ::cXml
          ::cXml+= "<cobr>" 
       Endif 
@@ -2081,16 +2081,16 @@ Return (Nil)
 
 * -----------> Metodo para Limpar Constantes de Imposto <--------------------- *                                                 // Jair Barreto
 METHOD LimpaPropriedadesImposto()            
-   ::cOrig:= ::cCsticms:= ::cModbc:= ::cModbcst:= []
-   ::nVbc:= ::nPicms:= ::nVicms:= ::nPredbc:= 0
-   ::nPmvast:= ::nPredbcst:= ::nVbcst:= ::nPicmst:= ::nVicmsst:= 0
-   ::nPcredsn:= ::nVcredicmssn:= 0
-   ::cCstipi:= ::cEnq:= []
-   ::nVbcipi:= ::nPipi:= ::nVipi:= 0
-   ::cCstPis:= ::cCstCofins:= ::cCstPisnt:= ::cCstCofinsnt:= []
-   ::nBcPis:= ::nAlPis:= ::nBcCofins:= ::nAlCofins:= 0
-   ::nVbcufdest:= ::nPfcpufdest:= ::nPicmsufdest:= ::nPicmsinter:= ::nPicmsinterpart:= 0
-   ::nVfcpufdest:= ::nVicmsufdest:= ::nVicmsufremet:= 0
+   ::cOrig       := ::cCsticms     := ::cModbc         := ::cModbcst     := []
+   ::nVbc        := ::nPicms       := ::nVicms         := ::nPredbc      := 0
+   ::nPmvast     := ::nPredbcst    := ::nVbcst         := ::nPicmst      := ::nVicmsst        := 0
+   ::nPcredsn    := ::nVcredicmssn := 0
+   ::cCstipi     := ::cEnq         := ::cCstipint      := []
+   ::nVbcipi     := ::nPipi        := ::nVipi          := 0
+   ::cCstPis     := ::cCstCofins   := ::cCstPisnt      := ::cCstCofinsnt := []
+   ::nBcPis      := ::nAlPis       := ::nBcCofins      := ::nAlCofins    := 0
+   ::nVbcufdest  := ::nPfcpufdest  := ::nPicmsufdest   := ::nPicmsinter  := ::nPicmsinterpart := 0
+   ::nVfcpufdest := ::nVicmsufdest := ::nVicmsufremet  := 0
 Return (Nil)
 
 * -----------------------> Metodo para fechar o XML <------------------------- *
