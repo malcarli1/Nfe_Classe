@@ -9,7 +9,7 @@
  *          : Maurílio Franchin Júnior                                       *
  *          : Jair Barreto                                                   *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 06.11.2025                                                     *
+ * ULT. ALT.: 14.11.2025                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 
@@ -63,7 +63,8 @@ CLASS Malc_GeraXml
    VAR cTpnfcredito            AS Character INIT []                               // Reforma tributária
    VAR cTpcompragov            AS Character INIT []                               // Reforma tributária
    VAR nPredutor               AS Num       INIT 0                                // Reforma tributária 
- 
+   VAR dPrevEntrega            AS Date      INIT Date()                           // RTC Data da previsão de entrega ou disponibilização do bem.
+
    // Tag emit - Grupo C
    VAR cXnomee                 AS Character INIT []
    VAR cXfant                  AS Character INIT []
@@ -406,6 +407,7 @@ CLASS Malc_GeraXml
 
    // TAG Ibscbs - Reforma tributária
    VAR cCclasstrib             AS Character INIT []                                                                     // Código da Classificação Tributária do IBS/CBS                                                                                             
+   VAR cIndDoacao              AS Character INIT []                                                                     // Indica a natureza da operação de doação, orientando a apuração e a geração de débitos ou estornos conforme o cenário. Informar “1” quando doação
    VAR nVbcibs                 AS Num       INIT 0                                                                      // Valor da Base de cálculo comum a IBS/CBS                                                                                                  
    VAR nPibsuf                 AS Num       INIT 0.1                              // fixo para 2026 depois vai mudar    // Alíquota do IBS Estadual                                                                                                                  
    VAR nPdifgibuf              AS Num       INIT 0                                                                      // Percentual de diferimento                                                                                                                 
@@ -582,10 +584,16 @@ METHOD fCria_Ide()
 
           If !Empty(::dDataS)
              If ::cModelo # [65]
-                ::cXml+= ::XmlTag( "dhSaiEnt" , ::DateTimeXml(::dDataS, ::cTimeS))                                                // Data da Saída da mercadoria
+                ::cXml+= ::XmlTag( "dhSaiEnt" , ::DateTimeXml(::dDataS, ::cTimeS))                                               // Data da Saída da mercadoria
              Endif 
           Endif  
- 
+
+          If !Empty(::dPrevEntrega)
+             If ::cModelo # [65]
+                ::cXml+= ::XmlTag( "dPrevEntrega" , ::DateXml(::dPrevEntrega))                                                   // Data da previsão de entrega ou disponibilização do bem.
+             Endif 
+          Endif  
+
           ::cXml+= ::XmlTag( "tpNF"     , Iif(!(::cTpnf $ [0_1]), [0], Left(::cTpnf, 1)))                                        // Tipo de Emissão da NF  0 - Entrada, 1 - Saída, 2 - Saída-Devolução, 3 - Saída-Garantia
           ::cXml+= ::XmlTag( "idDest"   , Iif(!(::cIdest $ [1_2_3]), [1], Left(::cIdest, 1)))                                    // Identificador de Local de destino da operação (1 - Interna, 2 - Interestadual, 3 - Exterior)
           ::cXml+= ::XmlTag( "cMunFG"   , Left(::cMunfg, 7))                                                                     // IBGE do Emitente
@@ -611,9 +619,9 @@ METHOD fCria_Ide()
           Endif 
 
           If ::cFinnfe == [6]                                                                                                    // Nota de Débito
-             ::cXml+= ::XmlTag( "tpNFDebito"  , Iif(!(::tpNFDebito $ [01_02_03_04_05_06_07]), [01], Left(::tpNFDebito, 2)))      // 01=Transferência de créditos para Cooperativas; 02=Anulação de Crédito por Saídas Imunes/Isentas; 03=Débitos de notas fiscais não processadas na apuração; 04=Multa e juros; 05=Transferência de crédito de sucessão; 06=Pagamento antecipado; 07=Perda em estoque                                                      
+             ::cXml+= ::XmlTag( "tpNFDebito"  , Iif(!(::tpNFDebito $ [01_02_03_04_05_06_07_08]), [01], Left(::tpNFDebito, 2)))   // 01 = Transferência de créditos para Cooperativas; 02 = Anulação de Crédito por Saídas Imunes/Isentas; 03 = Débitos de notas fiscais não processadas na apuração; 04 = Multa e juros; 05 = Transferência de crédito na sucessão; 06 = Pagamento antecipado; 07 = Perda em estoque; 08 = Desenquadramento do SN                                             
           Elseif ::cFinnfe == [5]                                                                                                // Nota de Crédito
-             ::cXml+= ::XmlTag( "tpNFCredito" , Iif(!(::tpNFCredito $ [01_02_03]), [01], Left(::tpNFCredito, 2)))                // 01 = Multa e juros; 02 = Apropriação de crédito presumido de IBS sobre o saldo devedor na ZFM (art. 450, § 1º, LC 214/25); 03 = Retorno 
+             ::cXml+= ::XmlTag( "tpNFCredito" , Iif(!(::tpNFCredito $ [01_02_03_04_05]), [01], Left(::tpNFCredito, 2)))          // 01 = Multa e juros; 02 = Apropriação de crédito presumido de IBS sobre o saldo devedor na ZFM (art. 450, § 1º, LC 214/25); 03 = Retorno por recusa total na entrega ou por não localização do destinatário na tentativa de entrega; 04 = Redução de valores; 05 = Transferência de crédito na sucessão
           Endif 
 
           If ::cAmbiente == [2] .or. ::cModelo == [65]
@@ -1370,7 +1378,7 @@ METHOD fCria_ProdutoIs()                                                        
              ::cXml  += ::XmlTag( "CSTIS"        , Left(::cClasstribis, 3))                                                      // Utilizar tabela CÓDIGO DE CLASSIFICAÇÃO TRIBUTÁRIA DO IMPOSTO SELETIVO
              ::cXml  += ::XmlTag( "cClasstribis" , Left(::cClasstribis, 6))                                                      // Utilizar tabela CÓDIGO DE CLASSIFICAÇÃO TRIBUTÁRIA DO IMPOSTO SELETIVO
              ::cXml  += ::XmlTag( "vBCIS"        , ::nVbcis)                                                                     // Valor da Base de Cálculo do Imposto Seletivo
-             ::cXml  += ::XmlTag( "pIS"          , ::nPisis)                                                                     // Alíquota do Imposto Seletivo
+             ::cXml  += ::XmlTag( "pIS"          , ::nPisis, 4)                                                                  // Alíquota do Imposto Seletivo
              ::cXml  += ::XmlTag( "pISEspec"     , ::nPisespec, 4)                                                               // Alíquota específica por unidade de medida apropriada
              ::cXml  += ::XmlTag( "uTrib"        , Left(::cUtrib_is, 6))                                                         // Unidade de Medida Tributável
              ::cXml  += ::XmlTag( "qTrib"        , ::nQtrib_is, 4)                                                               // Quantidade Tributável
@@ -1386,8 +1394,12 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
       If Left(::cCclasstrib, 3) $ [000_200_410_510_620] .or. (Left(::cCclasstrib, 3) $ [550_800] .and. ::cModelo # [65])
 
          ::cXml+= "<IBSCBS>"
-                ::cXml+= ::XmlTag( "CST"       , Left(::cCclasstrib, 3))
-                ::cXml+= ::XmlTag( "cClassTrib", Left(::cCclasstrib, 6))
+                ::cXml+= ::XmlTag( "CST"         , Left(::cCclasstrib, 3))
+                ::cXml+= ::XmlTag( "cClassTrib"  , Left(::cCclasstrib, 6))
+ 
+                If ::cIndDoacao == [1]
+                   ::cXml+= ::XmlTag( "indDoacao", ::cIndDoacao)                                                                // Indica a natureza da operação de doação, orientando a apuração e a geração de débitos ou estornos conforme o cenário Informar “1” quando doação
+                Endif
                        
                 ::cXml+= "<gIBSCBS>"
                        ::nVbcibs:= ::nVprod + ::nVServs + ::nVFrete + ::nVSeg + ::nVOutro + ::nVii - ::nVDesc - ::nVpis - ::nVCofins - ::nVicms - ::nVicmsufdest - ::nVfcp - ::nVfcpufdest - Round(::nMonoBas * ::nMonoAliq, 2) - ::nVissqn + ::nVis
@@ -1492,7 +1504,8 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
                                  ::cXml+= ::XmlTag( "vTribRegCBS"        , ::nVtribregcbs)
                           ::cXml+= "</gTribRegular>"
                        Endif
-
+/***********************************************************
+mudou para outro grupo que não definimos aqui ainda (324.120 UB120 gCredPresOper Crédito Presumido da Operação), Qdo criar usar já este padrão
                        If !Empty(::cCredPresgibs) .and. ::cCredPresgibs $ [1_2_3_4_5] .and. ::cModelo == [55]
                           ::cXml+= "<gIBSCredPres>"
                                  ::cXml                  += ::XmlTag( "cCredPres" , Left(::cCredPresgibs, 2))
@@ -1514,6 +1527,7 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
                                  ::nVcredprescondsuscbs_t+= ::nVcredprescondsuscbs                                               // já acumula o valor os totais
                           ::cXml+= "</gCBSCredPres>"
                        Endif
+***********************************************************/
                 ::cXml+= "</gIBSCBS>"
           ::cXml+= "</IBSCBS>"
 
