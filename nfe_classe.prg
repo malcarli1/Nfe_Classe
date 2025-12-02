@@ -1401,7 +1401,7 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
                               If ::nPdifgibuf # 0 .and. Left(::cCclasstrib, 3) == [510]
                                  ::cXml+= "<gDif>"
                                         ::cXml         += ::XmlTag( "pDif" , ::nPdifgibuf, 4)
-                                        ::cXml         += ::XmlTag( "vDif" , Round(::nVbcibs * ::nPibsuf * (::nPdifgibuf / 100), 2) )
+                                        ::cXml         += ::XmlTag( "vDif" , Round(::nVbcibs * (::nPibsuf/100) *(::nPdifgibuf / 100), 2) )
                                         ::nVdifgibsuf_t+= Round(::nVbcibs * ::nPibsuf * (::nPdifgibuf / 100), 2)                 // já acumula o valor os totais
                                  ::cXml+= "</gDif>"
                               Endif
