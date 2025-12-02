@@ -9,7 +9,7 @@
  *          : Maurílio Franchin Júnior                                       *
  *          : Jair Barreto                                                   *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 27.11.2025                                                     *
+ * ULT. ALT.: 02.12.2025                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 
@@ -441,6 +441,7 @@ CLASS Malc_GeraXml
    VAR nVissqn                 AS Num       INIT 0                                                                      //   
    VAR nVServs                 AS Num       INIT 0                                                                      //   
    VAR nVfcp                   AS Num       INIT 0                                                                      // 
+   VAR cCclasstribreg          AS Character INIT []
 
    // Tag ISTot - Reforma tributária
    VAR nVis_t                  AS Num       INIT 0
@@ -1482,8 +1483,8 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
 
                        If ::nPaliqefetregibsuf # 0 .and. Left(::cCclasstrib, 3) == [550]
                           ::cXml+= "<gTribRegular>"
-                                 ::cXml+= ::XmlTag( "CSTReg"             , Left(::cCclasstrib, 3))
-                                 ::cXml+= ::XmlTag( "cClassTribReg"      , Left(::cCclasstrib, 6))
+                                 ::cXml+= ::XmlTag( "CSTReg"             , Left(::cCclasstribreg, 3))
+                                 ::cXml+= ::XmlTag( "cClassTribReg"      , Left(::cCclasstribreg, 6))
                                  ::cXml+= ::XmlTag( "pAliqEfetRegIBSUF"  , ::nPaliqefetregibsuf, 4)
                                  ::cXml+= ::XmlTag( "vTribRegIBSUF"      , ::nVtribregibsuf)
                                  ::cXml+= ::XmlTag( "pAliqEfetRegIBSMun" , ::nPaliqefetregibsMun, 4)
