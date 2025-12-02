@@ -441,7 +441,7 @@ CLASS Malc_GeraXml
    VAR nVissqn                 AS Num       INIT 0                                                                      //   
    VAR nVServs                 AS Num       INIT 0                                                                      //   
    VAR nVfcp                   AS Num       INIT 0                                                                      // 
-   VAR cCclasstribreg          AS Character INIT []
+   VAR cCclasstribreg          AS Character INIT []                                                                     // cClassTribReg Código de Classificação Tributária do IBS e CBS
 
    // Tag ISTot - Reforma tributária
    VAR nVis_t                  AS Num       INIT 0
@@ -1486,11 +1486,11 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
                                  ::cXml+= ::XmlTag( "CSTReg"             , Left(::cCclasstribreg, 3))
                                  ::cXml+= ::XmlTag( "cClassTribReg"      , Left(::cCclasstribreg, 6))
                                  ::cXml+= ::XmlTag( "pAliqEfetRegIBSUF"  , ::nPaliqefetregibsuf, 4)
-                                 ::cXml+= ::XmlTag( "vTribRegIBSUF"      , ::nVtribregibsuf)
+                                 ::cXml+= ::XmlTag( "vTribRegIBSUF"      , ::nVtribregibsuf:= Round(::nVbcibs *::nPaliqefetregibsuf, 2) )
                                  ::cXml+= ::XmlTag( "pAliqEfetRegIBSMun" , ::nPaliqefetregibsMun, 4)
-                                 ::cXml+= ::XmlTag( "vTribRegIBSMun"     , ::nVtribregibsMun)
+                                 ::cXml+= ::XmlTag( "vTribRegIBSMun"     , ::nVtribregibsMun:= Round(::nVbcibs *::nPaliqefetregibsmun, 2) )
                                  ::cXml+= ::XmlTag( "pAliqEfetRegCBS"    , ::nPaliqefetregcbs, 4)
-                                 ::cXml+= ::XmlTag( "vTribRegCBS"        , ::nVtribregcbs)
+                                 ::cXml+= ::XmlTag( "vTribRegCBS"        , ::nVtribregcbs:= Round(::nVbcibs *::nPaliqefetregcbs, 2) )
                           ::cXml+= "</gTribRegular>"
                        Endif
 
