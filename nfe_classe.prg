@@ -1399,10 +1399,10 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
                               ::cXml+= ::XmlTag( "pIBSUF" , ::nPibsuf, 4)
 
                               If ::nPdifgibuf # 0 .and. Left(::cCclasstrib, 3) == [510]
-                                 ::cXml+= "<gDif>"
+                                 ::cXml+= "<gDif>" 
                                         ::cXml         += ::XmlTag( "pDif" , ::nPdifgibuf, 4)
-                                        ::cXml         += ::XmlTag( "vDif" , Round(::nVbcibs * (::nPibsuf/100) *(::nPdifgibuf / 100), 2) )
-                                        ::nVdifgibsuf_t+= Round(::nVbcibs * ::nPibsuf * (::nPdifgibuf / 100), 2)                 // já acumula o valor os totais
+                                        ::cXml         += ::XmlTag( "vDif" , Round(::nVbcibs * (::nPibsuf/100) * (::nPdifgibuf/100), 2) )
+                                        ::nVdifgibsuf_t+= Round(::nVbcibs * (::nPibsuf/100) * (::nPdifgibuf/100), 2)                 // já acumula o valor os totais
                                  ::cXml+= "</gDif>"
                               Endif
 
@@ -1416,11 +1416,11 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
                               If ::nPredaliqgibuf # 0 .and. Left(::cCclasstrib, 3) == [200]
                                  ::cXml+= "<gRed>"
                                         ::cXml+= ::XmlTag( "pRedAliq"  , ::nPredaliqgibuf, 4)
-                                        ::cXml+= ::XmlTag( "pAliqEfet" , ::nPibsuf * (1 - ::nPredaliqgibuf), 4)
+                                        ::cXml+= ::XmlTag( "pAliqEfet" , (::nPibsuf / 100) * (1 - (::nPredaliqgibuf/100)), 4)
                                  ::cXml+= "</gRed>"
                               Endif
                                        
-                              ::cXml+= ::XmlTag( "vIBSUF" , ::nVibsuf:= Round(::nVbcibs * (::nPibsuf / 100), 2) )
+                              ::cXml+= ::XmlTag( "vIBSUF" , ::nVibsuf:= Round(::nVbcibs * (::nPibsuf/100), 2) )
                        ::cXml+= "</gIBSUF>"
                        ::cXml+= "<gIBSMun>"
                               ::cXml+= ::XmlTag( "pIBSMun" , ::nPibsmun, 4)
@@ -1428,8 +1428,8 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
                               If ::nPdifgibsmun # 0 .and. Left(::cCclasstrib, 3) == [510]
                                  ::cXml+= "<gDif>"
                                         ::cXml           += ::XmlTag( "pDif"   , ::nPdifgibsmun, 4)
-                                        ::cXml           += ::XmlTag( "vDif"   , Round(::nVbcibs * (::nPibsmun / 100) * (::nPdifgibsmun / 100), 2) ) 
-                                        ::nVdDifgibsmun_t+= Round(::nVbcibs * (::nPibsmun / 100) * (::nPdifgibsmun / 100), 2)    // já acumula o valor os totais
+                                        ::cXml           += ::XmlTag( "vDif"   , Round(::nVbcibs * (::nPibsmun/100) * (::nPdifgibsmun/100), 2) ) 
+                                        ::nVdDifgibsmun_t+= Round(::nVbcibs * (::nPibsmun/100) * (::nPdifgibsmun/100), 2)    // já acumula o valor os totais
                                  ::cXml+= "</gDif>"
                               Endif
 
@@ -1443,11 +1443,11 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
                               If ::nPredaliqibsmun # 0 .and. Left(::cCclasstrib, 3) == [200]
                                  ::cXml+= "<gRed>"
                                         ::cXml+= ::XmlTag( "pRedAliq"  , ::nPredaliqibsmun, 4)
-                                        ::cXml+= ::XmlTag( "pAliqEfet" , ::nPibsmun * (1 - ::nPredaliqibsmun), 4)
+                                        ::cXml+= ::XmlTag( "pAliqEfet" , (::nPibsmun/100) * (1 - (::nPredaliqibsmun/100)), 4)
                                  ::cXml+= "</gRed>"
                               Endif
 
-                              ::cXml+= ::XmlTag( "vIBSMun" , ::nVibsmun:= Round(::nVbcibs * ::nPibsmun, 2) )
+                              ::cXml+= ::XmlTag( "vIBSMun" , ::nVibsmun:= Round(::nVbcibs * (::nPibsmun/100), 2) )
                               ::nVibsmungibsmun_t+= ::nVibsmun                                                                   // já acumula o valor os totais
                        ::cXml+= "</gIBSMun>"
                        ::cXml+= ::XmlTag( "vIBS" , ::nVibsuf + ::nVibsmun )
@@ -1459,7 +1459,7 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
                               If ::nPpDifgcbs # 0 .and. Left(::cCclasstrib, 3) == [510]
                                  ::cXml+= "<gDif>"
                                         ::cXml+= ::XmlTag( "pDif"   , ::nPpDifgcbs, 4)
-                                        ::cXml+= ::XmlTag( "vDif"   , Round(::nVbcibs * ::nPcbs * (::nPpDifgcbs / 100), 2) )  
+                                        ::cXml+= ::XmlTag( "vDif"   , Round(::nVbcibs * (::nPcbs/100) * (::nPpDifgcbs/100), 2) )  
                                  ::cXml+= "</gDif>"
                               Endif
 
@@ -1473,11 +1473,11 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
                               If ::nPredaliqgcbs # 0 .and. Left(::cCclasstrib, 3) == [200]
                                  ::cXml+= "<gRed>"
                                         ::cXml+= ::XmlTag( "pRedAliq"  , ::nPredaliqgcbs, 4)
-                                        ::cXml+= ::XmlTag( "pAliqEfet" , ::nPcbs * (1 - ::nPredaliqgcbs), 4)
+                                        ::cXml+= ::XmlTag( "pAliqEfet" , (::nPcbs/100) * (1 - (::nPredaliqgcbs/100)), 4)
                                  ::cXml+= "</gRed>"
                               Endif
 
-                              ::cXml       += ::XmlTag( "vCBS" , ::nVcbs:= Round(::nVbcibs * (::nPcbs / 100), 2) )
+                              ::cXml       += ::XmlTag( "vCBS" , ::nVcbs:= Round(::nVbcibs * (::nPcbs/100), 2) )
                               ::nVcbsgcbs_t+= ::nVcbs                                                                            // já acumula o valor os totais
                        ::cXml+= "</gCBS>"
 
@@ -1486,11 +1486,11 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
                                  ::cXml+= ::XmlTag( "CSTReg"             , Left(::cCclasstribreg, 3))
                                  ::cXml+= ::XmlTag( "cClassTribReg"      , Left(::cCclasstribreg, 6))
                                  ::cXml+= ::XmlTag( "pAliqEfetRegIBSUF"  , ::nPaliqefetregibsuf, 4)
-                                 ::cXml+= ::XmlTag( "vTribRegIBSUF"      , ::nVtribregibsuf:= Round(::nVbcibs *::nPaliqefetregibsuf, 2) )
+                                 ::cXml+= ::XmlTag( "vTribRegIBSUF"      , ::nVtribregibsuf:= Round(::nVbcibs * (::nPaliqefetregibsuf/100), 2) )
                                  ::cXml+= ::XmlTag( "pAliqEfetRegIBSMun" , ::nPaliqefetregibsMun, 4)
-                                 ::cXml+= ::XmlTag( "vTribRegIBSMun"     , ::nVtribregibsMun:= Round(::nVbcibs *::nPaliqefetregibsmun, 2) )
+                                 ::cXml+= ::XmlTag( "vTribRegIBSMun"     , ::nVtribregibsMun:= Round(::nVbcibs * (::nPaliqefetregibsmun/100), 2) )
                                  ::cXml+= ::XmlTag( "pAliqEfetRegCBS"    , ::nPaliqefetregcbs, 4)
-                                 ::cXml+= ::XmlTag( "vTribRegCBS"        , ::nVtribregcbs:= Round(::nVbcibs *::nPaliqefetregcbs, 2) )
+                                 ::cXml+= ::XmlTag( "vTribRegCBS"        , ::nVtribregcbs:= Round(::nVbcibs * (::nPaliqefetregcbs/100), 2) )
                           ::cXml+= "</gTribRegular>"
                        Endif
 
@@ -1498,7 +1498,7 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
                           ::cXml+= "<gIBSCredPres>"
                                  ::cXml                  += ::XmlTag( "cCredPres" , Left(::cCredPresgibs, 2))
                                  ::cXml                  += ::XmlTag( "pCredPres" , ::nPcredpresgibs, 4)
-                                 ::cXml                  += ::XmlTag( "vCredPres" , ::nVcredpresgibs:= Round(::nVbcibs * ::nPcredpresgibs, 2) )
+                                 ::cXml                  += ::XmlTag( "vCredPres" , ::nVcredpresgibs:= Round(::nVbcibs * (::nPcredpresgibs/100), 2) )
                                  ::nVcredpresgibs_t      += ::nVcredpresgibs                                                     // já acumula o valor os totais
                                  ::cXml                  += ::XmlTag( "vCredPresCondSus" , ::nVcredprescondsusibs)
                                  ::nVcredprescondsusibs_t+= ::nVcredprescondsusibs                                               // já acumula o valor os totais
@@ -1509,7 +1509,7 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
                           ::cXml+= "<gCBSCredPres>"
                                  ::cXml                  += ::XmlTag( "cCredPres" , Left(::cCredPrescbs, 2))
                                  ::cXml                  += ::XmlTag( "pCredPres" , ::nPcredprescbs, 4)
-                                 ::cXml                  += ::XmlTag( "vCredPres" , Round(::nVcredprescbs * ::nPcredprescbs, 2) )
+                                 ::cXml                  += ::XmlTag( "vCredPres" , Round(::nVcredprescbs * (::nPcredprescbs/100), 2) )
                                  ::nVcredprescbs_t       += ::nVcredprescbs                                                      // já acumula o valor os totais
                                  ::cXml                  += ::XmlTag( "vCredPresCondSus" , ::nVcredprescondsuscbs)
                                  ::nVcredprescondsuscbs_t+= ::nVcredprescondsuscbs                                               // já acumula o valor os totais
@@ -1539,17 +1539,17 @@ METHOD fCria_Gibscbsmono()   // Reforma tributária
              ::cXml       += ::XmlTag( "qBCMono"         , ::nQbcmono)
              ::cXml       += ::XmlTag( "adRemIBS"        , ::nAdremibs, 4)
              ::cXml       += ::XmlTag( "adRemCBS"        , ::nAdremcbs, 4)
-             ::cXml       += ::XmlTag( "vIBSMono"        , ::nVibsmono:= Round(nQbcmono * ::nAdremibs, 2) )
-             ::cXml       += ::XmlTag( "vCBSMono"        , ::nVcbsmono:= Round(nQbcmono * ::nAdremcbs, 2))
+             ::cXml       += ::XmlTag( "vIBSMono"        , ::nVibsmono:= Round(nQbcmono * (::nAdremibs/100), 2) )
+             ::cXml       += ::XmlTag( "vCBSMono"        , ::nVcbsmono:= Round(nQbcmono * (::nAdremcbs/100), 2))
              ::nvIBSMono_t+= ::nVibsmono                                                                                         // já acumula o valor para os totais
              ::nvCBSMono_t+= ::nVcbsmono                                                                                         // já acumula o valor para os totais
 
              If ::cIndMonoReten == [1]
                 ::cXml            += ::XmlTag( "qBCMonoReten"    , ::nQbcmonoreten, 0)
                 ::cXml            += ::XmlTag( "adRemIBSReten"   , ::nAdremibsreten, 4)
-                ::cXml            += ::XmlTag( "vIBSMonoReten"   , ::nIbsmonoreten:= Round(::nQbcmonoreten * ::nAdremibsreten, 2) )
+                ::cXml            += ::XmlTag( "vIBSMonoReten"   , ::nIbsmonoreten:= Round(::nQbcmonoreten * (::nAdremibsreten/100), 2) )
                 ::cXml            += ::XmlTag( "adRemCBSReten"   , ::nAdremcbsreten, 4)
-                ::cXml            += ::XmlTag( "vCBSMonoReten"   , ::nVcbsmonoreten:= Round(::nQbcmonoreten * ::nAdremcbsreten, 2) )
+                ::cXml            += ::XmlTag( "vCBSMonoReten"   , ::nVcbsmonoreten:= Round(::nQbcmonoreten * (::nAdremcbsreten/100), 2) )
                 ::nvIBSMonoReten_t+= ::nVibsmonoreten                                                                            // já acumula o valor para os totais
                 ::nvCBSMonoReten_t+= ::nVcbsmonoreten                                                                            // já acumula o valor para os totais
              Endif
@@ -1557,9 +1557,9 @@ METHOD fCria_Gibscbsmono()   // Reforma tributária
              If ::cIndMonoRet == [1]
                 ::cXml          += ::XmlTag( "qBCMonoRet"      , ::nQbcmonoret, 0)
                 ::cXml          += ::XmlTag( "adRemIBSRet"     , ::nAdremibsret, 4)
-                ::cXml          += ::XmlTag( "vIBSMonoRet"     , ::nVibsmonoret:= Round(::nQbcmonoret * ::nAdremibsret, 2) )
+                ::cXml          += ::XmlTag( "vIBSMonoRet"     , ::nVibsmonoret:= Round(::nQbcmonoret * (::nAdremibsret/100), 2) )
                 ::cXml          += ::XmlTag( "adRemCBSRet"     , ::nAdremcbsret, 4)
-                ::cXml          += ::XmlTag( "vCBSMonoRet"     , ::nVcbsmonoret:= Round(::nQbcmonoret * ::nAdremcbsret, 2) )
+                ::cXml          += ::XmlTag( "vCBSMonoRet"     , ::nVcbsmonoret:= Round(::nQbcmonoret * (::nAdremcbsret/100), 2) )
                 ::nvIBSMonoRet_t+= ::nVibsmonoret                                                                                // já acumula o valor para os totais
                 ::nvCBSMonoRet_t+= ::nVcbsmonoret                                                                                // já acumula o valor para os totais
              Endif
