@@ -1987,6 +1987,8 @@ METHOD fCria_Informacoes()
 *            ::cXml+= ::XmlTag( "infCpl" , Left(CharRem("°ºª-:\(){}[]`´?'", ::fRetiraAcento(StrTran(::cInfcpl, hb_OsNewLine(), '; '))), 5000))
           Endif 
    ::cXml+= "</infAdic>"
+
+   ::fCria_ProdExporta()
 Return (Nil)
 
 * ----------> Metodo para gerar a tag de Declaração de Importação <----------- *
