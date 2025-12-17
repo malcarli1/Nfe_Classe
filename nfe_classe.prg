@@ -10,7 +10,7 @@
  *          : Maurílio Franchin Júnior                                       *
  *          : Jair Barreto                                                   *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 10.12.2025                                                     *
+ * ULT. ALT.: 17.12.2025                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 
@@ -2119,7 +2119,7 @@ Local oCertificado
          oCertificado      := win_oleCreateObject( "CAPICOM.Certificate" )
          oCertificado:Load( cCertificadoArquivo , cCertificadoSenha, 1, 0 )
         
-         ::cCertNomecer    := oCertificado:SubjectName
+         ::cCertNomecer    := ::cCertificado:= oCertificado:SubjectName
          ::cCertEmissor    := oCertificado:IssuerName
          ::dCertDataini    := oCertificado:ValidFromDate
          ::dCertDatafim    := oCertificado:ValidToDate
@@ -2132,6 +2132,13 @@ Local oCertificado
             ::lCertVencido := .T.
          Else
             ::lCertVencido := .F.
+         Endif
+
+         If [CN=] $ ::cCertificado
+            ::cCertificado:= Substr(::cCertificado, At([CN=], ::cCertificado) + 3)
+            If [,] $ ::cCertificado
+               ::cCertificado:= Substr(::cCertificado, 1, At([,], ::cCertificado) - 1)
+            Endif
          Endif
    END SEQUENCE
 
