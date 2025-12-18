@@ -10,7 +10,7 @@
  *          : Maurílio Franchin Júnior                                       *
  *          : Jair Barreto                                                   *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 17.12.2025                                                     *
+ * ULT. ALT.: 18.12.2025                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 
@@ -31,8 +31,8 @@ CLASS Malc_GeraXml
    VAR cId                     AS Character INIT []                               // Grupo A
    VAR cCertNomecer            AS Character INIT []                               // Nome do certificado retornado
    VAR cCertEmissor            AS Character INIT []                               // Nome do Emissor do certificado retornado
-   VAR dCertDataini            AS Date      INIT CToD( [] )                       // Data Inicial de Validade do certificado retornado
-   VAR dCertDatafim            AS Date      INIT CToD( [] )                       // Data Final de Validade do certificado retornado
+   VAR dCertDataini            AS Time      INIT Ctod([])                         // Data Inicial de Validade do certificado retornado
+   VAR dCertDatafim            AS Time      INIT Ctod([])                         // Data Final de Validade do certificado retornado
    VAR cCertImprDig            AS Character INIT []                               // Impressão Digital do certificado retornado
    VAR cCertSerial             AS Character INIT []                               // Número Serial do certificado retornado
    VAR nCertVersao             AS Num       INIT 0                                // Versão do certificado retornado
@@ -2112,38 +2112,41 @@ Return (Nil)
 
 * -----------------------> Metodo para Ler Certificado .PFX <----------------- *
 METHOD fCertificadopfx(cCertificadoArquivo, cCertificadoSenha)
+   Local oCertificado, oStore, oErro
 
-Local oCertificado
+   Try
+     oCertificado:= win_oleCreateObject([CAPICOM.Certificate])
+     oCertificado:Load(cCertificadoArquivo, cCertificadoSenha, 1, 0)
 
-   BEGIN SEQUENCE WITH __BreakBlock()
-         oCertificado      := win_oleCreateObject( "CAPICOM.Certificate" )
-         oCertificado:Load( cCertificadoArquivo , cCertificadoSenha, 1, 0 )
-        
-         ::cCertNomecer    := ::cCertificado:= oCertificado:SubjectName
-         ::cCertEmissor    := oCertificado:IssuerName
-         ::dCertDataini    := oCertificado:ValidFromDate
-         ::dCertDatafim    := oCertificado:ValidToDate
-         ::cCertImprDig    := oCertificado:Thumbprint
-         ::cCertSerial     := oCertificado:SerialNumber
-         ::nCertVersao     := oCertificado:Version
-         ::lCertInstall    := oCertificado:Archived
-        
-         If Dtos(oCertificado:ValidToDate) < Dtos(Date())
-            ::lCertVencido := .T.
-         Else
-            ::lCertVencido := .F.
-         Endif
+     oStore := win_OleCreateObject([CAPICOM.Store])
+     oStore:open(2, [My], 1)
+     oStore:Add(oCertificado)
 
-         If [CN=] $ ::cCertificado
-            ::cCertificado:= Substr(::cCertificado, At([CN=], ::cCertificado) + 3)
-            If [,] $ ::cCertificado
-               ::cCertificado:= Substr(::cCertificado, 1, At([,], ::cCertificado) - 1)
-            Endif
-         Endif
-   END SEQUENCE
+     ::cCertNomecer:= ::cCertificado:= oCertificado:SubjectName
+     ::cCertEmissor:= oCertificado:IssuerName
+     ::dCertDataini:= oCertificado:ValidFromDate
+     ::dCertDatafim:= oCertificado:ValidToDate
+     ::cCertImprDig:= oCertificado:Thumbprint
+     ::cCertSerial := oCertificado:SerialNumber
+     ::nCertVersao := oCertificado:Version
+     ::lCertInstall:= oCertificado:Archived
 
-   Release oCertificado
-Return( Nil )
+     If Dtos(oCertificado:ValidToDate) < Dtos(Date())
+        ::lCertVencido:= .T.
+     Else
+        ::lCertVencido:= .F.
+     Endif
+
+     If [CN=] $ ::cCertificado
+        ::cCertificado:= Substr(::cCertificado, At([CN=], ::cCertificado) + 3)
+        If [,] $ ::cCertificado
+           ::cCertificado:= Substr(::cCertificado, 1, At([,], ::cCertificado) - 1)
+        Endif
+     Endif
+   End
+
+   Release oCertificado, oStore, oErro
+Return (Nil)
 
 * ----> Metodo para Retirar Caracteres/Sinais de uma String <----------------- *
 METHOD fRetiraSinal(cStr, cEliminar)
@@ -2152,14 +2155,16 @@ Return (CharRem(cEliminar, cStr))
 
 * -----------------------> Metodo Retira acentos de uma string <-------------- *
 METHOD fRetiraAcento(cStr)
-   Local aFrom := {[Á],[À],[Â],[Ã],[Ä],[Å],[A],[A],[A],[Æ] ,[Ç],[C],[C],[É],[È],[Ê],[Ë],[E],[E],[Í],[Ì],[Î],[Ï],[L],[L],[N],[Ñ],[Ó],[Ò],[Ô],[Õ],[Ö],[Ø],[?] ,[R],[R],[S],[?],[S],[T],[Ú],[Ù],[Û],[Ü],[U],[Ý],[?],[Z],[?],[Z],[á],[à],[â],[ã],[ä],[å],[a],[a],[a],[æ] ,[ç],[c],[c],[é],[è],[ê],[ë],[e],[e],[í],[ì],[î],[ï],[l],[l],[n],[ñ],[ó],[ò],[ô],[õ],[ö],[ø],[?] ,[r],[r],[s],[?],[s],[t],[ú],[ù],[û],[ü],[u],[ý],[ÿ],[z],[?],[z],[ß] ,[&],[º] ,[ª] ,[?],[¡],[£],[ÿ],[ ],[á],[] ,[ ],[ ],[?],[?],[?],[¢],[?],[°],[A³],[A§],[Ai],[A©],[Ao.],[?],[´]}
-   Local aTo   := {[A],[A],[A],[A],[A],[A],[A],[A],[A],[AE],[C],[C],[C],[E],[E],[E],[E],[E],[E],[I],[I],[I],[I],[L],[L],[N],[N],[O],[O],[O],[O],[O],[O],[OE],[R],[R],[S],[S],[S],[T],[U],[U],[U],[U],[U],[Y],[Y],[Z],[Z],[Z],[a],[a],[a],[a],[a],[a],[a],[a],[a],[ae],[c],[c],[c],[e],[e],[e],[e],[e],[e],[i],[i],[i],[i],[l],[l],[n],[n],[o],[o],[o],[o],[o],[o],[oe],[r],[r],[s],[s],[s],[t],[u],[u],[u],[u],[u],[y],[y],[z],[z],[z],[ss],[E],[o.],[a.],[c],[i],[u],[a],[a],[a],[E],[a],[ ],[e],[e],[o],[o],[a],[],[o],[c],[a],[e],[u],[],[]}, i
+   Local aLetraCAc:= {[Á],[À],[Ä],[Ã],[Â],[É],[È],[Ë],[Ê],[&],[Í],[Ì],[Ï],[Î],[Ó],[Ò],[Ö],[Õ],[Ô],[Ú],[Ù],[Ü],[Û],[Ç],[Ñ],[Ý],[á],[à],[ä],[ã],[â],[é],[è],[ë],[ƒ],[ê],[í],[ì],[ï],[î],[ó],[ò],[ö],[õ],[ô],[ú],[ù],[ü],[û],[ç],[ñ],[ý],[ÿ],[º] ,[ª] ,[‡],[Æ],[¡],[£],[ÿ],[ ],[á],[ ] ,[ ],[ ],[‚],[ˆ],[“],[¢],[…],[°],[A³],[A§],[Ai],[A©],[Ao.],[’],[´],[j] + Chr(160),[J] + Chr(160),Chr(160)}
+   Local aLetraSAc:= {[A],[A],[A],[A],[A],[E],[E],[E],[E],[E],[I],[I],[I],[I],[O],[O],[O],[O],[O],[U],[U],[U],[U],[C],[N],[Y],[a],[a],[a],[a],[a],[e],[e],[e],[a],[e],[i],[i],[i],[i],[o],[o],[o],[o],[o],[u],[u],[u],[u],[c],[n],[y],[y],[o.],[a.],[c],[a],[i],[u],[a],[a],[a],[E ],[a],[ ],[e],[e],[o],[o],[a],[],[o],[c],[a],[e],[u],[],[], [ja], [Ja], [a]}, i
 
-   hb_Default( @cStr,"" )
+   Hb_Default(@cStr, [])
 
-   For i:= 1 To Len( aFrom )
-      cStr:= StrTran(cStr, aFrom[i], aTo[i])
+   For i = 1 To Len(aLetraCAc)
+       cStr:= StrTran(cStr, aLetraCAc[i], aLetraSAc[i])
    Next
+
+   Release aLetraCAc, aLetraSAc, i
 Return (cStr)
 
 * -------------> Metodo para Gerar uma tag XML com tratamento de tipos <------ *
