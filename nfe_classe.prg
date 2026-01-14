@@ -10,7 +10,7 @@
  *          : Maurílio Franchin Júnior                                       *
  *          : Jair Barreto                                                   *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 18.12.2025                                                     *
+ * ULT. ALT.: 14.01.2026                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 
@@ -168,20 +168,20 @@ CLASS Malc_GeraXml
    VAR cXlocdesemb             AS Character INIT [] 
    VAR cUfdesemb               AS Character INIT [] 
    VAR dDdesemb                AS Date      INIT CToD( [] )
-   VAR nTpviatransp            AS Num       INIT 0
+   VAR nTpviatransp            AS Int       INIT 0
    VAR nVafrmm                 AS Num       INIT 0
-   VAR nTpintermedio           AS Num       INIT 0
+   VAR nTpintermedio           AS Int       INIT 0
    VAR cCnpja                  AS Character INIT [] 
    VAR cUfterceiro             AS Character INIT [] 
    VAR cCexportador            AS Character INIT [] 
 
    // TAG adi - Grupo I01 - Grupo de Adições (SubGrupo da TAG DI) 
-   VAR nNadicao                AS Num       INIT 0                                // Número da Adição 
-   VAR nNseqadic               AS Num       INIT 0                                // Número sequencial do ítem dentro da Adição
+   VAR nNadicao                AS Int       INIT 0                                // Número da Adição 
+   VAR nNseqadic               AS Int       INIT 0                                // Número sequencial do ítem dentro da Adição
    VAR cCfabricante            AS Character INIT []                               // Código do fabricante estrangeiro, usado nos sistemas internos de informação do emitente da NF-e 
    VAR nVdescdi                AS Num       INIT 0                                // Valor do desconto do item da DI ? Adição
    VAR cNdraw                  AS Character INIT []                               // Número do ato concessório de Drawback (O número do Ato Concessório de Suspensão deve ser preenchido com 11 dígitos (AAAANNNNNND)
-   VAR nNre                    AS Num       INIT 0                                // Número do Registro de Exportação
+   VAR nNre                    AS Int       INIT 0                                // Número do Registro de Exportação
    VAR cChnfe                  AS Character INIT []                               // Chave de Acesso da NF-e recebida para exportação NF-e recebida com fim específico de exportação. No caso de operação com CFOP 3.503, informar a chave de acesso da NF-e que efetivou a exportação 
    VAR nQexport                AS Num       INIT 0                                // Quantidade do item realmente exportado A unidade de medida desta quantidade é a unidade de comercialização deste item. No caso de operação com CFOP 3.503, informar a quantidade de mercadoria devolvida
 
@@ -197,7 +197,7 @@ CLASS Malc_GeraXml
    VAR cNserie                 AS Character INIT [] 
    VAR cTpcomb                 AS Character INIT []                                            
    VAR cNmotor                 AS Character INIT [] 
-   VAR nCmt                    AS Character INIT [] 
+   VAR nCmt                    AS Num       INIT 0 
    VAR cDist                   AS Character INIT [] 
    VAR cAnomod                 AS Character INIT [] 
    VAR cAnofab                 AS Character INIT [] 
@@ -355,7 +355,7 @@ CLASS Malc_GeraXml
    VAR cXpag                   AS Character INIT [] 
    VAR nVpag                   AS Num       INIT 0
    VAR nVtroco                 AS Num       INIT 0
-   VAR nTpintegra              AS Num       INIT 0                                // 1=Pagamento integrado com o sistema de automação da empresa (Ex.: equipamento TEF, Comércio Eletrônico) | 2= Pagamento não integrado com o sistema de automação da empresa 
+   VAR nTpintegra              AS Int       INIT 0                                // 1=Pagamento integrado com o sistema de automação da empresa (Ex.: equipamento TEF, Comércio Eletrônico) | 2= Pagamento não integrado com o sistema de automação da empresa 
    VAR cCnpjpag                AS Character INIT [] 
    VAR cTband                  AS Character INIT [] 
    VAR cAut                    AS Character INIT [] 
@@ -588,9 +588,9 @@ METHOD fCria_Ide()
              Endif 
           Endif  
  
-          ::cXml+= ::XmlTag( "tpNF"     , Iif(!(::cTpnf $ [0_1]), [0], Left(::cTpnf, 1)))                                        // Tipo de Emissão da NF  0 - Entrada, 1 - Saída, 2 - Saída-Devolução, 3 - Saída-Garantia
-          ::cXml+= ::XmlTag( "idDest"   , Iif(!(::cIdest $ [1_2_3]), [1], Left(::cIdest, 1)))                                    // Identificador de Local de destino da operação (1 - Interna, 2 - Interestadual, 3 - Exterior)
-          ::cXml+= ::XmlTag( "cMunFG"   , Left(::cMunfg, 7))                                                                     // IBGE do Emitente
+          ::cXml+= ::XmlTag( "tpNF"   , Iif(!(::cTpnf $ [0_1]), [0]   , Left(::cTpnf, 1)))                                        // Tipo de Emissão da NF  0 - Entrada, 1 - Saída, 2 - Saída-Devolução, 3 - Saída-Garantia
+          ::cXml+= ::XmlTag( "idDest" , Iif(!(::cIdest $ [1_2_3]), [1], Left(::cIdest, 1)))                                    // Identificador de Local de destino da operação (1 - Interna, 2 - Interestadual, 3 - Exterior)
+          ::cXml+= ::XmlTag( "cMunFG" , Left(::cMunfg, 7))                                                                     // IBGE do Emitente
 
           If ::cIndpres == [5]                                                                                                   
              ::cXml+= ::XmlTag( "cMunFGIBS", Left(::cMunfg, 7))                                                                  // Informar o município de ocorrência do fato gerador do fato gerador do IBS / CBS. Campo preenchido somente quando ?indPres = 5 (Operação presencial, fora do estabelecimento)?, e não tiver endereço do destinatário (Grupo: E05) ou Local de entrega (Grupo: G01).
@@ -613,9 +613,9 @@ METHOD fCria_Ide()
           Endif 
 
           If ::cFinnfe == [6]                                                                                                    // Nota de Débito
-             ::cXml+= ::XmlTag( "tpNFDebito"  , Iif(!(::tpNFDebito $ [01_02_03_04_05_06_07]), [01], Left(::tpNFDebito, 2)))      // 01=Transferência de créditos para Cooperativas; 02=Anulação de Crédito por Saídas Imunes/Isentas; 03=Débitos de notas fiscais não processadas na apuração; 04=Multa e juros; 05=Transferência de crédito de sucessão; 06=Pagamento antecipado; 07=Perda em estoque                                                      
+             ::cXml+= ::XmlTag( "tpNFDebito"  , Iif(!(::cTpnfdebito $ [01_02_03_04_05_06_07]), [01], Left(::cTpnfdebito, 2)))      // 01=Transferência de créditos para Cooperativas; 02=Anulação de Crédito por Saídas Imunes/Isentas; 03=Débitos de notas fiscais não processadas na apuração; 04=Multa e juros; 05=Transferência de crédito de sucessão; 06=Pagamento antecipado; 07=Perda em estoque                                                      
           Elseif ::cFinnfe == [5]                                                                                                // Nota de Crédito
-             ::cXml+= ::XmlTag( "tpNFCredito" , Iif(!(::tpNFCredito $ [01_02_03]), [01], Left(::tpNFCredito, 2)))                // 01 = Multa e juros; 02 = Apropriação de crédito presumido de IBS sobre o saldo devedor na ZFM (art. 450, § 1º, LC 214/25); 03 = Retorno 
+             ::cXml+= ::XmlTag( "tpNFCredito" , Iif(!(::cTpnfcredito $ [01_02_03]), [01]           , Left(::cTpnfcredito, 2)))                // 01 = Multa e juros; 02 = Apropriação de crédito presumido de IBS sobre o saldo devedor na ZFM (art. 450, § 1º, LC 214/25); 03 = Retorno 
           Endif 
 
           If ::cAmbiente == [2] .And. ::cModelo == [65]
