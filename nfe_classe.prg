@@ -618,7 +618,7 @@ METHOD fCria_Ide()
              ::cXml+= ::XmlTag( "tpNFCredito" , Iif(!(::cTpnfcredito $ [01_02_03]), [01]           , Left(::cTpnfcredito, 2)))                // 01 = Multa e juros; 02 = Apropriação de crédito presumido de IBS sobre o saldo devedor na ZFM (art. 450, § 1º, LC 214/25); 03 = Retorno 
           Endif 
 
-          If ::cAmbiente == [2] .And. ::cModelo == [65]
+          If ::cAmbiente == [2] .and. ::cModelo == [65]
              ::cXml+= ::XmlTag( "indFinal" , [1])                                                                                // Indica operação com consumidor final (0 - Não ; 1 - Consumidor Final)
           Else
              ::cXml+= ::XmlTag( "indFinal" , Iif(!(::cIndfinal $ [0_1]), [0], Left(::cIndfinal, 1)))                             // Indica operação com consumidor final (0 - Não ; 1 - Consumidor Final)
@@ -635,11 +635,11 @@ METHOD fCria_Ide()
              ::cXml+= ::XmlTag( "indIntermed" , Iif(!(::cIndintermed $ [0_1]), [0], Left(::cIndintermed, 1)))                    // Indicador de intermediador/marketplace, 0 - Operação sem intermediador (em site ou plataforma própria), 1 - Operação em site ou plataforma de terceiros (intermediadores/marketplace)
           Endif 
 
-          ::cXml+= ::XmlTag( "procEmi"  , Iif(!(::cProcemi $ [0_1_2_3]), [1], Left(::cProcemi, 1)))                                // 0 - emissão de NF-e com aplicativo do contribuinte;
+          ::cXml+= ::XmlTag( "procEmi"   , Iif(!(::cProcemi $ [0_1_2_3]), [1], Left(::cProcemi, 1)))                                // 0 - emissão de NF-e com aplicativo do contribuinte;
                                                                                                                                  // 1 - emissão de NF-e avulsa pelo Fisco;
                                                                                                                                  // 2 - emissão de NF-e avulsa, pelo contribuinte com seu certificado digital, através do site do Fisco;
                                                                                                                                  // 3 - emissão NF-e pelo contribuinte com aplicativo fornecido pelo Fisco.
-          ::cXml+= ::XmlTag( "verProc"  , Left(::cVerproc, 20))                                                                  // Informar a versão do aplicativo emissor de NF-e.
+          ::cXml+= ::XmlTag( "verProc"   , Left(::cVerproc, 20))                                                                  // Informar a versão do aplicativo emissor de NF-e.
 
           If ::cTpemis # [1]                                                                                                     // 1 - Emissão normal (não em contingência
              ::cXml+= ::XmlTag( "dhCont" , ::DateTimeXml(::dDhcont, ::cTimeE))                                                   // Data-hora contingência       FSDA - tpEmis = 5
@@ -712,7 +712,7 @@ METHOD fCria_Emitente()
     	         ::cXml+= ::XmlTag( "xPais"   , Left(::fRetiraAcento(::cXpaise), 60))                                            // País Emitente da NF
 
                  If !Empty(::SoNumero(::cFonee))
-	                ::cXml+= ::XmlTag( "fone"    , Left(::SoNumero(::cFonee), 14))                                               // Telefone do Emitente
+	            ::cXml+= ::XmlTag( "fone" , Left(::SoNumero(::cFonee), 14))                                               // Telefone do Emitente
                  Endif 
           ::cXml+= "</enderEmit>"
           
@@ -753,7 +753,7 @@ METHOD fCria_Destinatario()
       Endif
 
       // Id estrangeiro
-      If !Empty(::cIdestrangeiro) .AND. ::cUfd == [EX]
+      If !Empty(::cIdestrangeiro) .and. ::cUfd == [EX]
          ::cXml+= ::XmlTag("idEstrangeiro", Left(::cIdestrangeiro, 20))
       Endif
 
@@ -770,7 +770,7 @@ METHOD fCria_Destinatario()
       If lGerarEnder
          ::cXml+= "<enderDest>"
          ::cXml+= ::XmlTag("xLgr", Left(::fRetiraAcento(::cXlgrd), 60))
-         ::cXml+= ::XmlTag("nro", Left(::cNrod, 60))
+         ::cXml+= ::XmlTag("nro" , Left(::cNrod, 60))
 
          If !Empty(::cXcpld)
             ::cXml+= ::XmlTag("xCpl", Left(::cXcpld, 60))
@@ -781,12 +781,12 @@ METHOD fCria_Destinatario()
          If ::cUfd == "EX"
             ::cXml+= ::XmlTag("cMun", "9999999")
             ::cXml+= ::XmlTag("xMun", "EXTERIOR")
-            ::cXml+= ::XmlTag("UF", "EX")
+            ::cXml+= ::XmlTag("UF"  , "EX")
          Else
             ::cXml+= ::XmlTag("cMun", Left(::cCmund, 7))
             ::cXml+= ::XmlTag("xMun", Left(::fRetiraAcento(::cXmund), 60))
-            ::cXml+= ::XmlTag("UF", Left(::cUfd, 2))
-            ::cXml+= ::XmlTag("CEP", Left(::SoNumero(::cCepd), 8))
+            ::cXml+= ::XmlTag("UF"  , Left(::cUfd, 2))
+            ::cXml+= ::XmlTag("CEP" , Left(::SoNumero(::cCepd), 8))
          Endif
 
          IF !Empty(::cPaisd)
@@ -932,7 +932,7 @@ Return(::fCria_Endereco([entrega]))
 METHOD fCria_Produto()
    ::cXml+= [<det nItem="] + Left(NumberXml( ::nItem, 0 ), 3) + [">]
           ::cXml+= "<prod>"
-                 ::cXml    += ::XmlTag( "cProd"    , Left(::cProd, 60))
+                 ::cXml    += ::XmlTag( "cProd" , Left(::cProd, 60))
 
                  If !Empty(::cEan)
                     ::cXml += ::XmlTag( "cEAN"  , Left(::cEan, 14))
@@ -946,10 +946,10 @@ METHOD fCria_Produto()
                     ::cXml += ::XmlTag( "xProd" , Left(::fRetiraAcento(::cXprod), 120))
                  Endif 
 
-                 ::cXml    += ::XmlTag( "NCM"      , Iif(Empty(::cNcm), [00], Left(::cNcm, 8)))                                  // Obrigatória informação do NCM completo (8 dígitos). Nota: Em caso de item de serviço ou item que não tenham produto (ex. transferência de crédito, crédito do ativo imobilizado, etc.), informar o valor 00 (dois zeros). (NT 2014/004)
+                 ::cXml    += ::XmlTag( "NCM"   , Iif(Empty(::cNcm), [00], Left(::cNcm, 8)))                                  // Obrigatória informação do NCM completo (8 dígitos). Nota: Em caso de item de serviço ou item que não tenham produto (ex. transferência de crédito, crédito do ativo imobilizado, etc.), informar o valor 00 (dois zeros). (NT 2014/004)
 
                  If Len(::cNcm) > 8
-        	           ::cXml += ::XmlTag( "EXTIPI" , [0] + Right(::cNcm, 2))                                                       // Excessão de IPI 
+        	    ::cXml += ::XmlTag( "EXTIPI", [0] + Right(::cNcm, 2))                                                       // Excessão de IPI 
                  Endif    
 
                  If !Empty(::cCest)
@@ -979,7 +979,7 @@ METHOD fCria_Produto()
                  ::nVFrete_t+= ::nVfrete                                                                                         // já acumula o valor dos fretes para os totais
 
                  If !Empty(::nVseg)
-                    ::cXml+= ::XmlTag( "vSeg"  , ::nVseg)
+                    ::cXml+= ::XmlTag( "vSeg"   , ::nVseg)
                  Endif 
                  ::nVseg_t+= ::nVseg                                                                                             // já acumula o valor dos seguros para os totais
 
@@ -1390,7 +1390,7 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
          ::cXml+= ::XmlTag( "CST"       , Left(::cCclasstrib, 3))
          ::cXml+= ::XmlTag( "cClassTrib", Left(::cCclasstrib, 6))
                        
-         If !Empty(::cCclasstrib) .And. !(Left(::cCclasstrib, 3) $ [400_410_510]) .And. ::cCrt == '3'                            // CRT # 3 (Simples nacional por enquanto não tem IBS/CBS), CSTs 400/410/510 Não tem alíquota de IBS/CBS e portanto não gera a tag
+         If !Empty(::cCclasstrib) .and. !(Left(::cCclasstrib, 3) $ [400_410_510]) .and. ::cCrt == '3'                            // CRT # 3 (Simples nacional por enquanto não tem IBS/CBS), CSTs 400/410/510 Não tem alíquota de IBS/CBS e portanto não gera a tag
             If Left(::cCclasstrib, 3) $ [000_200_620] .or. (Left(::cCclasstrib, 3) $ [550_800] .and. ::cModelo # [65])
                ::cXml+= "<gIBSCBS>"
                       ::nVbcibs:= ::nVprod + ::nVServs + ::nVFrete + ::nVSeg + ::nVOutro + ::nVii - ::nVDesc - ::nVpis - ::nVCofins - ::nVicms - ::nVicmsufdest - ::nVfcp - ::nVfcpufdest - Round(::nMonoBas * ::nMonoAliq, 2) - ::nVissqn + ::nVis
@@ -1536,7 +1536,7 @@ Return (Nil)
 
 * -------------------> Metodo para gerar a tag gIBSCBSMono <------------------ *
 METHOD fCria_Gibscbsmono()   // Reforma tributária
-   If ::nQbcmono # 0 .and. ::cIndMono == [1] .And. ::cCrt == '3'
+   If ::nQbcmono # 0 .and. ::cIndMono == [1] .and. ::cCrt == '3'
       ::cXml+= "<gIBSCBSMono>"
              ::cXml       += ::XmlTag( "qBCMono"         , ::nQbcmono)
              ::cXml       += ::XmlTag( "adRemIBS"        , ::nAdremibs, 4)
@@ -1731,7 +1731,7 @@ METHOD fCria_TotaisRtc()
 *      !Empty(::nVdDifgibsmun_t)  .Or. !Empty(::nVdevtribgibsmun_t)     .Or. !Empty(::nVibsmungibsmun_t) .Or. ; 
 *      !Empty(::nVcredpresgibs_t) .Or. !Empty(::nVcredprescondsusibs_t) .Or.                                  ;
 *      !Empty(::nVdifgcbs_t)      .Or. !Empty(::nVdevtribgcbs_t)        .Or. !Empty(::nVcbsgcbs_t)       .Or. !Empty(::nVcredprescbs_t)  .Or. !Empty(::nVcredprescondsuscbs_t) .Or. ;
-*      !Empty(::nvIBSMono_t)      .Or. !Empty(::nvCBSMono_t)            .Or. !Empty(::nvIBSMonoReten_t)  .Or. !Empty(::nvCBSMonoReten_t) .Or. !Empty(::nvIBSMonoRet_t)         .Or. !Empty(::nvCBSMonoRet_t) .And. ;
+*      !Empty(::nvIBSMono_t)      .Or. !Empty(::nvCBSMono_t)            .Or. !Empty(::nvIBSMonoReten_t)  .Or. !Empty(::nvCBSMonoReten_t) .Or. !Empty(::nvIBSMonoRet_t)         .Or. !Empty(::nvCBSMonoRet_t) .and. ;
    If ::cCrt == '3'
       ::cXml+= "<IBSCBSTot>"
              ::cXml+= ::XmlTag( "vBCIBSCBS" , ::nVbcibscbs_t)
@@ -1913,7 +1913,7 @@ METHOD fCria_Pagamento() // Grupo YA. Informações de Pagamento
    Endif  
 
    ::cXml+= "<detPag>" 
-          If !(::cTpag $ [90_99]) .And. !Empty(::cIndPag)
+          If !(::cTpag $ [90_99]) .and. !Empty(::cIndPag)
              ::cXml+= ::XmlTag( "indPag" , Iif(!(::cIndPag $ [0_1]), [0], Left(::cIndPag, 1)))                                   // Indicação da Forma de Pagamento 0= Pagamento à Vista 1= Pagamento à Prazo (Incluído na NT2016.002)
           Endif     
 
