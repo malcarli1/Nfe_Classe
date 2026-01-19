@@ -10,7 +10,7 @@
  *          : Maurílio Franchin Júnior                                       *
  *          : Jair Barreto                                                   *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 14.01.2026                                                     *
+ * ULT. ALT.: 19.01.2026                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 
@@ -147,6 +147,7 @@ CLASS Malc_GeraXml
    VAR cXprod                  AS Character INIT [] 
    VAR cNcm                    AS Character INIT [] 
    VAR cCest                   AS Character INIT [] 
+   VAR cBenef                  AS Character INIT []                               // Obrigatoriedade: I - Nota Fiscal Eletrônica - NF-e, modelo 55, prevista no inciso I do artigo 212-O do RICMS, a partir de 6 de abril de 2026; II - Nota Fiscal de Consumidor Eletrônica - NFC-e, modelo 65, prevista no inciso III do artigo 212-O do RICMS, a partir de 6 de abril de 2026.
    VAR cCfOp                   AS Character INIT [] 
    VAR cUcom                   AS Character INIT [UN]
    VAR nQcom                   AS Num       INIT 0
@@ -954,6 +955,10 @@ METHOD fCria_Produto()
 
                  If !Empty(::cCest)
                     ::cXml += ::XmlTag( "CEST"  , Left(::SoNumero(::cCest), 7))
+                 Endif 
+
+                 If !Empty(::cBenef)
+                    ::cXml += ::XmlTag( "cBenef", AllTrim( cBenef ))
                  Endif 
 
                  ::cXml    += ::XmlTag( "CFOP"  , Left(::SoNumero(::cCfOp), 4))
