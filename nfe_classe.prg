@@ -958,7 +958,7 @@ METHOD fCria_Produto()
                  Endif 
 
                  If !Empty(::cBenef)
-                    ::cXml += ::XmlTag( "cBenef", AllTrim( cBenef ))
+                    ::cXml += ::XmlTag( "cBenef", Left( cBenef, 10 ))
                  Endif 
 
                  ::cXml    += ::XmlTag( "CFOP"  , Left(::SoNumero(::cCfOp), 4))
