@@ -10,9 +10,13 @@
  *          : Maurílio Franchin Júnior                                       *
  *          : Jair Barreto                                                   *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 19.01.2026                                                     *
+ * ULT. ALT.: 20.01.2026                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
+#IfNdef __XHARBOUR__
+   #xcommand TRY => BEGIN SEQUENCE WITH {| oErr | Break( oErr ) }
+   #xcommand CATCH [<!oErr!>] => RECOVER [USING <oErr>] <-oErr->
+#endif
 
 *   AS Num       INIT 0 pode conter decimais
 *   AS Int ou AS Integer não contém decimais 4.5 vai ser 4
