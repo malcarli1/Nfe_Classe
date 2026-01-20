@@ -144,7 +144,7 @@ CLASS Malc_GeraXml
    VAR cIeg                    AS Character INIT [] 
 
    // Tag prod - Grupo I - Produtos e Serviços da NFe
-   VAR nItem                   AS Num       INIT 1
+   VAR nItem                   AS Int       INIT 1
    VAR cProd                   AS Character INIT [] 
    VAR cEan                    AS Character INIT [] 
    VAR cEantrib                AS Character INIT [] 
@@ -1394,8 +1394,8 @@ Return (Nil)
 
 * ----------------------> Metodo para gerar a tag IBSCBS <-------------------- *
 METHOD fCria_ProdutoIbscbs()  // Reforma tributária
- 
-   ::cXml+= "<IBSCBS>"
+   If !Empty(::cCclasstrib)
+      ::cXml+= "<IBSCBS>"
          ::cXml+= ::XmlTag( "CST"       , Left(::cCclasstrib, 3))
          ::cXml+= ::XmlTag( "cClassTrib", Left(::cCclasstrib, 6))
                        
@@ -1529,17 +1529,18 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
                ::cXml+= "</gIBSCBS>"
             Endif
          Endif 
-   ::cXml+= "</IBSCBS>"
+      ::cXml+= "</IBSCBS>"
 
-   If Left(::cCclasstrib, 3) == [620]
-      ::fCria_Gibscbsmono()
-   Endif 
+      If Left(::cCclasstrib, 3) == [620]
+         ::fCria_Gibscbsmono()
+      Endif 
 
-   If Left(::cCclasstrib, 3) == [800] .and. ::cFinnfe == [6]
-      ::cXml+= "<gTransfCred>"
-      ::cXml+= ::XmlTag( "vIBS" , ::nVibs_c )
-      ::cXml+= ::XmlTag( "vCBS" , ::nVcbs_c )
-      ::cXml+= "</gTransfCred>"
+      If Left(::cCclasstrib, 3) == [800] .and. ::cFinnfe == [6]
+         ::cXml+= "<gTransfCred>"
+         ::cXml+= ::XmlTag( "vIBS" , ::nVibs_c )
+         ::cXml+= ::XmlTag( "vCBS" , ::nVcbs_c )
+         ::cXml+= "</gTransfCred>"
+      Endif
    Endif
 Return (Nil)
 
