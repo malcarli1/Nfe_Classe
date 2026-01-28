@@ -10,7 +10,7 @@
  *          : Maurílio Franchin Júnior                                       *
  *          : Jair Barreto                                                   *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 23.01.2026                                                     *
+ * ULT. ALT.: 28.01.2026                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 #IfNdef __XHARBOUR__
@@ -61,9 +61,8 @@ CLASS Malc_GeraXml
    VAR cProcemi                AS Character INIT [0]                              // 0 - emissão de NF-e com aplicativo do contribuinte
    VAR cVerproc                AS Character INIT [4.00_B30]
    VAR dDhCont                 AS Character INIT []                               // Data-hora contingência       FSDA - tpEmis = 5
-   VAR cxJust                  AS Character INIT []                               // Justificativa contingência   FSDA - tpEmis = 5
+   VAR cXjust                  AS Character INIT []                               // Justificativa contingência   FSDA - tpEmis = 5
    VAR cRefnfe                 AS Character INIT []                               // Grupo BA
-   VAR cCepe                   AS Character INIT []  
    VAR cTpnfdebito             AS Character INIT []                               // Reforma tributária
    VAR cTpnfcredito            AS Character INIT []                               // Reforma tributária
    VAR cTpcompragov            AS Character INIT []                               // Reforma tributária
@@ -1741,12 +1740,12 @@ METHOD fCria_TotaisRtc()
       ::cXml+= "</ISTot>"
    Endif
 
-*   If !Empty(::nVdifgibsuf_t)    .Or. !Empty(::nVdevtribgibsuf_t)      .Or. !Empty(::nVibsufgibsuf_t)   .Or. ;                    // Tag só é gerada se houver valores informados nos itens, (Simples nacional não gera a Tag)
-*      !Empty(::nVdDifgibsmun_t)  .Or. !Empty(::nVdevtribgibsmun_t)     .Or. !Empty(::nVibsmungibsmun_t) .Or. ; 
-*      !Empty(::nVcredpresgibs_t) .Or. !Empty(::nVcredprescondsusibs_t) .Or.                                  ;
-*      !Empty(::nVdifgcbs_t)      .Or. !Empty(::nVdevtribgcbs_t)        .Or. !Empty(::nVcbsgcbs_t)       .Or. !Empty(::nVcredprescbs_t)  .Or. !Empty(::nVcredprescondsuscbs_t) .Or. ;
-*      !Empty(::nvIBSMono_t)      .Or. !Empty(::nvCBSMono_t)            .Or. !Empty(::nvIBSMonoReten_t)  .Or. !Empty(::nvCBSMonoReten_t) .Or. !Empty(::nvIBSMonoRet_t)         .Or. !Empty(::nvCBSMonoRet_t) .and. ;
-   If ::cCrt == '3'
+   If !Empty(::nVdifgibsuf_t)    .Or. !Empty(::nVdevtribgibsuf_t)      .Or. !Empty(::nVibsufgibsuf_t)   .Or. ;                    // Tag só é gerada se houver valores informados nos itens, (Simples nacional não gera a Tag)
+      !Empty(::nVdDifgibsmun_t)  .Or. !Empty(::nVdevtribgibsmun_t)     .Or. !Empty(::nVibsmungibsmun_t) .Or. ; 
+      !Empty(::nVcredpresgibs_t) .Or. !Empty(::nVcredprescondsusibs_t) .Or.                                  ;
+      !Empty(::nVdifgcbs_t)      .Or. !Empty(::nVdevtribgcbs_t)        .Or. !Empty(::nVcbsgcbs_t)       .Or. !Empty(::nVcredprescbs_t)  .Or. !Empty(::nVcredprescondsuscbs_t) .Or. ;
+      !Empty(::nvIBSMono_t)      .Or. !Empty(::nvCBSMono_t)            .Or. !Empty(::nvIBSMonoReten_t)  .Or. !Empty(::nvCBSMonoReten_t) .Or. !Empty(::nvIBSMonoRet_t)         .Or. !Empty(::nvCBSMonoRet_t) //.and. ;
+*   If ::cCrt == '3'
       ::cXml+= "<IBSCBSTot>"
              ::cXml+= ::XmlTag( "vBCIBSCBS" , ::nVbcibscbs_t)
              ::cXml+= "<gIBS>"
