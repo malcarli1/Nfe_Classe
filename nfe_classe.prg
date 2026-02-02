@@ -526,7 +526,16 @@ CLASS Malc_GeraXml
    METHOD fCria_ProdutoIbscbs()                                                   // Reforma tributária
    METHOD fCria_Totais()
    METHOD fCria_TotaisRtc()                                                       // Reforma tributária
+   METHOD fTrata_TribRegular()                                                    // Reforma tributária
+   METHOD fTrata_CreditoPresumido()                                               // Reforma tributária
    METHOD fCria_Gibscbsmono()                                                     // Reforma tributária
+   METHOD fCria_Gtransfcredito()                                                  // Reforma tributária
+   METHOD fTrata_Diferimento()                                                    // Reforma tributária
+   METHOD fTrata_Reducao()                                                        // Reforma tributária
+   METHOD fTrata_TributoDevolvido()                                               // Reforma tributária
+   METHOD fCria_IBSUF()                                                           // Reforma tributária  
+   METHOD fCria_IBSMun()                                                          // Reforma tributária
+   METHOD fCria_CBS()                                                             // Reforma tributária
    METHOD fCria_Transportadora() 
    METHOD fCria_Cobranca()
    METHOD fCria_Pagamento()
@@ -622,7 +631,7 @@ METHOD fCria_Ide()
              ::cXml+= ::XmlTag( "tpNFCredito" , Iif(!(::cTpnfcredito $ [01_02_03]), [01]           , Left(::cTpnfcredito, 2)))   // 01 = Multa e juros; 02 = Apropriação de crédito presumido de IBS sobre o saldo devedor na ZFM (art. 450, § 1º, LC 214/25); 03 = Retorno 
           Endif 
 
-          If ::cAmbiente == [2] .And. ::cModelo == [65]
+          If ::cAmbiente == [2] .and. ::cModelo == [65]
              ::cXml+= ::XmlTag( "indFinal" , [1])                                                                                // Indica operação com consumidor final (0 - Não ; 1 - Consumidor Final)
           Else
              ::cXml+= ::XmlTag( "indFinal" , Iif(!(::cIndfinal $ [0_1]), [0], Left(::cIndfinal, 1)))                             // Indica operação com consumidor final (0 - Não ; 1 - Consumidor Final)
@@ -757,7 +766,7 @@ METHOD fCria_Destinatario()
       Endif
 
       // Id estrangeiro
-      If !Empty(::cIdestrangeiro) .AND. ::cUfd == [EX]
+      If !Empty(::cIdestrangeiro) .and. ::cUfd == [EX]
          ::cXml+= ::XmlTag("idEstrangeiro", Left(::cIdestrangeiro, 20))
       Endif
 
@@ -1382,209 +1391,265 @@ METHOD fCria_ProdutoIs()                                                        
              ::cXml  += ::XmlTag( "uTrib"        , Left(::cUtrib_is, 6))                                                         // Unidade de Medida Tributável
              ::cXml  += ::XmlTag( "qTrib"        , ::nQtrib_is, 4)                                                               // Quantidade Tributável
              ::cXml  += ::XmlTag( "vIS"          , ::nVis:= Round((::nVbcis * ::nQtrib_is) * (::nPisis/100), 2))                 // Valor do Imposto Seletivo
-             ::nVis_t+= nVis
+             ::nVis_t+= ::nVis
       ::cXml+= "</IS>"
    Endif 
 Return (Nil)
 
 * ----------------------> Metodo para gerar a tag IBSCBS <-------------------- *
 METHOD fCria_ProdutoIbscbs()  // Reforma tributária
- 
-   ::cXml+= "<IBSCBS>"
-         ::cXml+= ::XmlTag( "CST"       , Left(::cCclasstrib, 3))
-         ::cXml+= ::XmlTag( "cClassTrib", Left(::cCclasstrib, 6))
+   If !Empty(::cCclasstrib)
+      ::cXml+= "<IBSCBS>"
+             ::cXml+= ::XmlTag( "CST"       , Left(::cCclasstrib, 3))
+             ::cXml+= ::XmlTag( "cClassTrib", Left(::cCclasstrib, 6))
                        
-         If !Empty(::cCclasstrib) .And. !(Left(::cCclasstrib, 3) $ [400_410_510]) //.And. ::cCrt == '3'                            // CRT # 3 (Simples nacional por enquanto não tem IBS/CBS), CSTs 400/410/510 Não tem alíquota de IBS/CBS e portanto não gera a tag
-            If Left(::cCclasstrib, 3) $ [000_200_620] .or. (Left(::cCclasstrib, 3) $ [550_800] .and. ::cModelo # [65])
-               ::cXml+= "<gIBSCBS>"
-                      ::nVbcibs:= ::nVprod + ::nVServs + ::nVFrete + ::nVSeg + ::nVOutro + ::nVii - ::nVDesc - ::nVpis - ::nVCofins - ::nVicms - ::nVicmsufdest - ::nVfcp - ::nVfcpufdest - Round(::nMonoBas * ::nMonoAliq, 2) - ::nVissqn + ::nVis
-                      ::cXml+= ::XmlTag( "vBC" , ::nVbcibs)
-                      ::nVbcibscbs_t+= ::nVbcibs                                                                                 // já acumula o valor para os totais
-      
-                      ::cXml+= "<gIBSUF>"
-                             ::cXml+= ::XmlTag( "pIBSUF" , ::nPibsuf, 4)
-      
-                             If ::nPdifgibuf # 0 .and. Left(::cCclasstrib, 3) == [510]
-                                ::cXml+= "<gDif>" 
-                                       ::cXml         += ::XmlTag( "pDif" , ::nPdifgibuf, 4)
-                                       ::cXml         += ::XmlTag( "vDif" , Round(::nVbcibs * (::nPibsuf/100) * (::nPdifgibuf/100), 2) )
-                                       ::nVdifgibsuf_t+= Round(::nVbcibs * (::nPibsuf/100) * (::nPdifgibuf/100), 2)              // já acumula o valor para os totais
-                                ::cXml+= "</gDif>"
-                             Endif
-      
-                             If ::nVdevtribgibuf # 0
-                                ::cXml+= "<gDevTrib>"
-                                       ::cXml             += ::XmlTag( "vDevTrib" , ::nVdevtribgibuf)
-                                       ::nVdevtribgibsuf_t+= ::nVdevtribgibuf                                                    // já acumula o valor para os totais
-                                ::cXml+= "</gDevTrib>"
-                             Endif
-      
-                             If ::nPredaliqgibuf # 0 .and. Left(::cCclasstrib, 3) == [200]
-                                ::cXml+= "<gRed>"
-                                       ::cXml+= ::XmlTag( "pRedAliq"  , ::nPredaliqgibuf, 4)
-                                       ::cXml+= ::XmlTag( "pAliqEfet" , (::nPibsuf/100) * (1 - (::nPredaliqgibuf/100)), 4)
-                                ::cXml+= "</gRed>"
-                             Endif
-                                      
-                             ::cXml+= ::XmlTag( "vIBSUF" , ::nVibsuf:= Round(::nVbcibs * (::nPibsuf/100), 2) )
-                      ::cXml+= "</gIBSUF>"
-                      ::cXml+= "<gIBSMun>"
-                             ::cXml+= ::XmlTag( "pIBSMun" , ::nPibsmun, 4)
-      
-                             If ::nPdifgibsmun # 0 .and. Left(::cCclasstrib, 3) == [510]
-                                ::cXml+= "<gDif>"
-                                       ::cXml           += ::XmlTag( "pDif"   , ::nPdifgibsmun, 4)
-                                       ::cXml           += ::XmlTag( "vDif"   , Round(::nVbcibs * (::nPibsmun/100) * (::nPdifgibsmun/100), 2) ) 
-                                       ::nVdDifgibsmun_t+= Round(::nVbcibs * (::nPibsmun/100) * (::nPdifgibsmun/100), 2)         // já acumula o valor para os totais
-                                ::cXml+= "</gDif>"
-                             Endif
-      
-                             If ::nVdevtribgibsmun # 0
-                                ::cXml+= "<gDevTrib>"
-                                       ::cXml+= ::XmlTag( "vDevTrib"  , ::nVdevtribgibsmun)
-                                       ::nVdevtribgibsmun_t+= ::nVdevtribgibsmun                                                 // já acumula o valor para os totais
-                                ::cXml+= "</gDevTrib>"
-                             Endif
-      
-                             If ::nPredaliqibsmun # 0 .and. Left(::cCclasstrib, 3) == [200]
-                                ::cXml+= "<gRed>"
-                                       ::cXml+= ::XmlTag( "pRedAliq"  , ::nPredaliqibsmun, 4)
-                                       ::cXml+= ::XmlTag( "pAliqEfet" , (::nPibsmun/100) * (1 - (::nPredaliqibsmun/100)), 4)
-                                ::cXml+= "</gRed>"
-                             Endif
-      
-                             ::cXml+= ::XmlTag( "vIBSMun" , ::nVibsmun:= Round(::nVbcibs * (::nPibsmun/100), 2) )
-                             ::nVibsmungibsmun_t+= ::nVibsmun                                                                    // já acumula o valor para os totais
-                      ::cXml+= "</gIBSMun>"
-                      ::cXml+= ::XmlTag( "vIBS" , ::nVibsuf + ::nVibsmun )
-                      ::nVibsufgibsuf_t+= (::nVibsuf + ::nVibsmun)                                                               // já acumula o valor para os totais
-      
-                      ::cXml+= "<gCBS>"
-                             ::cXml+= ::XmlTag( "pCBS" , ::nPcbs, 4)
-      
-                             If ::nPpDifgcbs # 0 .and. Left(::cCclasstrib, 3) == [510]
-                                ::cXml+= "<gDif>"
-                                       ::cXml+= ::XmlTag( "pDif"   , ::nPpDifgcbs, 4)
-                                       ::cXml+= ::XmlTag( "vDif"   , Round(::nVbcibs * (::nPcbs/100) * (::nPpDifgcbs/100), 2) )  
-                                ::cXml+= "</gDif>"
-                             Endif
-      
-                             If ::nVdevtribgcbs # 0
-                                ::cXml+= "<gDevTrib>"
-                                       ::cXml+= ::XmlTag( "vDevTrib" , ::nVdevtribgcbs)
-                                       ::nVdevtribgcbs+= ::nVdevtribgcbs                                                         // já acumula o valor para os totais
-                                ::cXml+= "</gDevTrib>"
-                             Endif
-      
-                             If ::nPredaliqgcbs # 0 .and. Left(::cCclasstrib, 3) == [200]
-                                ::cXml+= "<gRed>"
-                                       ::cXml+= ::XmlTag( "pRedAliq"  , ::nPredaliqgcbs, 4)
-                                       ::cXml+= ::XmlTag( "pAliqEfet" , (::nPcbs/100) * (1 - (::nPredaliqgcbs/100)), 4)
-                                ::cXml+= "</gRed>"
-                             Endif
-      
-                             ::cXml       += ::XmlTag( "vCBS" , ::nVcbs:= Round(::nVbcibs * (::nPcbs/100), 2) )
-                             ::nVcbsgcbs_t+= ::nVcbs                                                                             // já acumula o valor para os totais
-                      ::cXml+= "</gCBS>"
-      
-                      If ::nPaliqefetregibsuf # 0 .and. Left(::cCclasstrib, 3) $ [550]
-                         ::cXml+= "<gTribRegular>"
-                                ::cXml+= ::XmlTag( "CSTReg"             , Left(::cCclasstribreg, 3))
-                                ::cXml+= ::XmlTag( "cClassTribReg"      , Left(::cCclasstribreg, 6))
-                                ::cXml+= ::XmlTag( "pAliqEfetRegIBSUF"  , ::nPaliqefetregibsuf, 4)
-                                ::cXml+= ::XmlTag( "vTribRegIBSUF"      , ::nVtribregibsuf:= Round(::nVbcibs * (::nPaliqefetregibsuf/100), 2) )
-                                ::cXml+= ::XmlTag( "pAliqEfetRegIBSMun" , ::nPaliqefetregibsMun, 4)
-                                ::cXml+= ::XmlTag( "vTribRegIBSMun"     , ::nVtribregibsMun:= Round(::nVbcibs * (::nPaliqefetregibsmun/100), 2) )
-                                ::cXml+= ::XmlTag( "pAliqEfetRegCBS"    , ::nPaliqefetregcbs, 4)
-                                ::cXml+= ::XmlTag( "vTribRegCBS"        , ::nVtribregcbs:= Round(::nVbcibs * (::nPaliqefetregcbs/100), 2) )
-                         ::cXml+= "</gTribRegular>"
-                      Endif
-      
-                      If !Empty(::cCredPresgibs) .and. ::cCredPresgibs $ [1_2_3_4_5] .and. ::cModelo == [55]
-                         ::cXml+= "<gIBSCredPres>"
-                                ::cXml                  += ::XmlTag( "cCredPres" , Left(::cCredPresgibs, 2))
-                                ::cXml                  += ::XmlTag( "pCredPres" , ::nPcredpresgibs, 4)
-                                ::cXml                  += ::XmlTag( "vCredPres" , ::nVcredpresgibs:= Round(::nVbcibs * (::nPcredpresgibs/100), 2) )
-                                ::nVcredpresgibs_t      += ::nVcredpresgibs                                                      // já acumula o valor para os totais
-                                ::cXml                  += ::XmlTag( "vCredPresCondSus" , ::nVcredprescondsusibs)
-                                ::nVcredprescondsusibs_t+= ::nVcredprescondsusibs                                                // já acumula o valor para os totais
-                          ::cXml+= "</gIBSCredPres>"
-                      Endif
-      
-                      If !Empty(::cCredPrescbs) .and. ::cCredPrescbs $ [1_2_3_4_5] .and. ::cModelo == [55]
-                         ::cXml+= "<gCBSCredPres>"
-                                ::cXml                  += ::XmlTag( "cCredPres" , Left(::cCredPrescbs, 2))
-                                ::cXml                  += ::XmlTag( "pCredPres" , ::nPcredprescbs, 4)
-                                ::cXml                  += ::XmlTag( "vCredPres" , Round(::nVcredprescbs * (::nPcredprescbs/100), 2) )
-                                ::nVcredprescbs_t       += ::nVcredprescbs                                                       // já acumula o valor para os totais
-                                ::cXml                  += ::XmlTag( "vCredPresCondSus" , ::nVcredprescondsuscbs)
-                                ::nVcredprescondsuscbs_t+= ::nVcredprescondsuscbs                                                // já acumula o valor para os totais
-                         ::cXml+= "</gCBSCredPres>"
-                      Endif
-               ::cXml+= "</gIBSCBS>"
-            Endif
-         Endif 
-   ::cXml+= "</IBSCBS>"
+             If !(Left(::cCclasstrib, 3) $ [400_410_510]) //.and. ::cCrt == [3]  // CRT # 3 (Simples nacional por enquanto não tem IBS/CBS), CSTs 400/410/510 Não tem alíquota de IBS/CBS e portanto não gera a tag
+                If Left(::cCclasstrib, 3) $ [000_200_620] .or. (Left(::cCclasstrib, 3) $ [550_800] .and. ::cModelo # [65])
+                   ::cXml+= "<gIBSCBS>"
+                          ::nVbcibs:= ::nVprod + ::nVServs + ::nVFrete + ::nVSeg + ::nVOutro + ::nVii - ::nVDesc - ::nVpis - ::nVCofins - ::nVicms - ::nVicmsufdest - ::nVfcp - ::nVfcpufdest - Round(::nMonoBas * ::nMonoAliq, 2) - ::nVissqn + ::nVis
+                          ::cXml+= ::XmlTag( "vBC" , ::nVbcibs)
+                          ::nVbcibscbs_t+= ::nVbcibs                                                                                 // já acumula o valor para os totais
 
-   If Left(::cCclasstrib, 3) == [620]
+                          ::fCria_IBSUF()      
+
+                          ::fCria_IBSMun()
+
+                          ::fCria_CBS()
+  
+                          ::fTrata_TribRegular()      
+
+                          ::fTrata_CreditoPresumido()      
+                   ::cXml+= "</gIBSCBS>"
+                Endif
+             Endif 
+      ::cXml+= "</IBSCBS>"
+
       ::fCria_Gibscbsmono()
-   Endif 
 
+      ::fCria_Gtransfcredito()
+   Endif
+Return (Nil)
+
+* ----------------------> Metodo para gerar a tag IBSUF <--------------------- *
+METHOD fCria_IBSUF() // Alterado por : Jair Barreto  data : 23/01/2026
+   ::cXml+= "<gIBSUF>"
+          ::cXml+= ::XmlTag( "pIBSUF" , ::nPibsuf, 4)
+
+          ::fTrata_Diferimento([UF])
+
+          ::fTrata_TributoDevolvido([UF])
+
+          ::fTrata_Reducao([UF])
+                                      
+          ::cXml+= ::XmlTag( "vIBSUF" , ::nVibsuf:= Round(::nVbcibs * (::nPibsuf/100), 2) )
+          ::nVibsufgibsuf_t += ::nVibsuf
+   ::cXml+= "</gIBSUF>"
+Return (Nil)
+
+* ----------------------> Metodo para gerar a tag IBSMUN <-------------------- *
+METHOD fCria_IBSMun() // Alterado por : Jair Barreto  data : 23/01/2026
+   ::cXml+= "<gIBSMun>"
+          ::cXml+= ::XmlTag( "pIBSMun" , ::nPibsmun, 4)
+      
+          ::fTrata_Diferimento([MUN])
+
+          ::fTrata_TributoDevolvido([MUN])
+      
+          ::fTrata_Reducao([MUN])
+
+          ::cXml+= ::XmlTag( "vIBSMun" , ::nVibsmun:= Round(::nVbcibs * (::nPibsmun/100), 2) )
+          ::nVibsmungibsmun_t+= ::nVibsmun                                                                    // já acumula o valor para os totais
+    ::cXml+= "</gIBSMun>"
+    ::cXml+= ::XmlTag( "vIBS" , ::nVibsuf + ::nVibsmun )
+    ::nVibsufgibsuf_t+= (::nVibsuf + ::nVibsmun)                                                               // já acumula o valor para os totais
+Return (Nil)
+
+* ----------------------> Metodo para gerar a tag CBS <----------------------- *
+METHOD fCria_CBS()   // Alterado por : Jair Barreto  data : 23/01/2026
+   ::cXml+= "<gCBS>"
+          ::cXml+= ::XmlTag( "pCBS" , ::nPcbs, 4)
+      
+          ::fTrata_Diferimento([CBS])
+      
+          ::fTrata_TributoDevolvido([CBS])
+     
+          ::fTrata_Reducao([CBS])
+     
+          ::cXml       += ::XmlTag( "vCBS" , ::nVcbs:= Round(::nVbcibs * (::nPcbs/100), 2) )
+          ::nVcbsgcbs_t+= ::nVcbs                                                                             // já acumula o valor para os totais
+   ::cXml+= "</gCBS>"
+Return (Nil)
+
+* ----------------------> Metodo para gerar a tag Tributo Devolvido <--------- *
+METHOD fTrata_TributoDevolvido(cTipo)
+   Do Case
+      Case cTipo == [UF] .and. ::nVdevtribgibuf # 0
+           ::cXml+= "<gDevTrib>"
+                  ::cXml             += ::XmlTag( "vDevTrib" , ::nVdevtribgibuf)
+                  ::nVdevtribgibsuf_t+= ::nVdevtribgibuf                                                    // já acumula o valor para os totais
+           ::cXml+= "</gDevTrib>"
+      Case cTipo == [MUN] .and. ::nVdevtribgibsmun # 0
+           ::cXml+= "<gDevTrib>"
+                  ::cXml+= ::XmlTag( "vDevTrib"  , ::nVdevtribgibsmun)
+                  ::nVdevtribgibsmun_t+= ::nVdevtribgibsmun                                                 // já acumula o valor para os totais
+           ::cXml+= "</gDevTrib>"
+      Case cTipo == [CBS] .and. ::nVdevtribgcbs # 0
+           ::cXml+= "<gDevTrib>"
+                  ::cXml+= ::XmlTag( "vDevTrib" , ::nVdevtribgcbs)
+                  ::nVdevtribgcbs+= ::nVdevtribgcbs                                                         // já acumula o valor para os totais
+           ::cXml+= "</gDevTrib>"
+   Endcase
+Return (Nil)
+
+* ----------------------> Metodo para gerar a tag Diferimento <--------------- *
+METHOD fTrata_Diferimento(cTipo)       // Alterado por : Jair Barreto  data : 23/01/2026
+   If Left(::cCclasstrib, 3) == [510]
+      Do Case
+         Case cTipo == [UF] .and. ::nPdifgibuf # 0
+              ::cXml+= "<gDif>"
+                     ::cXml         += ::XmlTag( "pDif" , ::nPdifgibuf, 4)
+                     ::cXml         += ::XmlTag( "vDif" , Round(::nVbcibs * (::nPibsuf/100) * (::nPdifgibuf/100), 2) )
+                     ::nVdifgibsuf_t+= Round(::nVbcibs * (::nPibsuf/100) * (::nPdifgibuf/100), 2)              // já acumula o valor para os totais
+              ::cXml+= "</gDif>"
+         Case cTipo == [MUN] .and. ::nPifgibsmun # 0
+              ::cXml+= "<gDif>"
+                     ::cXml           += ::XmlTag( "pDif" , ::nPdifgibsmun, 4)
+                     ::cXml           += ::XmlTag( "vDif" , Round(::nVbcibs * (::nPibsmun/100) * (::nPdifgibsmun/100), 2) ) 
+                     ::nVdDifgibsmun_t+= Round(::nVbcibs * (::nPibsmun/100) * (::nPdifgibsmun/100), 2)         // já acumula o valor para os totais
+              ::cXml+= "</gDif>"
+         Case cTipo == [CBS] .and. ::nPpDifgcbs # 0
+              ::cXml+= "<gDif>"
+                     ::cXml+= ::XmlTag( "pDif" , ::nPpDifgcbs, 4)
+                     ::cXml+= ::XmlTag( "vDif" , Round(::nVbcibs * (::nPcbs/100) * (::nPpDifgcbs/100), 2) )  
+              ::cXml+= "</gDif>"
+      Endcase
+   Endif
+Return (Nil)
+
+* ----------------------> Metodo para gerar a tag Redução <------------------ *
+METHOD fTrata_Reducao(cTipo)          // Alterado por : Jair Barreto  data : 23/01/2026
+   If Left(::cCclasstrib, 3) == [200]
+      Do Case
+         Case cTipo == [UF] .and. ::nPredaliqgibuf # 0
+              ::cXml+= "<gRed>"
+                     ::cXml+= ::XmlTag( "pRedAliq"  , ::nPredaliqgibuf, 4)
+                     ::cXml+= ::XmlTag( "pAliqEfet" , (::nPibsuf/100) * (1 - (::nPredaliqgibuf/100)), 4)
+              ::cXml+= "</gRed>"
+         Case cTipo == [MUN] .and. ::nPredaliqibsmun # 0
+              ::cXml+= "<gRed>"
+                     ::cXml+= ::XmlTag( "pRedAliq"  , ::nPredaliqibsmun, 4)
+                     ::cXml+= ::XmlTag( "pAliqEfet" , (::nPibsmun/100) * (1 - (::nPredaliqibsmun/100)), 4)
+              ::cXml+= "</gRed>"
+         Case cTipo == [CBS] .and. ::nPredaliqgcbs # 0
+              ::cXml+= "<gRed>"
+                     ::cXml+= ::XmlTag( "pRedAliq"  , ::nPredaliqgcbs, 4)
+                     ::cXml+= ::XmlTag( "pAliqEfet" , (::nPcbs/100) * (1 - (::nPredaliqgcbs/100)), 4)
+              ::cXml+= "</gRed>"
+      Endcase
+   Endif
+Return (Nil)
+
+* ----------------------> Metodo para gerar a tag Transferencia de Credito <-- *
+METHOD fCria_Gtransfcredito()    // Alterado por : Jair Barreto  data : 23/01/2026
    If Left(::cCclasstrib, 3) == [800] .and. ::cFinnfe == [6]
       ::cXml+= "<gTransfCred>"
-      ::cXml+= ::XmlTag( "vIBS" , ::nVibs_c )
-      ::cXml+= ::XmlTag( "vCBS" , ::nVcbs_c )
+             ::cXml+= ::XmlTag( "vIBS" , ::nVibs_c )
+             ::cXml+= ::XmlTag( "vCBS" , ::nVcbs_c )
       ::cXml+= "</gTransfCred>"
+   Endif
+Return (Nil)
+
+* ----------------------> Metodo para gerar a tag Credito Presumido <--------- *
+METHOD fTrata_CreditoPresumido()    // Alterado por : Jair Barreto  data : 23/01/2026
+   If ::cModelo == [55]
+      If !Empty(::cCredPresgibs) .and. ::cCredPresgibs $ [1_2_3_4_5]
+         ::cXml+= "<gIBSCredPres>"
+                ::cXml                  += ::XmlTag( "cCredPres" , Left(::cCredPresgibs, 2))
+                ::cXml                  += ::XmlTag( "pCredPres" , ::nPcredpresgibs, 4)
+                ::cXml                  += ::XmlTag( "vCredPres" , ::nVcredpresgibs:= Round(::nVbcibs * (::nPcredpresgibs/100), 2) )
+                ::cXml                  += ::XmlTag( "vCredPresCondSus" , ::nVcredprescondsusibs)
+                ::nVcredprescondsusibs_t+= ::nVcredprescondsusibs                                                // já acumula o valor para os totais
+                ::nVcredpresgibs_t      += ::nVcredpresgibs                                                      // já acumula o valor para os totais
+         ::cXml+= "</gIBSCredPres>"
+      Endif
+
+      If !Empty(::cCredPrescbs) .and. ::cCredPrescbs $ [1_2_3_4_5]
+         ::cXml+= "<gCBSCredPres>"
+                ::cXml                  += ::XmlTag( "cCredPres" , Left(::cCredPrescbs, 2))
+                ::cXml                  += ::XmlTag( "pCredPres" , ::nPcredprescbs, 4)
+                ::cXml                  += ::XmlTag( "vCredPres" , Round(::nVcredprescbs * (::nPcredprescbs/100), 2) )
+                ::cXml                  += ::XmlTag( "vCredPresCondSus" , ::nVcredprescondsuscbs)
+                ::nVcredprescbs_t       += ::nVcredprescbs                                                       // já acumula o valor para os totais
+                ::nVcredprescondsuscbs_t+= ::nVcredprescondsuscbs                                                // já acumula o valor para os totais
+         ::cXml+= "</gCBSCredPres>"
+      Endif
+   Endif
+Return (Nil)
+
+* ----------------------> Metodo para gerar a tag Tributação Regular <-------- *
+METHOD fTrata_TribRegular() // Alterado por : Jair Barreto  data : 23/01/2026
+   If Left(::cCclasstrib, 3) == [550] .and. ::nPaliqefetregibsuf # 0
+      ::cXml+= "<gTribRegular>"
+             ::cXml+= ::XmlTag( "CSTReg"             , Left(::cCclasstribreg, 3))
+             ::cXml+= ::XmlTag( "cClassTribReg"      , Left(::cCclasstribreg, 6))
+             ::cXml+= ::XmlTag( "pAliqEfetRegIBSUF"  , ::nPaliqefetregibsuf, 4)
+             ::cXml+= ::XmlTag( "vTribRegIBSUF"      , ::nVtribregibsuf:= Round(::nVbcibs * (::nPaliqefetregibsuf/100), 2) )
+             ::cXml+= ::XmlTag( "pAliqEfetRegIBSMun" , ::nPaliqefetregibsMun, 4)
+             ::cXml+= ::XmlTag( "vTribRegIBSMun"     , ::nVtribregibsMun:= Round(::nVbcibs * (::nPaliqefetregibsmun/100), 2) )
+             ::cXml+= ::XmlTag( "pAliqEfetRegCBS"    , ::nPaliqefetregcbs, 4)
+             ::cXml+= ::XmlTag( "vTribRegCBS"        , ::nVtribregcbs:= Round(::nVbcibs * (::nPaliqefetregcbs/100), 2) )
+      ::cXml+= "</gTribRegular>"
    Endif
 Return (Nil)
 
 * -------------------> Metodo para gerar a tag gIBSCBSMono <------------------ *
 METHOD fCria_Gibscbsmono()   // Reforma tributária
-   If ::nQbcmono # 0 .and. ::cIndMono == [1] //.And. ::cCrt == '3'
-      ::cXml+= "<gIBSCBSMono>"
-             ::cXml       += ::XmlTag( "qBCMono"         , ::nQbcmono)
-             ::cXml       += ::XmlTag( "adRemIBS"        , ::nAdremibs, 4)
-             ::cXml       += ::XmlTag( "adRemCBS"        , ::nAdremcbs, 4)
-             ::cXml       += ::XmlTag( "vIBSMono"        , ::nVibsmono:= Round(nQbcmono * (::nAdremibs/100), 2) )
-             ::cXml       += ::XmlTag( "vCBSMono"        , ::nVcbsmono:= Round(nQbcmono * (::nAdremcbs/100), 2))
-             ::nvIBSMono_t+= ::nVibsmono                                                                                         // já acumula o valor para os totais
-             ::nvCBSMono_t+= ::nVcbsmono                                                                                         // já acumula o valor para os totais
+   If Left(::cCclasstrib, 3) == [620]
+      If ::nQbcmono # 0 .and. ::cIndMono == [1] //.and. ::cCrt == [3]
+         ::cXml+= "<gIBSCBSMono>"
+                ::cXml       += ::XmlTag( "qBCMono"         , ::nQbcmono)
+                ::cXml       += ::XmlTag( "adRemIBS"        , ::nAdremibs, 4)
+                ::cXml       += ::XmlTag( "adRemCBS"        , ::nAdremcbs, 4)
+                ::cXml       += ::XmlTag( "vIBSMono"        , ::nVibsmono:= Round(nQbcmono * (::nAdremibs/100), 2) )
+                ::cXml       += ::XmlTag( "vCBSMono"        , ::nVcbsmono:= Round(nQbcmono * (::nAdremcbs/100), 2))
+                ::nvIBSMono_t+= ::nVibsmono                                                                                         // já acumula o valor para os totais
+                ::nvCBSMono_t+= ::nVcbsmono                                                                                         // já acumula o valor para os totais
 
-             If ::cIndMonoReten == [1]
-                ::cXml            += ::XmlTag( "qBCMonoReten"    , ::nQbcmonoreten, 0)
-                ::cXml            += ::XmlTag( "adRemIBSReten"   , ::nAdremibsreten, 4)
-                ::cXml            += ::XmlTag( "vIBSMonoReten"   , ::nIbsmonoreten:= Round(::nQbcmonoreten * (::nAdremibsreten/100), 2) )
-                ::cXml            += ::XmlTag( "adRemCBSReten"   , ::nAdremcbsreten, 4)
-                ::cXml            += ::XmlTag( "vCBSMonoReten"   , ::nVcbsmonoreten:= Round(::nQbcmonoreten * (::nAdremcbsreten/100), 2) )
-                ::nvIBSMonoReten_t+= ::nVibsmonoreten                                                                            // já acumula o valor para os totais
-                ::nvCBSMonoReten_t+= ::nVcbsmonoreten                                                                            // já acumula o valor para os totais
-             Endif
+                If ::cIndMonoReten == [1]
+                   ::cXml            += ::XmlTag( "qBCMonoReten"    , ::nQbcmonoreten, 0)
+                   ::cXml            += ::XmlTag( "adRemIBSReten"   , ::nAdremibsreten, 4)
+                   ::cXml            += ::XmlTag( "vIBSMonoReten"   , ::nIbsmonoreten:= Round(::nQbcmonoreten * (::nAdremibsreten/100), 2) )
+                   ::cXml            += ::XmlTag( "adRemCBSReten"   , ::nAdremcbsreten, 4)
+                   ::cXml            += ::XmlTag( "vCBSMonoReten"   , ::nVcbsmonoreten:= Round(::nQbcmonoreten * (::nAdremcbsreten/100), 2) )
+                   ::nvIBSMonoReten_t+= ::nVibsmonoreten                                                                            // já acumula o valor para os totais
+                   ::nvCBSMonoReten_t+= ::nVcbsmonoreten                                                                            // já acumula o valor para os totais
+                Endif
 
-             If ::cIndMonoRet == [1]
-                ::cXml          += ::XmlTag( "qBCMonoRet"      , ::nQbcmonoret, 0)
-                ::cXml          += ::XmlTag( "adRemIBSRet"     , ::nAdremibsret, 4)
-                ::cXml          += ::XmlTag( "vIBSMonoRet"     , ::nVibsmonoret:= Round(::nQbcmonoret * (::nAdremibsret/100), 2) )
-                ::cXml          += ::XmlTag( "adRemCBSRet"     , ::nAdremcbsret, 4)
-                ::cXml          += ::XmlTag( "vCBSMonoRet"     , ::nVcbsmonoret:= Round(::nQbcmonoret * (::nAdremcbsret/100), 2) )
-                ::nvIBSMonoRet_t+= ::nVibsmonoret                                                                                // já acumula o valor para os totais
-                ::nvCBSMonoRet_t+= ::nVcbsmonoret                                                                                // já acumula o valor para os totais
-             Endif
+                If ::cIndMonoRet == [1]
+                   ::cXml          += ::XmlTag( "qBCMonoRet"      , ::nQbcmonoret, 0)
+                   ::cXml          += ::XmlTag( "adRemIBSRet"     , ::nAdremibsret, 4)
+                   ::cXml          += ::XmlTag( "vIBSMonoRet"     , ::nVibsmonoret:= Round(::nQbcmonoret * (::nAdremibsret/100), 2) )
+                   ::cXml          += ::XmlTag( "adRemCBSRet"     , ::nAdremcbsret, 4)
+                   ::cXml          += ::XmlTag( "vCBSMonoRet"     , ::nVcbsmonoret:= Round(::nQbcmonoret * (::nAdremcbsret/100), 2) )
+                   ::nvIBSMonoRet_t+= ::nVibsmonoret                                                                                // já acumula o valor para os totais
+                   ::nvCBSMonoRet_t+= ::nVcbsmonoret                                                                                // já acumula o valor para os totais
+                Endif
 
-             If ::cIndMonoDif == [1]
-                ::cXml+= ::XmlTag( "pDifIBS"         , ::nPdifibs, 4)                                                            // Percentual do diferimento do imposto monofásico. A ser aplicado em vIBSMono.
-                ::cXml+= ::XmlTag( "vIBSMonoDif"     , ::nVibsmonodif)                                                           // Valor do IBS monofásico diferido. A ser deduzido do valor do IBS. 
-                ::cXml+= ::XmlTag( "pDifCBS"         , ::nPdifcbs, 4)                                                            // Percentual do diferimento do imposto monofásico. A ser aplicado em vCBSMono
-                ::cXml+= ::XmlTag( "vCBSMonoDif"     , ::nVcbsmonodif)                                                           // Valor da CBS Monofásica diferida. A ser deduzido do valor da CBS
-                ::cXml+= ::XmlTag( "vTotIBSMonoItem" , ::nVtotibsmonoItem)                                                       // Total de IBS Monofásico. 
-                ::cXml+= ::XmlTag( "vTotCBSMonoItem" , ::nVtotcbsmonoItem)                                                       // Total da CBS Monofásica. 
-             Endif
-      ::cXml+= "</gIBSCBSMono>"
+                If ::cIndMonoDif == [1]
+                   ::cXml+= ::XmlTag( "pDifIBS"         , ::nPdifibs, 4)                                                            // Percentual do diferimento do imposto monofásico. A ser aplicado em vIBSMono.
+                   ::cXml+= ::XmlTag( "vIBSMonoDif"     , ::nVibsmonodif)                                                           // Valor do IBS monofásico diferido. A ser deduzido do valor do IBS. 
+                   ::cXml+= ::XmlTag( "pDifCBS"         , ::nPdifcbs, 4)                                                            // Percentual do diferimento do imposto monofásico. A ser aplicado em vCBSMono
+                   ::cXml+= ::XmlTag( "vCBSMonoDif"     , ::nVcbsmonodif)                                                           // Valor da CBS Monofásica diferida. A ser deduzido do valor da CBS
+                   ::cXml+= ::XmlTag( "vTotIBSMonoItem" , ::nVtotibsmonoItem)                                                       // Total de IBS Monofásico. 
+                   ::cXml+= ::XmlTag( "vTotCBSMonoItem" , ::nVtotcbsmonoItem)                                                       // Total da CBS Monofásica. 
+                Endif
+         ::cXml+= "</gIBSCBSMono>"
+      Endif
    Endif 
 Return (Nil)
 
 * ----------------> Metodo para gerar as tags do PIS e COFINS <--------------- *
 METHOD fCria_ProdutoPisCofins()                                                                                                  // Marcelo Brigatti
-
    If Len( AllTrim( ::cCstPis ) ) > 0 .Or. !Empty(::cCstPis)
              ::cXml+= "<PIS>"
                    ::cXml+= "<PISAliq>"
@@ -1714,74 +1779,77 @@ METHOD fCria_Totais()
           ::cXml+= "</ICMSTot>"
    ::cXml+= "</total>"
 
-   If !Empty(::cCclasstrib)
-      ::fCria_TotaisRtc() 
-   Endif
+   ::fCria_TotaisRtc() 
 Return (Nil)
 
 * --------------> Metodo para gerar a tag de Total RTC da NFe <--------------- *
 METHOD fCria_TotaisRtc()
-   If "</total>" $ ::cXml
-      ::cXml:= StrTran(::cXml, "</total>", "")  
-   Endif  
+   If !Empty(::cCclasstrib)
 
-   If !Empty(::nVis_t)
-      ::cXml+= "<ISTot>"
-             ::cXml+= ::XmlTag( "vIS" , ::nVis_t)
-      ::cXml+= "</ISTot>"
-   Endif
+      If "</total>" $ ::cXml
+         ::cXml:= StrTran(::cXml, "</total>", "")  
+      Endif  
 
-   If !Empty(::nVdifgibsuf_t)    .Or. !Empty(::nVdevtribgibsuf_t)      .Or. !Empty(::nVibsufgibsuf_t)   .Or. ;                    // Tag só é gerada se houver valores informados nos itens, (Simples nacional não gera a Tag)
-      !Empty(::nVdDifgibsmun_t)  .Or. !Empty(::nVdevtribgibsmun_t)     .Or. !Empty(::nVibsmungibsmun_t) .Or. ; 
-      !Empty(::nVcredpresgibs_t) .Or. !Empty(::nVcredprescondsusibs_t) .Or.                                  ;
-      !Empty(::nVdifgcbs_t)      .Or. !Empty(::nVdevtribgcbs_t)        .Or. !Empty(::nVcbsgcbs_t)       .Or. !Empty(::nVcredprescbs_t)  .Or. !Empty(::nVcredprescondsuscbs_t) .Or. ;
-      !Empty(::nvIBSMono_t)      .Or. !Empty(::nvCBSMono_t)            .Or. !Empty(::nvIBSMonoReten_t)  .Or. !Empty(::nvCBSMonoReten_t) .Or. !Empty(::nvIBSMonoRet_t)         .Or. !Empty(::nvCBSMonoRet_t) //.And. ;
-*   If ::cCrt == '3'
-      ::cXml+= "<IBSCBSTot>"
-             ::cXml+= ::XmlTag( "vBCIBSCBS" , ::nVbcibscbs_t)
-             ::cXml+= "<gIBS>"
-                    ::cXml+= "<gIBSUF>"
-                           ::cXml+= ::XmlTag( "vDif"      , ::nVdifgibsuf_t)
-                           ::cXml+= ::XmlTag( "vDevTrib"  , ::nVdevtribgibsuf_t)
-                           ::cXml+= ::XmlTag( "vIBSUF"    , ::nVibsufgibsuf_t)
-                    ::cXml+= "</gIBSUF>"
-                    ::cXml+= "<gIBSMun>"
-                           ::cXml+= ::XmlTag( "vDif"      , ::nVdDifgibsmun_t)
-                           ::cXml+= ::XmlTag( "vDevTrib"  , ::nVdevtribgibsmun_t)
-                           ::cXml+= ::XmlTag( "vIBSMun"   , ::nVibsmungibsmun_t)
-                    ::cXml+= "</gIBSMun>"
-                    ::cXml+= ::XmlTag( "vIBS"             , ::nVibsgibs_t:= ::nVibsufgibsuf_t + ::nVibsmungibsmun_t )
-                    ::cXml+= ::XmlTag( "vCredPres"        , ::nVcredpresgibs_t)
-                    ::cXml+= ::XmlTag( "vCredPresCondSus" , ::nVcredprescondsusibs_t)
-             ::cXml+= "</gIBS>"
-             ::cXml+= "<gCBS>"
-                    ::cXml+= ::XmlTag( "vDif"             , ::nVdifgcbs_t)
-                    ::cXml+= ::XmlTag( "vDevTrib"         , ::nVdevtribgcbs_t)
-                    ::cXml+= ::XmlTag( "vCBS"             , ::nVcbsgcbs_t)
-                    ::cXml+= ::XmlTag( "vCredPres"        , ::nVcredprescbs_t)
-                    ::cXml+= ::XmlTag( "vCredPresCondSus" , ::nVcredprescondsuscbs_t)
-             ::cXml+= "</gCBS>"
+      If !Empty(::nVis_t)
+         ::cXml+= "<ISTot>"
+                ::cXml+= ::XmlTag( "vIS" , ::nVis_t)
+         ::cXml+= "</ISTot>"
+      Endif
+
+      If !Empty(::nVdifgibsuf_t)    .Or. !Empty(::nVdevtribgibsuf_t)      .Or. !Empty(::nVibsufgibsuf_t)   .Or. ;                    // Tag só é gerada se houver valores informados nos itens, (Simples nacional não gera a Tag)
+         !Empty(::nVdDifgibsmun_t)  .Or. !Empty(::nVdevtribgibsmun_t)     .Or. !Empty(::nVibsmungibsmun_t) .Or. ; 
+         !Empty(::nVcredpresgibs_t) .Or. !Empty(::nVcredprescondsusibs_t) .Or.                                  ;
+         !Empty(::nVdifgcbs_t)      .Or. !Empty(::nVdevtribgcbs_t)        .Or. !Empty(::nVcbsgcbs_t)       .Or. !Empty(::nVcredprescbs_t)  .Or. !Empty(::nVcredprescondsuscbs_t) .Or. ;
+         !Empty(::nvIBSMono_t)      .Or. !Empty(::nvCBSMono_t)            .Or. !Empty(::nvIBSMonoReten_t)  .Or. !Empty(::nvCBSMonoReten_t) .Or. !Empty(::nvIBSMonoRet_t)         .Or. !Empty(::nvCBSMonoRet_t) //.and. ::cCrt == [3]
+
+         ::cXml+= "<IBSCBSTot>"
+                ::cXml+= ::XmlTag( "vBCIBSCBS" , ::nVbcibscbs_t)
+                ::cXml+= "<gIBS>"
+                       ::cXml+= "<gIBSUF>"
+                              ::cXml+= ::XmlTag( "vDif"      , ::nVdifgibsuf_t)
+                              ::cXml+= ::XmlTag( "vDevTrib"  , ::nVdevtribgibsuf_t)
+                              ::cXml+= ::XmlTag( "vIBSUF"    , ::nVibsufgibsuf_t)
+                       ::cXml+= "</gIBSUF>"
+                  
+                       ::cXml+= "<gIBSMun>"
+                              ::cXml+= ::XmlTag( "vDif"      , ::nVdDifgibsmun_t)
+                              ::cXml+= ::XmlTag( "vDevTrib"  , ::nVdevtribgibsmun_t)
+                              ::cXml+= ::XmlTag( "vIBSMun"   , ::nVibsmungibsmun_t)
+                       ::cXml+= "</gIBSMun>"
+                       ::cXml+= ::XmlTag( "vIBS"             , ::nVibsgibs_t:= ::nVibsufgibsuf_t + ::nVibsmungibsmun_t )
+                       ::cXml+= ::XmlTag( "vCredPres"        , ::nVcredpresgibs_t)
+                       ::cXml+= ::XmlTag( "vCredPresCondSus" , ::nVcredprescondsusibs_t)
+                ::cXml+= "</gIBS>"
+
+                ::cXml+= "<gCBS>"
+                       ::cXml+= ::XmlTag( "vDif"             , ::nVdifgcbs_t)
+                       ::cXml+= ::XmlTag( "vDevTrib"         , ::nVdevtribgcbs_t)
+                       ::cXml+= ::XmlTag( "vCBS"             , ::nVcbsgcbs_t)
+                       ::cXml+= ::XmlTag( "vCredPres"        , ::nVcredprescbs_t)
+                       ::cXml+= ::XmlTag( "vCredPresCondSus" , ::nVcredprescondsuscbs_t)
+                ::cXml+= "</gCBS>"
    
-             If !Empty(::nvIBSMono_t) .or. !Empty(::nvCBSMono_t) .or. !Empty(::nvIBSMonoReten_t) .or. !Empty(::nvCBSMonoReten_t) .or. !Empty(::nvIBSMonoRet_t) .or. !Empty(::nvCBSMonoRet_t)
-                ::cXml+= "<gMono>"
-                       ::cXml+= ::XmlTag( "vIBSMono"      , ::nvIBSMono_t)
-                       ::cXml+= ::XmlTag( "vCBSMono"      , ::nvCBSMono_t)
-                       ::cXml+= ::XmlTag( "vIBSMonoReten" , ::nvIBSMonoReten_t)
-                       ::cXml+= ::XmlTag( "vCBSMonoReten" , ::nvCBSMonoReten_t)
-                       ::cXml+= ::XmlTag( "vIBSMonoRet"   , ::nvIBSMonoRet_t)
-                       ::cXml+= ::XmlTag( "vCBSMonoRet"   , ::nvCBSMonoRet_t)
-                ::cXml+= "</gMono>"
-             Endif
-      ::cXml+= "</IBSCBSTot>"
-   EndIf   
+                If !Empty(::nvIBSMono_t) .or. !Empty(::nvCBSMono_t) .or. !Empty(::nvIBSMonoReten_t) .or. !Empty(::nvCBSMonoReten_t) .or. !Empty(::nvIBSMonoRet_t) .or. !Empty(::nvCBSMonoRet_t)
+                   ::cXml+= "<gMono>"
+                          ::cXml+= ::XmlTag( "vIBSMono"      , ::nvIBSMono_t)
+                          ::cXml+= ::XmlTag( "vCBSMono"      , ::nvCBSMono_t)
+                          ::cXml+= ::XmlTag( "vIBSMonoReten" , ::nvIBSMonoReten_t)
+                          ::cXml+= ::XmlTag( "vCBSMonoReten" , ::nvCBSMonoReten_t)
+                          ::cXml+= ::XmlTag( "vIBSMonoRet"   , ::nvIBSMonoRet_t)
+                          ::cXml+= ::XmlTag( "vCBSMonoRet"   , ::nvCBSMonoRet_t)
+                   ::cXml+= "</gMono>"
+                Endif
+         ::cXml+= "</IBSCBSTot>"
+      EndIf   
 /*
-   ::nvNftot:= ::nVis_t + ::nVbcibscbs_t
+      ::nvNftot:= ::nVis_t + ::nVbcibscbs_t
 
-   If !Empty(::nvNftot)
-      ::cXml+= ::XmlTag( "vNFTot" , ::nvNftot)  //  Valor total da NF-e com IBS / CBS / IS
-   Endif
+      If !Empty(::nvNftot)
+         ::cXml+= ::XmlTag( "vNFTot" , ::nvNftot)  //  Valor total da NF-e com IBS / CBS / IS
+      Endif
 */   
-   ::cXml+= "</total>"
+      ::cXml+= "</total>"
+   Endif
 Return (Nil)
 
 * ---------------> Metodo para gerar a tag do Transportador <----------------- *
@@ -1917,7 +1985,7 @@ METHOD fCria_Pagamento() // Grupo YA. Informações de Pagamento
    Endif  
 
    ::cXml+= "<detPag>" 
-          If !(::cTpag $ [90_99]) .And. !Empty(::cIndPag)
+          If !(::cTpag $ [90_99]) .and. !Empty(::cIndPag)
              ::cXml+= ::XmlTag( "indPag" , Iif(!(::cIndPag $ [0_1]), [0], Left(::cIndPag, 1)))                                   // Indicação da Forma de Pagamento 0= Pagamento à Vista 1= Pagamento à Prazo (Incluído na NT2016.002)
           Endif     
 
