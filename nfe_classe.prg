@@ -10,7 +10,7 @@
  *          : Maurílio Franchin Júnior                                       *
  *          : Jair Barreto                                                   *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 02.02.2026                                                     *
+ * ULT. ALT.: 03.02.2026                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 #IfNdef __XHARBOUR__
@@ -63,7 +63,6 @@ CLASS Malc_GeraXml
    VAR dDhCont                 AS Character INIT []                               // Data-hora contingência       FSDA - tpEmis = 5
    VAR cxJust                  AS Character INIT []                               // Justificativa contingência   FSDA - tpEmis = 5
    VAR cRefnfe                 AS Character INIT []                               // Grupo BA
-   VAR cCepe                   AS Character INIT []  
    VAR cTpnfdebito             AS Character INIT []                               // Reforma tributária
    VAR cTpnfcredito            AS Character INIT []                               // Reforma tributária
    VAR cTpcompragov            AS Character INIT []                               // Reforma tributária
@@ -266,7 +265,7 @@ CLASS Malc_GeraXml
    VAR nVicmsufremet           AS Num       INIT 0
 
    // Tag Ipi - Grupo O
-   VAR cCEnq                   AS Character INIT [] // [999]
+   VAR cCenq                   AS Character INIT [] // [999]
    VAR cCstipi                 AS Character INIT [53]
    VAR cCstipint               AS Character INIT [] 
    VAR nVipi                   AS Num       INIT 0
@@ -528,11 +527,11 @@ CLASS Malc_GeraXml
    METHOD fCria_TotaisRtc()                                                       // Reforma tributária
    METHOD fTrata_TribRegular()                                                    // Reforma tributária
    METHOD fTrata_CreditoPresumido()                                               // Reforma tributária
-   METHOD fCria_Gibscbsmono()                                                     // Reforma tributária
-   METHOD fCria_Gtransfcredito()                                                  // Reforma tributária
    METHOD fTrata_Diferimento()                                                    // Reforma tributária
    METHOD fTrata_Reducao()                                                        // Reforma tributária
    METHOD fTrata_TributoDevolvido()                                               // Reforma tributária
+   METHOD fCria_Gibscbsmono()                                                     // Reforma tributária
+   METHOD fCria_Gtransfcredito()                                                  // Reforma tributária
    METHOD fCria_IBSUF()                                                           // Reforma tributária  
    METHOD fCria_IBSMun()                                                          // Reforma tributária
    METHOD fCria_CBS()                                                             // Reforma tributária
@@ -648,20 +647,18 @@ METHOD fCria_Ide()
              ::cXml+= ::XmlTag( "indIntermed" , Iif(!(::cIndintermed $ [0_1]), [0], Left(::cIndintermed, 1)))                    // Indicador de intermediador/marketplace, 0 - Operação sem intermediador (em site ou plataforma própria), 1 - Operação em site ou plataforma de terceiros (intermediadores/marketplace)
           Endif 
 
-          ::cXml+= ::XmlTag( "procEmi"  , Iif(!(::cProcemi $ [0_1_2_3]), [1], Left(::cProcemi, 1)))                                // 0 - emissão de NF-e com aplicativo do contribuinte;
+          ::cXml+= ::XmlTag( "procEmi"   , Iif(!(::cProcemi $ [0_1_2_3]), [1], Left(::cProcemi, 1)))                             // 0 - emissão de NF-e com aplicativo do contribuinte;
                                                                                                                                  // 1 - emissão de NF-e avulsa pelo Fisco;
                                                                                                                                  // 2 - emissão de NF-e avulsa, pelo contribuinte com seu certificado digital, através do site do Fisco;
                                                                                                                                  // 3 - emissão NF-e pelo contribuinte com aplicativo fornecido pelo Fisco.
-          ::cXml+= ::XmlTag( "verProc"  , Left(::cVerproc, 20))                                                                  // Informar a versão do aplicativo emissor de NF-e.
+          ::cXml+= ::XmlTag( "verProc"   , Left(::cVerproc, 20))                                                                 // Informar a versão do aplicativo emissor de NF-e.
 
           If ::cTpemis # [1]                                                                                                     // 1 - Emissão normal (não em contingência
              ::cXml+= ::XmlTag( "dhCont" , ::DateTimeXml(::dDhcont, ::cTimeE))                                                   // Data-hora contingência       FSDA - tpEmis = 5
              ::cXml+= ::XmlTag( "xJust"  , Left(::cXjust, 256))                                                                  // Justificativa contingência   FSDA - tpEmis = 5
           Endif 
 
-          If ::cModelo == [55]
-             ::fCria_Compragov()
-          Endif
+          ::fCria_Compragov()
    ::cXml+= "</ide>"
 Return (Nil)
 
@@ -690,11 +687,13 @@ Return (Nil)
 
 * ------------------> Metodo para gerar a tag gCompragov <-------------------- *
 METHOD fCria_Compragov()
-   If !Empty(::cTpcompragov)
-      ::cXml+= "<gCompraGov>"                                                                                                    
-             ::cXml+= ::XmlTag( "tpCompraGov" , Iif(!(::cTpcompragov $ [1_2_3_4]), [1], Left(::cTpcompragov, 1)))                // 1=União 2=Estado 3=Distrito Federal 4=Município
-             ::cXml+= ::XmlTag( "pRedutor"    , ::nPredutor, 4)                            
-      ::cXml+= "</gCompraGov>"
+   If ::cModelo == [55]
+      If !Empty(::cTpcompragov)
+         ::cXml+= "<gCompraGov>"                                                                                                    
+                ::cXml+= ::XmlTag( "tpCompraGov" , Iif(!(::cTpcompragov $ [1_2_3_4]), [1], Left(::cTpcompragov, 1)))                // 1=União 2=Estado 3=Distrito Federal 4=Município
+                ::cXml+= ::XmlTag( "pRedutor"    , ::nPredutor, 4)                            
+         ::cXml+= "</gCompraGov>"
+      Endif
    Endif                                                                             
 Return (Nil)
 
@@ -719,13 +718,13 @@ METHOD fCria_Emitente()
                  ::cXml+= ::XmlTag( "xBairro" , Left(::fRetiraAcento(::cXBairroe), 60))                                          // Bairro do Emitente
                  ::cXml+= ::XmlTag( "cMun"    , Left(::SoNumero(::cMunfg), 7))                                                   // Código IBGE do emitente
                  ::cXml+= ::XmlTag( "xMun"    , Left(::fRetiraAcento(::cXmune), 60))                                             // Cidade do Emitente
-      	         ::cXml+= ::XmlTag( "UF"      , Left(::cUfE, 2))                                                                 // UF do Emitente
+      	         ::cXml+= ::XmlTag( "UF"      , Left(::cUfe, 2))                                                                 // UF do Emitente
      	         ::cXml+= ::XmlTag( "CEP"     , Left(::SoNumero(::cCepe), 8))                                                    // CEP do Emitente
     	         ::cXml+= ::XmlTag( "cPais"   , Left(::cPais, 4))                                                                // Código do País emitente
     	         ::cXml+= ::XmlTag( "xPais"   , Left(::fRetiraAcento(::cXpaise), 60))                                            // País Emitente da NF
 
                  If !Empty(::SoNumero(::cFonee))
-	                ::cXml+= ::XmlTag( "fone"    , Left(::SoNumero(::cFonee), 14))                                               // Telefone do Emitente
+	            ::cXml+= ::XmlTag( "fone" , Left(::SoNumero(::cFonee), 14))                                               // Telefone do Emitente
                  Endif 
           ::cXml+= "</enderEmit>"
           
@@ -794,12 +793,12 @@ METHOD fCria_Destinatario()
          If ::cUfd == "EX"
             ::cXml+= ::XmlTag("cMun", "9999999")
             ::cXml+= ::XmlTag("xMun", "EXTERIOR")
-            ::cXml+= ::XmlTag("UF", "EX")
+            ::cXml+= ::XmlTag("UF"  , ::cUfd)
          Else
             ::cXml+= ::XmlTag("cMun", Left(::cCmund, 7))
             ::cXml+= ::XmlTag("xMun", Left(::fRetiraAcento(::cXmund), 60))
-            ::cXml+= ::XmlTag("UF", Left(::cUfd, 2))
-            ::cXml+= ::XmlTag("CEP", Left(::SoNumero(::cCepd), 8))
+            ::cXml+= ::XmlTag("UF"  , Left(::cUfd, 2))
+            ::cXml+= ::XmlTag("CEP" , Left(::SoNumero(::cCepd), 8))
          Endif
 
          IF !Empty(::cPaisd)
@@ -863,7 +862,7 @@ METHOD fCria_Endereco(cTipo)
            cXBairro:= ::cXBairror
            cMun    := ::cCmunr
            cXMun   := ::cXmunr
-           cUf     := ::cUfE
+           cUf     := ::cUfr
            cCep    := ::cCepr
            cPais   := ::cPaisr
            cXPais  := ::cXpaisr
@@ -945,7 +944,7 @@ Return(::fCria_Endereco([entrega]))
 METHOD fCria_Produto()
    ::cXml+= [<det nItem="] + Left(NumberXml( ::nItem, 0 ), 3) + [">]
           ::cXml+= "<prod>"
-                 ::cXml    += ::XmlTag( "cProd"    , Left(::cProd, 60))
+                 ::cXml    += ::XmlTag( "cProd" , Left(::cProd, 60))
 
                  If !Empty(::cEan)
                     ::cXml += ::XmlTag( "cEAN"  , Left(::cEan, 14))
@@ -962,7 +961,7 @@ METHOD fCria_Produto()
                  ::cXml    += ::XmlTag( "NCM"      , Iif(Empty(::cNcm), [00], Left(::cNcm, 8)))                                  // Obrigatória informação do NCM completo (8 dígitos). Nota: Em caso de item de serviço ou item que não tenham produto (ex. transferência de crédito, crédito do ativo imobilizado, etc.), informar o valor 00 (dois zeros). (NT 2014/004)
 
                  If Len(::cNcm) > 8
-        	           ::cXml += ::XmlTag( "EXTIPI" , [0] + Right(::cNcm, 2))                                                       // Excessão de IPI 
+        	    ::cXml += ::XmlTag( "EXTIPI" , [0] + Right(::cNcm, 2))                                                       // Excessão de IPI 
                  Endif    
 
                  If !Empty(::cCest)
@@ -1147,11 +1146,11 @@ METHOD fCria_ProdCombustivel()                                                  
              ::cXml+= ::XmlTag( "UFCons"   , Left(::cUfd, 2))
 
              If ::nQbcprod  > 0
-                    ::cXml+= "<CIDE>"
-                           ::cXml+= ::XmlTag( "qBCProd"    , ::nQbcprod, 4)                                                      // Informar a BC da CIDE em quantidade
-                           ::cXml+= ::XmlTag( "vAliqProd"  , ::nValiqprod, 4)                                                    // Informar o valor da alíquota em reais da CIDE
-                           ::cXml+= ::XmlTag( "vCIDE"      , ::nVcide)                                                           // Informar o valor da CIDE
-                    ::cXml+= "</CIDE>"
+                ::cXml+= "<CIDE>"
+                       ::cXml+= ::XmlTag( "qBCProd"    , ::nQbcprod, 4)                                                      // Informar a BC da CIDE em quantidade
+                       ::cXml+= ::XmlTag( "vAliqProd"  , ::nValiqprod, 4)                                                    // Informar o valor da alíquota em reais da CIDE
+                       ::cXml+= ::XmlTag( "vCIDE"      , ::nVcide)                                                           // Informar o valor da CIDE
+                ::cXml+= "</CIDE>"
              Endif 
       ::cXml+= "</comb>"
    Endif 
@@ -1358,7 +1357,7 @@ Return (Nil)
 METHOD fCria_ProdutoIpi()
    If ( ::nVipi > 0 .or. !Empty(::cCstipint) ) .and. ::cModelo == [55]
       ::cXml+= "<IPI>"
-             ::cXml+= ::XmlTag( "cEnq" , Left(::cCEnq, 3))
+             ::cXml+= ::XmlTag( "cEnq" , Left(::cCenq, 3))
 
              If ::cCstipi $ [00_49_50_99]
                 ::cXml+= "<IPITrib>"                                                                                             // Grupo do CST 00, 49, 50 e 99
@@ -1650,7 +1649,7 @@ Return (Nil)
 
 * ----------------> Metodo para gerar as tags do PIS e COFINS <--------------- *
 METHOD fCria_ProdutoPisCofins()                                                                                                  // Marcelo Brigatti
-   If Len( AllTrim( ::cCstPis ) ) > 0 .Or. !Empty(::cCstPis)
+   If Len( AllTrim( ::cCstPis ) ) > 0 .or. !Empty(::cCstPis)
              ::cXml+= "<PIS>"
                    ::cXml+= "<PISAliq>"
                          ::cXml   += ::XmlTag( "CST"     , Iif(!(::cCstPis $ [01_02]), [01], Left(::cCstPis, 2)))                // 01=Operação Tributável (base de cálculo = valor da operação alíquota normal (cumulativo/não cumulativo));  02=Operação Tributável (base de cálculo = valor da operação (alíquota diferenciada))
@@ -1669,7 +1668,7 @@ METHOD fCria_ProdutoPisCofins()                                                 
                          ::nVCofins_t+= ::nVCofins                                                                               // já acumula o valor do COFINS para os totais
                    ::cXml+= "</COFINSAliq>"
              ::cXml+= "</COFINS>"
-   ElseIf Len( AllTrim( ::cCstPisqtd ) ) > 0 .Or. !Empty(::cCstPisqtd)
+   ElseIf Len( AllTrim( ::cCstPisqtd ) ) > 0 .or. !Empty(::cCstPisqtd)
              ::cXml+= "<PIS>"
                    ::cXml+= "<PISQtde>"
                          ::cXml   += ::XmlTag( "CST"       , Iif(!(::cCstPisqtd $ [03]), [03], Left(::cCstPisqtd, 2)))           // Operação Tributável (base de cálculo = quantidade vendida x alíquota por unidade de produto)
@@ -1688,7 +1687,7 @@ METHOD fCria_ProdutoPisCofins()                                                 
                          ::nVCofins_t+= ::nVCofins                                                                               // já acumula o valor do COFINS para os totais
                    ::cXml+= "</COFINSQtde>"
              ::cXml+= "</COFINS>"
-   ElseIf Len( AllTrim( ::cCstPisnt ) ) > 0 .Or. !Empty(::cCstPisnt)
+   ElseIf Len( AllTrim( ::cCstPisnt ) ) > 0 .or. !Empty(::cCstPisnt)
              ::cXml+= "<PIS>"
                    ::cXml+= "<PISNT>"
                          ::cXml+= ::XmlTag( "CST"       , Iif(!(::cCstPisnt $ [04_05_06_07_08_09]), [04], Left(::cCstPisnt, 2))) // Código de Situação Tributária do PIS 04=Operação Tributável (tributação monofásica (alíquota zero)); 05=Operação Tributável (Substituição Tributária); 06=Operação Tributável (alíquota zero); 07=Operação Isenta da Contribuição; 08=Operação Sem Incidência da Contribuição; 09=Operação com Suspensão da Contribuição;
@@ -1699,7 +1698,7 @@ METHOD fCria_ProdutoPisCofins()                                                 
                          ::cXml+= ::XmlTag( "CST"       , Iif(!(::cCstCofinsnt $ [04_05_06_07_08_09]), [04], Left(::cCstCofinsnt, 2))) 
                    ::cXml+= "</COFINSNT>"
              ::cXml+= "</COFINS>"
-   ElseIf Len( AllTrim( ::cCstPisoutro ) ) > 0 .Or. !Empty(::cCstPisoutro)
+   ElseIf Len( AllTrim( ::cCstPisoutro ) ) > 0 .or. !Empty(::cCstPisoutro)
              ::cXml+= "<PIS>"
                    ::cXml+= "<PISOutr>"
                          ::cXml   += ::XmlTag( "CST"     , Iif(!(::cCstPisoutro $ [49_50_51_52_53_54_55_56_60_61_62_63_64_65_66_67_70_71_72_73_74_75_98_99]), [49], Left(::cCstPisoutro, 2))) // Código de Situação Tributária do PIS
@@ -1796,11 +1795,11 @@ METHOD fCria_TotaisRtc()
          ::cXml+= "</ISTot>"
       Endif
 
-      If !Empty(::nVdifgibsuf_t)    .Or. !Empty(::nVdevtribgibsuf_t)      .Or. !Empty(::nVibsufgibsuf_t)   .Or. ;                    // Tag só é gerada se houver valores informados nos itens, (Simples nacional não gera a Tag)
-         !Empty(::nVdDifgibsmun_t)  .Or. !Empty(::nVdevtribgibsmun_t)     .Or. !Empty(::nVibsmungibsmun_t) .Or. ; 
-         !Empty(::nVcredpresgibs_t) .Or. !Empty(::nVcredprescondsusibs_t) .Or.                                  ;
-         !Empty(::nVdifgcbs_t)      .Or. !Empty(::nVdevtribgcbs_t)        .Or. !Empty(::nVcbsgcbs_t)       .Or. !Empty(::nVcredprescbs_t)  .Or. !Empty(::nVcredprescondsuscbs_t) .Or. ;
-         !Empty(::nvIBSMono_t)      .Or. !Empty(::nvCBSMono_t)            .Or. !Empty(::nvIBSMonoReten_t)  .Or. !Empty(::nvCBSMonoReten_t) .Or. !Empty(::nvIBSMonoRet_t)         .Or. !Empty(::nvCBSMonoRet_t) //.and. ::cCrt == [3]
+      If !Empty(::nVdifgibsuf_t)    .or. !Empty(::nVdevtribgibsuf_t)      .or. !Empty(::nVibsufgibsuf_t)   .or. ;                    // Tag só é gerada se houver valores informados nos itens, (Simples nacional não gera a Tag)
+         !Empty(::nVdDifgibsmun_t)  .or. !Empty(::nVdevtribgibsmun_t)     .or. !Empty(::nVibsmungibsmun_t) .or. ; 
+         !Empty(::nVcredpresgibs_t) .or. !Empty(::nVcredprescondsusibs_t) .or.                                  ;
+         !Empty(::nVdifgcbs_t)      .or. !Empty(::nVdevtribgcbs_t)        .or. !Empty(::nVcbsgcbs_t)       .or. !Empty(::nVcredprescbs_t)  .or. !Empty(::nVcredprescondsuscbs_t) .or. ;
+         !Empty(::nvIBSMono_t)      .or. !Empty(::nvCBSMono_t)            .or. !Empty(::nvIBSMonoReten_t)  .or. !Empty(::nvCBSMonoReten_t) .or. !Empty(::nvIBSMonoRet_t)         .or. !Empty(::nvCBSMonoRet_t) //.and. ::cCrt == [3]
 
          ::cXml+= "<IBSCBSTot>"
                 ::cXml+= ::XmlTag( "vBCIBSCBS" , ::nVbcibscbs_t)
@@ -2052,7 +2051,7 @@ METHOD fCria_Informacoes()
                 ::cInfFisc+= "Valor de COFINS para movimento R$ " + NumberXml(::nVCofins_t, 2) + hb_OsNewLine()
              Endif 
              If ::cUfd # [EX] .and. !Empty(::cCodDest)
- 		          ::cInfFisc+= "Cód:" + ::cCodDest + hb_OsNewLine()
+ 		::cInfFisc+= "Cód:" + ::cCodDest + hb_OsNewLine()
              Endif 
           Endif 
 
@@ -2064,6 +2063,7 @@ METHOD fCria_Informacoes()
              ::cXml+= ::XmlTag( "infCpl" , Left(::fRetiraAcento(StrTran(::cInfcpl, hb_OsNewLine(), '; ')), 5000))
           Endif 
    ::cXml+= "</infAdic>"
+
    ::fCria_ProdExporta()
 Return (Nil)
 
@@ -2168,7 +2168,7 @@ METHOD LimpaPropriedadesImposto()
    ::nVbc        := ::nPicms       := ::nVicms         := ::nPredbc      := 0
    ::nPmvast     := ::nPredbcst    := ::nVbcst         := ::nPicmst      := ::nVicmsst        := 0
    ::nPcredsn    := ::nVcredicmssn := 0
-   ::cCstipi     := ::cCEnq        := ::cCstipint      := []
+   ::cCstipi     := ::cCenq        := ::cCstipint      := []
    ::nVbcipi     := ::nPipi        := ::nVipi          := 0
    ::cCstPis     := ::cCstCofins   := ::cCstPisnt      := ::cCstCofinsnt := []
    ::nBcPis      := ::nAlPis       := ::nBcCofins      := ::nAlCofins    := 0
@@ -2184,8 +2184,7 @@ Return (Nil)
 
 * -----------------------> Metodo para Ler Certificado .PFX <----------------- *
 METHOD fCertificadopfx(cCertificadoArquivo, cCertificadoSenha)
-
-Local oCertificado, oStore, oErro
+   Local oCertificado, oStore, oErro
 
    Try
       oCertificado      := win_oleCreateObject( 'CAPICOM.Certificate' )
@@ -2217,7 +2216,6 @@ Local oCertificado, oStore, oErro
       EndIf
    End
    Release oCertificado, oStore, oErro
-
 Return( Nil )
 
 * ----> Metodo para Retirar Caracteres/Sinais de uma String <----------------- *
@@ -2369,7 +2367,7 @@ Return (dTerceiroDomingoDeFevereiro)
 
 * -------------> Metodo Cálculo de dígito módulo 11 <------------------------- *
 METHOD CalculaDigito(cNumero, cModulo)
-   Local nFator, nPos, nSoma, nResto, nModulo, cCalculo
+   Local nFator:= 2 nPos:= nSoma:= nResto:= nModulo:= 0, cCalculo
  
    hb_Default(@cModulo, [11])
 
@@ -2377,10 +2375,8 @@ METHOD CalculaDigito(cNumero, cModulo)
       Return ([])
    Endif
 
-   cCalculo:= AllTrim(cNumero)
    nModulo := Val(cModulo)
-   nFator  := 2
-   nSoma   := 0
+   cCalculo:= AllTrim(cNumero)
 
    If nModulo == 10
       For nPos:= Len(cCalculo) TO 1 STEP -1
@@ -2409,9 +2405,9 @@ METHOD SoNumero(cTxt)
    Local cSoNumeros:= "", cChar
 
    For EACH cChar IN cTxt
-      If cChar $ "0123456789"
-         cSoNumeros += cChar
-      Endif
+       If cChar $ "0123456789"
+          cSoNumeros += cChar
+       Endif
    Next
 Return (cSoNumeros)
 
@@ -2420,9 +2416,9 @@ METHOD SoNumeroCnpj(cTxt)
    Local cSoNumeros:= "", cChar
 
    For EACH cChar IN cTxt
-      If (cChar >= "0" .and. cChar <= "9") .or. (cChar >= "A" .and. cChar <= "Z")
-         cSoNumeros += cChar
-      Endif
+       If (cChar >= "0" .and. cChar <= "9") .or. (cChar >= "A" .and. cChar <= "Z")
+          cSoNumeros += cChar
+       Endif
    Next
 Return (cSoNumeros)
 
