@@ -10,7 +10,7 @@
  *          : Maurílio Franchin Júnior                                       *
  *          : Jair Barreto                                                   *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 03.02.2026                                                     *
+ * ULT. ALT.: 04.02.2026                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 #IfNdef __XHARBOUR__
@@ -2367,7 +2367,7 @@ Return (dTerceiroDomingoDeFevereiro)
 
 * -------------> Metodo Cálculo de dígito módulo 11 <------------------------- *
 METHOD CalculaDigito(cNumero, cModulo)
-   Local nFator:= 2 nPos:= nSoma:= nResto:= nModulo:= 0, cCalculo
+   Local nFator:= 2, nPos:= nSoma:= nResto:= nModulo:= 0, cCalculo
  
    hb_Default(@cModulo, [11])
 
