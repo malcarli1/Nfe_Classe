@@ -10,7 +10,7 @@
  *          : Maurílio Franchin Júnior                                       *
  *          : Jair Barreto                                                   *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 04.02.2026                                                     *
+ * ULT. ALT.: 11.02.2026                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 #IfNdef __XHARBOUR__
@@ -1460,7 +1460,8 @@ METHOD fCria_IBSMun() // Alterado por : Jair Barreto  data : 23/01/2026
           ::nVibsmungibsmun_t+= ::nVibsmun                                                                    // já acumula o valor para os totais
     ::cXml+= "</gIBSMun>"
     ::cXml+= ::XmlTag( "vIBS" , ::nVibsuf + ::nVibsmun )
-    ::nVibsufgibsuf_t+= (::nVibsuf + ::nVibsmun)                                                               // já acumula o valor para os totais
+
+    ::nVibsufgibsuf_t+= ::nVibsmun                                                                            // já acumula o valor para os totais
 Return (Nil)
 
 * ----------------------> Metodo para gerar a tag CBS <----------------------- *
