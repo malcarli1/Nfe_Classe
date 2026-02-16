@@ -10,7 +10,7 @@
  *          : Maurílio Franchin Júnior                                       *
  *          : Jair Barreto                                                   *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 11.02.2026                                                     *
+ * ULT. ALT.: 16.02.2026                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 #IfNdef __XHARBOUR__
@@ -1989,7 +1989,7 @@ METHOD fCria_Pagamento() // Grupo YA. Informações de Pagamento
              ::cXml+= ::XmlTag( "indPag" , Iif(!(::cIndPag $ [0_1]), [0], Left(::cIndPag, 1)))                                   // Indicação da Forma de Pagamento 0= Pagamento à Vista 1= Pagamento à Prazo (Incluído na NT2016.002)
           Endif     
 
-          ::cXml+= ::XmlTag( "tPag"      , Iif(!(::cTpag $ [01_02_03_04_05_10_11_12_13_15_16_17_18_19_90_99]), [01], Left(::cTpag, 2)))  // Meio de pagamento 01=Dinheiro 02=Cheque 03=Cartão de Crédito 04=Cartão de Débito 05=Crédito Loja 10=Vale Alimentação 11=Vale Refeição 12=Vale Presente 13=Vale Combustível 15=Boleto Bancário 16=Depósito Bancário 17=Pagamento Instantâneo (PIX) 18=Transferência bancária, Carteira Digital 19=Programa de fidelidade, Cashback, Crédito Virtual 90= Sem pagamento 99=Outros (Atualizado na NT2016.002, NT2020.006)
+          ::cXml+= ::XmlTag( "tPag"      , Iif(!(::cTpag $ [01_02_03_04_05_10_11_12_13_15_16_17_18_19_90_91_99]), [01], Left(::cTpag, 2)))  // Meio de pagamento 01=Dinheiro 02=Cheque 03=Cartão de Crédito 04=Cartão de Débito 05=Crédito Loja 10=Vale Alimentação 11=Vale Refeição 12=Vale Presente 13=Vale Combustível 15=Boleto Bancário 16=Depósito Bancário 17=Pagamento Instantâneo (PIX) 18=Transferência bancária, Carteira Digital 19=Programa de fidelidade, Cashback, Crédito Virtual, 90= Sem pagamento, 91= Pagamento Posterior, 99=Outros (Atualizado na NT2016.002, NT2020.006)
 
           If ::cTpag == [99]
              ::cXml+= ::XmlTag( "xPag" , Left(::cXpag, 60))                                                                      // Descrição do meio de pagamento. Preencher informando o meio de pagamento utilizado quando o código do meio de pagamento for informado como 99-outros.
