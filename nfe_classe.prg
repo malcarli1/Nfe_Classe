@@ -970,8 +970,12 @@ METHOD fCria_Produto()
                  Endif 
 
                  If !Empty(::cBenef)
-                    ::cXml += ::XmlTag( "cBenef"  , Left(::cBenef, 8))
-                 Endif 
+                    If ::cBenef == [SEM CBENEF]
+                       ::cXml += ::XmlTag( "cBenef"  , Left( cBenef, 10 ))
+                    Else 
+                       ::cXml += ::XmlTag( "cBenef"  , Left( cBenef, 2 )  + ::SoNumero( Right( ::cBenef, 8 ) ) )
+                    EndIf
+                 Endif
 
                  ::cXml    += ::XmlTag( "CFOP"  , Left(::SoNumero(::cCfOp), 4))
                  ::cXml    += ::XmlTag( "uCom"  , Left(::cUcom, 6))
