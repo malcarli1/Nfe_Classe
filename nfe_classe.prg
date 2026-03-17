@@ -10,7 +10,7 @@
  *          : Maurílio Franchin Júnior                                       *
  *          : Jair Barreto                                                   *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 09.03.2026                                                     *
+ * ULT. ALT.: 17.03.2026                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 #IfNdef __XHARBOUR__
@@ -164,6 +164,7 @@ CLASS Malc_GeraXml
    VAR cXped                   AS Character INIT []                               // Grupo I05
    VAR nNitemped               AS Int       INIT 0                                // Grupo I05
    VAR cNfci                   AS Character INIT []                               // Grupo I07
+   VAR cBenef                  AS Character INIT [] 
 
    // TAG DI - Grupo I01 - Configuracoes para IMPORTACAO CFOP com início "3"      // Colaboração Rubens Aluotto - 16/06/2025
    VAR cNdi                    AS Character INIT [] 
@@ -966,6 +967,10 @@ METHOD fCria_Produto()
 
                  If !Empty(::cCest)
                     ::cXml += ::XmlTag( "CEST"  , Left(::SoNumero(::cCest), 7))
+                 Endif 
+
+                 If !Empty(::cBenef)
+                    ::cXml += ::XmlTag( "cBenef"  , Left(::SoNumero(::cBenef), 8))
                  Endif 
 
                  ::cXml    += ::XmlTag( "CFOP"  , Left(::SoNumero(::cCfOp), 4))
