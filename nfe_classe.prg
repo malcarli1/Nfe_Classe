@@ -10,7 +10,7 @@
  *          : Maurílio Franchin Júnior                                       *
  *          : Jair Barreto                                                   *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 17.03.2026                                                     *
+ * ULT. ALT.: 27.03.2026                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 #IfNdef __XHARBOUR__
@@ -2038,6 +2038,10 @@ METHOD fCria_Pagamento() // Grupo YA. Informações de Pagamento
    Else
       ::cXml:= StrTran(::cXml, "</detPag></pag>", "</detPag>")  
    Endif  
+
+   If "</detPag></pag><detPag>" $ ::cXml
+      ::cXml:= StrTran(::cXml, "</detPag></pag><detPag>", "</detPag><detPag>")  
+   Endif
 
    If !("</pag>") $ ::cXml
       ::cXml+= "</pag>" 
