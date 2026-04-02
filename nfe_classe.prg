@@ -10,7 +10,7 @@
  *          : Maurílio Franchin Júnior                                       *
  *          : Jair Barreto                                                   *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 27.03.2026                                                     *
+ * ULT. ALT.: 02.04.2026                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 #IfNdef __XHARBOUR__
@@ -971,9 +971,9 @@ METHOD fCria_Produto()
 
                  If !Empty(::cBenef)
                     If ::cBenef == [SEM CBENEF]
-                       ::cXml += ::XmlTag( "cBenef"  , Left( cBenef, 10 ))
+                       ::cXml += ::XmlTag( "cBenef"  , Left( ::cBenef, 10 ))
                     Else 
-                       ::cXml += ::XmlTag( "cBenef"  , Left( cBenef, 2 )  + ::SoNumero( Right( ::cBenef, 8 ) ) )
+                       ::cXml += ::XmlTag( "cBenef"  , Left( ::cBenef, 2 )  + ::SoNumero( Right( ::cBenef, 8 ) ) )
                     EndIf
                  Endif
 
