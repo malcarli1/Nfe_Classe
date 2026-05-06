@@ -10,7 +10,7 @@
  *          : Maurílio Franchin Júnior                                       *
  *          : Jair Barreto                                                   *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 02.04.2026                                                     *
+ * ULT. ALT.: 06.05.2026                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 #IfNdef __XHARBOUR__
@@ -626,9 +626,9 @@ METHOD fCria_Ide()
           Endif 
 
           If ::cFinnfe == [6]                                                                                                    // Nota de Débito
-             ::cXml+= ::XmlTag( "tpNFDebito"  , Iif(!(::cTpnfdebito $ [01_02_03_04_05_06_07]), [01], Left(::cTpnfdebito, 2)))    // 01=Transferência de créditos para Cooperativas; 02=Anulação de Crédito por Saídas Imunes/Isentas; 03=Débitos de notas fiscais não processadas na apuração; 04=Multa e juros; 05=Transferência de crédito de sucessão; 06=Pagamento antecipado; 07=Perda em estoque                                                      
+             ::cXml+= ::XmlTag( "tpNFDebito"  , Iif(!(::cTpnfdebito $ [01_02_03_04_05_06_07_08]), [01], Left(::cTpnfdebito, 2)))    // 01=Transferência de créditos para Cooperativas; 02=Anulação de Crédito por Saídas Imunes/Isentas; 03=Débitos de notas fiscais não processadas na apuração; 04=Multa e juros; 05=Transferência de crédito de sucessão; 06=Pagamento antecipado; 07=Perda em estoque                                                      
           Elseif ::cFinnfe == [5]                                                                                                // Nota de Crédito
-             ::cXml+= ::XmlTag( "tpNFCredito" , Iif(!(::cTpnfcredito $ [01_02_03]), [01]           , Left(::cTpnfcredito, 2)))   // 01 = Multa e juros; 02 = Apropriação de crédito presumido de IBS sobre o saldo devedor na ZFM (art. 450, § 1º, LC 214/25); 03 = Retorno 
+             ::cXml+= ::XmlTag( "tpNFCredito" , Iif(!(::cTpnfcredito $ [01_02_03_04_05_06]), [01]     , Left(::cTpnfcredito, 2)))   // 01 = Multa e juros; 02 = Apropriação de crédito presumido de IBS sobre o saldo devedor na ZFM (art. 450, § 1º, LC 214/25); 03 = Retorno 
           Endif 
 
           If ::cAmbiente == [2] .and. ::cModelo == [65]
@@ -777,6 +777,7 @@ METHOD fCria_Destinatario()
          ::cXml+= ::XmlTag("xNome", Left(::fRetiraAcento(::cXnomed), 60))
       Endif
 
+      // a partir de 03/08/2026 obrigatório para ::cIndpres # 1
       // enderDest: gerar apenas se modelo 55 e houver dados de endereço
       lGerarEnder:= ::cModelo == [55] .and. (!Empty(::cXlgrd) .or. !Empty(::cNrod) .or. !Empty(::cXBairrod) .or. !Empty(::cCmund) .or. !Empty(::cXmund))
 
