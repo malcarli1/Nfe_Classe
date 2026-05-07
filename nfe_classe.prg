@@ -2054,28 +2054,28 @@ METHOD fCria_Informacoes()
    ::cXml+= "<infAdic>"
           If ::lComplementar                                                                                                     // Informações DIFAL
              If ::nVIcmsSufDest > 0
-                ::cInfFisc+= "DIFAL para UF destino R$ " + NumberXml(::nVIcmsSufDest, 2) + hb_OsNewLine()
+                ::cInfFisc+= "DIFAL para UF destino R$ " + NumberXml(::nVIcmsSufDest, 2) + Hb_Eol()
              Endif 
 
              If ::nVIcmsSufRemet > 0
-                ::cInfFisc+= "DIFAL para UF Origem R$ " + NumberXml(::nVIcmsSufRemet, 2) + hb_OsNewLine()
+                ::cInfFisc+= "DIFAL para UF Origem R$ " + NumberXml(::nVIcmsSufRemet, 2) + Hb_Eol()
              Endif    
 
              If !Empty(::nVpis_t)                                                                                                // Destaque valor do PIS/COFINS
-                ::cInfFisc+= "Valor de PIS para movimento R$ " + NumberXml(::nVpis_t, 2) + hb_OsNewLine()
-                ::cInfFisc+= "Valor de COFINS para movimento R$ " + NumberXml(::nVCofins_t, 2) + hb_OsNewLine()
+                ::cInfFisc+= "Valor de PIS para movimento R$ " + NumberXml(::nVpis_t, 2) + Hb_Eol()
+                ::cInfFisc+= "Valor de COFINS para movimento R$ " + NumberXml(::nVCofins_t, 2) + Hb_Eol()
              Endif 
              If ::cUfd # [EX] .and. !Empty(::cCodDest)
- 		::cInfFisc+= "Cód:" + ::cCodDest + hb_OsNewLine()
+ 		::cInfFisc+= "Cód:" + ::cCodDest + Hb_Eol()
              Endif 
           Endif 
 
           If !Empty(AllTrim(::cInfFisc))
-             ::cXml+= ::XmlTag( "infAdFisco" , Left(::fRetiraAcento(StrTran(::cInfFisc, hb_OsNewLine(), "; ")), 2000))
+             ::cXml+= ::XmlTag( "infAdFisco" , Left(::fRetiraAcento(StrTran(::cInfFisc, Hb_Eol(), "; ")), 2000))
           Endif 
 
           If !Empty(AllTrim(::cInfcpl))
-             ::cXml+= ::XmlTag( "infCpl" , Left(::fRetiraAcento(StrTran(::cInfcpl, hb_OsNewLine(), '; ')), 5000))
+             ::cXml+= ::XmlTag( "infCpl" , Left(::fRetiraAcento(StrTran(::cInfcpl, Hb_Eol(), '; ')), 5000))
           Endif 
    ::cXml+= "</infAdic>"
 
@@ -2352,7 +2352,6 @@ Return (Stod(StrZero(nAno ,4) + StrZero(nMes, 2)+ StrZero(nDia, 2)))
 * -------------> Metodo Terça de Carnaval <----------------------------------- *
 METHOD TercaDeCarnaval(nAno)
 Return (::DomingoDePascoa(nAno) - 47)
-
 
 * -------------> Metodo Horário de verão início <----------------------------- *
 METHOD HorarioVeraoInicio(nAno)
