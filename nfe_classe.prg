@@ -43,7 +43,37 @@ CLASS Malc_GeraXml
    VAR lCertInstall            AS Logical   INIT .F.                              // Verifica se o Certificado está Instalado no Repositório do Windows
    VAR lCertVencido            AS Logical   INIT .F.                              // Verifica se o Certificado está Vencido
 
-    // Tag ide - Grupo B
+   // Variáveis de Retorno da Consulta CNPJ
+   VAR cCnpj_Cnpj              AS Character INIT []
+   VAR cCnpj_RazaoSocial       AS Character INIT []
+   VAR cCnpj_NomeFantasia      AS Character INIT []
+   VAR cCnpj_Situacao          AS Character INIT []
+   VAR cCnpj_Logradouro        AS Character INIT []
+   VAR cCnpj_Numero            AS Character INIT []
+   VAR cCnpj_Bairro            AS Character INIT []
+   VAR cCnpj_Municipio         AS Character INIT []
+   VAR cCnpj_UF                AS Character INIT []
+   VAR cCnpj_CEP               AS Character INIT []
+   VAR cCnpj_Email             AS Character INIT []
+   VAR cCnpj_Telefone          AS Character INIT []
+   VAR cCnpj_CnaePrincipal     AS Character INIT []
+   VAR cCnpj_CnaeSecundario    AS Character INIT []
+   VAR cCnpj_QSA               AS Character INIT []
+   VAR cCnpj_NaturezaJuridica  AS Character INIT []
+   VAR cCnpj_CapitalSocial     AS Character INIT []
+   VAR cCnpj_Abertura          AS Character INIT []
+   VAR cCnpj_Porte             AS Character INIT []
+   VAR cCnpj_Tipo              AS Character INIT []
+   VAR cCnpj_Complemento       AS Character INIT []
+   VAR cCnpj_EFR               AS Character INIT []
+   VAR cCnpj_DataSituacao      AS Character INIT []
+   VAR cCnpj_MotivoSituacao    AS Character INIT []
+   VAR cCnpj_SitEspecial       AS Character INIT []
+   VAR cCnpj_DataSitEspecial   AS Character INIT []
+   VAR lCnpj_OptanteSimples    AS Logical   INIT .F.
+   VAR lCnpj_OptanteSimei      AS Logical   INIT .F.
+
+   // Tag ide - Grupo B
    VAR cNatop                  AS Character INIT [] 
    VAR cMunfg                  AS Character INIT [] 
    VAR dDataE                  AS Date      INIT Date()
@@ -561,6 +591,7 @@ CLASS Malc_GeraXml
    METHOD fConsultaGTIN()                                                         // cGtin
    METHOD ExtraiTag()                                                             // cXml, cTag
    METHOD ExtraiTagsRepetidas()                                                   // cXml, cTag
+   METHOD fConsultaCNPJ()                                                          // cCnpj
 ENDCLASS
 
 * ---------------> Metodo para inicializar a criação da Classe <-------------- *
@@ -2352,6 +2383,110 @@ METHOD ExtraiTagsRepetidas(cXml, cTag)
       Endif
    EndDo
 Return (cResult)
+
+* -------------------------> Metodo para Consultar Cnpj <--------------------- *
+METHOD fConsultaCNPJ(cCnpj)
+   Local oHttp, cResponse, oErr, hResponse:= Hash(), nItem
+   
+   ::cCnpj_RazaoSocial:= ::cCnpj_NomeFantasia:= ::cCnpj_Situacao:= ::cCnpj_CnaePrincipal:= ::cCnpj_CnaeSecundario:= ::cCnpj_QSA:= []
+   
+   cCnpj:= ::SoNumero(cCnpj)
+   
+   If Len(cCnpj) # 14
+      Return ([ERRO|CNPJ deve conter 14 dígitos])
+   Endif
+
+   TRY
+      oHttp:= CreateObject([WinHttp.WinHttpRequest.5.1])
+      oHttp:Open([GET], [https://www.receitaws.com.br/v1/cnpj/] + cCnpj, .F.)
+      oHttp:Send()
+      cResponse:= oHttp:ResponseText
+   CATCH oErr
+      Return ([ERRO|Falha na conexão: ] + oErr:Description)
+   END
+
+   hb_MemoWrit([retorno.txt], cResponse)  
+
+   If Empty(cResponse)
+      Return ([ERRO|Resposta vazia do servidor])
+   Endif
+
+   hb_jsonDecode(cResponse, @hResponse)
+
+   If ValType(hResponse) # [H]
+      Return ([ERRO|O servidor retornou um formato inválido (Não é JSON)])
+   Endif
+
+   If HHasKey(hResponse, [message])
+      If [TOO MANY REQUESTS] $ Upper(hb_ValToStr(hResponse["message"]))
+         Return ([ERRO|LIMITE EXCEDIDO: Aguarde 20 segundos para consultar novamente.])
+      Endif
+   Endif
+
+   If HHasKey(hResponse, [status]) .and. hResponse["status"] == [ERROR]
+      Return ([ERRO|ReceitaWS: ] + hb_UTF8ToStr(hb_defaultValue(hResponse["message"], [Erro desconhecido])))
+   Endif
+
+   ::cCnpj_Cnpj            := Alltrim(hb_defaultValue(hResponse["cnpj"], []))
+   ::cCnpj_RazaoSocial     := Alltrim(hb_defaultValue(hResponse["nome"], []))
+   ::cCnpj_NomeFantasia    := Alltrim(hb_defaultValue(hResponse["fantasia"], []))
+   ::cCnpj_Situacao        := hb_defaultValue(hResponse["situacao"], [])
+   ::cCnpj_Tipo            := hb_defaultValue(hResponse["tipo"], [])
+   ::cCnpj_Abertura        := hb_defaultValue(hResponse["abertura"], [])
+   ::cCnpj_Porte           := Alltrim(hb_defaultValue(hResponse["porte"], []))
+   ::cCnpj_NaturezaJuridica:= Alltrim(hb_defaultValue(hResponse["natureza_juridica"], []))
+   ::cCnpj_CapitalSocial   := hb_defaultValue(hResponse["capital_social"], [])
+   
+   // Endereço e Contato
+   ::cCnpj_Logradouro      := Alltrim(hb_defaultValue(hResponse["logradouro"], []))
+   ::cCnpj_Numero          := hb_defaultValue(hResponse["numero"], [])
+   ::cCnpj_Complemento     := Alltrim(hb_defaultValue(hResponse["complemento"], []))
+   ::cCnpj_Bairro          := Alltrim(hb_defaultValue(hResponse["bairro"], []))
+   ::cCnpj_Municipio       := Alltrim(hb_defaultValue(hResponse["municipio"], []))
+   ::cCnpj_UF              := hb_defaultValue(hResponse["uf"], [])
+   ::cCnpj_CEP             := hb_defaultValue(hResponse["cep"], [])
+   ::cCnpj_Email           := hb_defaultValue(hResponse["email"], [])
+   ::cCnpj_Telefone        := hb_defaultValue(hResponse["telefone"], [])
+
+   // Situação Detalhada
+   ::cCnpj_EFR             := Alltrim(hb_defaultValue(hResponse["efr"], []))
+   ::cCnpj_DataSituacao    := hb_defaultValue(hResponse["data_situacao"], [])
+   ::cCnpj_MotivoSituacao  := Alltrim(hb_defaultValue(hResponse["motivo_situacao"], []))
+   ::cCnpj_SitEspecial     := Alltrim(hb_defaultValue(hResponse["situacao_especial"], []))
+   ::cCnpj_DataSitEspecial := hb_defaultValue(hResponse["data_situacao_especial"], [])
+
+   // --- ATIVIDADE PRINCIPAL (Loop para garantir que pegamos todos se houver) ---
+   If HHasKey(hResponse, [atividade_principal])
+      For Each nItem In hResponse["atividade_principal"]
+          ::cCnpj_CnaePrincipal+= nItem["code"] + [ - ] + Alltrim(nItem["text"]) + hb_eol()
+      Next
+   Endif
+
+   // --- ATIVIDADES SECUNDÁRIAS ---
+   If HHasKey(hResponse, [atividades_secundarias])
+      For Each nItem In hResponse["atividades_secundarias"]
+          ::cCnpj_CnaeSecundario+= nItem["code"] + [ - ] + Alltrim(nItem["text"]) + hb_eol()
+      Next
+   Endif
+
+   // --- QSA (Quadro de Sócios e Administradores) ---
+   If HHasKey(hResponse, [qsa]) .and. ValType(hResponse["qsa"]) == "A"
+      For Each nItem In hResponse["qsa"]
+          ::cCnpj_QSA+= Alltrim(nItem["nome"]) + " [" + Alltrim(nItem["qual"]) + "]" + hb_eol()
+      Next
+   Endif
+
+   // --- DADOS DO SIMPLES / MEI ---
+   ::lCnpj_OptanteSimples:= .F.
+   If HHasKey(hResponse, [simples]) .and. ValType(hResponse["simples"]) == [H]
+      ::lCnpj_OptanteSimples:= hb_defaultValue(hResponse["simples"]["optante"], .F.)
+   Endif
+
+   ::lCnpj_OptanteSimei:= .F.
+   If HHasKey(hResponse, [simei]) .and. ValType(hResponse["simei"]) == [H]
+      ::lCnpj_OptanteSimei:= hb_defaultValue(hResponse["simei"]["optante"], .F.)
+   Endif
+Return ([OK])
 
 * ----> Metodo para Retirar Caracteres/Sinais de uma String <----------------- *
 METHOD fRetiraSinal(cStr, cEliminar)
