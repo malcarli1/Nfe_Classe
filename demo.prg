@@ -4,7 +4,7 @@
  * OBJETIVO : Gerar Xml de Nfe/Nfce                                          *
  * AUTOR    : Marcelo Antonio Lázzaro Carli                                  *
  * DATA     : 23.06.2025                                                     *
- * ULT. ALT.: 17.09.2025                                                     *
+ * ULT. ALT.: 15.05.2026                                                     *
  *****************************************************************************/
 #include <minigui.ch>
 
@@ -15,6 +15,7 @@ Procedure Main()
    REQUEST DBFCDX, DBFFPT
    HB_LangSelect([PT])
    HB_SETCODEPAGE([PT850])    &&& PARA INDEXAR CAMPOS ACENTUADOS
+   HB_SETCODEPAGE([PTISO])    &&& PARA INDEXAR CAMPOS ACENTUADOS
    RDDSETDEFAULT([DBFCDX])
    Set Date Briti             &&& data no formato dd/mm/aaaados
    Set Dele On                &&& ignora registros marcados por deleção
@@ -28,8 +29,11 @@ Procedure Main()
    DEFINE WINDOW f_demo AT 0, 0 WIDTH 800 HEIGHT 600 TITLE [Gerar Xml] ICON [demo.ico] MAIN NOSIZE NOMAXIMIZE
         DEFINE MAIN MENU 
   	     POPUP [&Manutenções]
-                 MENUITEM [&1. Gerar]         ACTION {|| fGerarxml()}
-                 MENUITEM [&2. Buscar Pfx]    ACTION {|| fBuscarpfx()}
+                 MENUITEM [&1. Gerar]          ACTION {|| fGerarxml()}
+                 MENUITEM [&2. Buscar Pfx]     ACTION {|| fBuscarpfx()}
+                 MENUITEM [&3. Gerar Json]     ACTION {|| fGerarjson()}
+                 MENUITEM [&4. Consultar Gtin] ACTION {|| fConsultarGtin()}
+                 MENUITEM [&5. Consultar Cnpj] ACTION {|| fConsultaCnpj()}
                  SEPARATOR		
                  MENUITEM [Sair do Sistema] ACTION {|| ThisWindow.Release}
              END POPUP	           
@@ -46,6 +50,538 @@ Procedure Main()
    DoMethod([f_demo], [Maximize])
    DoMethod([f_demo], [Activate])
 Return (Nil)
+
+Static Procedure fConsultaCnpj()
+   HB_SETCODEPAGE([PTISO])
+
+   Set Font to "MS Sans Serif", 8
+   DEFINE WINDOW fConsultaCnpj AT 0,0 WIDTH 620 HEIGHT 735 TITLE [Consulta de CNPJ] ICON [DEMO.ICO] MODAL NOSIZE NOSYSMENU
+ 
+     DEFINE FRAME Frame_1
+            ROW    10
+            COL    10
+            WIDTH  580
+            HEIGHT 95
+            OPAQUE .T.
+     END FRAME
+
+     DEFINE LABEL Label_1
+            ROW    20
+            COL    20
+            WIDTH  60
+            HEIGHT 16
+            VALUE "CNPJ"
+            FONTSIZE 10
+     END LABEL
+
+     DEFINE LABEL Label_2
+            ROW    110
+            COL    10
+            WIDTH  120
+            HEIGHT 16
+            VALUE "Número de Inscrição"
+     END LABEL
+
+     DEFINE LABEL Label_3
+            ROW    110
+            COL    170
+            WIDTH  120
+            HEIGHT 16
+            VALUE "Tipo"
+     END LABEL
+
+     DEFINE LABEL Label_4
+            ROW    110
+            COL    300
+            WIDTH  100
+            HEIGHT 16
+            VALUE "Data de Abertura"
+     END LABEL
+
+     DEFINE LABEL Label_5
+            ROW    110
+            COL    410
+            WIDTH  100
+            HEIGHT 16
+            VALUE "Porte"
+     END LABEL
+
+     DEFINE LABEL Label_6
+            ROW    155
+            COL    10
+            WIDTH  120
+            HEIGHT 16
+            VALUE "Nome Empresarial"
+     END LABEL
+
+     DEFINE LABEL Label_7
+            ROW    200
+            COL    10
+            WIDTH  110
+            HEIGHT 16
+            VALUE "Nome de Fantasia"
+     END LABEL
+
+     DEFINE LABEL Label_8
+            ROW    245
+            COL    10
+            WIDTH  60
+            HEIGHT 16
+            VALUE "Endereço"
+     END LABEL
+
+     DEFINE LABEL Label_9
+            ROW    245
+            COL    490
+            WIDTH  50
+            HEIGHT 16
+            VALUE "Número"
+     END LABEL
+
+     DEFINE LABEL Label_10
+            ROW    290
+            COL    10
+            WIDTH  85
+            HEIGHT 16
+            VALUE "Complemento"
+     END LABEL
+
+     DEFINE LABEL Label_11
+            ROW    290
+            COL    320
+            WIDTH  85
+            HEIGHT 16
+            VALUE "Bairro/Distrito"
+     END LABEL
+
+     DEFINE LABEL Label_12
+            ROW    335
+            COL    10
+            WIDTH  60
+            HEIGHT 16
+            VALUE "Município"
+     END LABEL
+
+     DEFINE LABEL Label_13
+            ROW    335
+            COL    400
+            WIDTH  20
+            HEIGHT 16
+            VALUE "Uf"
+     END LABEL
+
+     DEFINE LABEL Label_14
+            ROW    335
+            COL    460
+            WIDTH  30
+            HEIGHT 16
+            VALUE "CEP"
+     END LABEL
+
+     DEFINE LABEL Label_15
+            ROW    380
+            COL    10
+            WIDTH  40
+            HEIGHT 16
+            VALUE "Email"
+     END LABEL
+
+     DEFINE LABEL Label_16
+            ROW    380
+            COL    300
+            WIDTH  55
+            HEIGHT 16
+            VALUE "Telefone"
+     END LABEL
+
+     DEFINE LABEL Label_17
+            ROW    425
+            COL    10
+            WIDTH  120
+            HEIGHT 16
+            VALUE "Situação Cadastral"
+     END LABEL
+
+     DEFINE LABEL Label_18
+            ROW    425
+            COL    410
+            WIDTH  155
+            HEIGHT 16
+            VALUE "Data da Situação Cadastral"
+     END LABEL
+
+     DEFINE LABEL Label_19
+            ROW    470
+            COL    10
+            WIDTH  180
+            HEIGHT 16
+            VALUE "Ente Federativo Responsável"
+     END LABEL
+
+     DEFINE LABEL Label_20
+            ROW    470
+            COL    300
+            WIDTH  180
+            HEIGHT 16
+            VALUE "Motivo de Situação Cadastral"
+     END LABEL
+
+     DEFINE LABEL Label_21
+            ROW    515
+            COL    10
+            WIDTH  120
+            HEIGHT 16
+            VALUE "Situação Especial"
+     END LABEL
+
+     DEFINE LABEL Label_22
+            ROW    515
+            COL    410
+            WIDTH  160
+            HEIGHT 16
+            VALUE "Data da Situação Especial"
+     END LABEL
+
+     DEFINE TEXTBOX Text_ConsCnpj
+            ROW    35
+            COL    20
+            WIDTH  180
+            HEIGHT 20
+            FONTSIZE 11
+            FONTBOLD .T.
+            ONENTER {|| DoMethod([fConsultaCnpj], [Text_ConsCap], [SetFocus])}
+            INPUTMASK "99.999.999/9999-99"
+            TOOLTIP   "Entre com o Cnpj"
+     END TEXTBOX
+
+     DEFINE BUTTON Button_1
+            ROW    35
+            COL    230
+            WIDTH  100
+            HEIGHT 20
+            ACTION {|| fConsultarCnpjClasse(GetProperty([fConsultaCnpj], [Text_ConsCnpj], [Value]))}
+            CAPTION "Consultar"
+            FONTBOLD .T.
+     END BUTTON
+
+     DEFINE BUTTON Button_2
+            ROW    35
+            COL    480
+            WIDTH  100
+            HEIGHT 20
+            ACTION {|| ThisWindow.Release()}
+            CAPTION "Sair"
+            FONTBOLD .T.
+     END BUTTON
+
+     DEFINE TEXTBOX Text_3
+            ROW    125
+            COL    10
+            WIDTH  150
+            HEIGHT 24
+            READONLY .T.
+            FONTBOLD .T.
+     END TEXTBOX
+
+     DEFINE TEXTBOX Text_4
+            ROW    125
+            COL    170
+            WIDTH  120
+            HEIGHT 24
+            READONLY .T.
+            FONTBOLD .T.
+     END TEXTBOX
+
+     DEFINE TEXTBOX Text_5
+            ROW    125
+            COL    300
+            WIDTH  100
+            HEIGHT 24
+            READONLY .T.
+            FONTBOLD .T.
+     END TEXTBOX
+
+     DEFINE TEXTBOX Text_55
+            ROW    125
+            COL    410
+            WIDTH  180
+            HEIGHT 24
+            READONLY .T.
+            FONTBOLD .T.
+     END TEXTBOX
+
+     DEFINE TEXTBOX Text_6
+            ROW    170
+            COL    10
+            WIDTH  580
+            HEIGHT 24
+            READONLY .T.
+            FONTBOLD .T.
+     END TEXTBOX
+
+     DEFINE TEXTBOX Text_7
+            ROW    215
+            COL    10
+            WIDTH  580
+            HEIGHT 24
+            READONLY .T.
+            FONTBOLD .T.
+     END TEXTBOX
+
+     DEFINE TEXTBOX Text_8
+            ROW    260
+            COL    10
+            WIDTH  470
+            HEIGHT 24
+            READONLY .T.
+            FONTBOLD .T.
+     END TEXTBOX
+
+     DEFINE TEXTBOX Text_9
+            ROW    260
+            COL    490
+            WIDTH  100
+            HEIGHT 24
+            READONLY .T.
+            FONTBOLD .T.
+     END TEXTBOX
+
+     DEFINE TEXTBOX Text_10
+            ROW    305
+            COL    10
+            WIDTH  300
+            HEIGHT 24
+            READONLY .T.
+            FONTBOLD .T.
+     END TEXTBOX
+
+     DEFINE TEXTBOX Text_12
+            ROW    305
+            COL    320
+            WIDTH  270
+            HEIGHT 24
+            READONLY .T.
+            FONTBOLD .T.
+     END TEXTBOX
+
+     DEFINE TEXTBOX Text_13
+            ROW    350
+            COL    10
+            WIDTH  380
+            HEIGHT 24
+            READONLY .T.
+            FONTBOLD .T.
+     END TEXTBOX
+
+     DEFINE TEXTBOX Text_14
+            ROW    350
+            COL    400
+            WIDTH  50
+            HEIGHT 24
+            READONLY .T.
+            FONTBOLD .T.
+     END TEXTBOX
+
+     DEFINE TEXTBOX Text_11
+            ROW    350
+            COL    460
+            WIDTH  130
+            HEIGHT 24
+            READONLY .T.
+            FONTBOLD .T.
+     END TEXTBOX
+
+     DEFINE TEXTBOX Text_15
+            ROW    395
+            COL    10
+            WIDTH  280
+            HEIGHT 24
+            READONLY .T.
+            FONTBOLD .T.
+     END TEXTBOX
+
+     DEFINE TEXTBOX Text_16
+            ROW    395
+            COL    300
+            WIDTH  290
+            HEIGHT 24
+            READONLY .T.
+            FONTBOLD .T.
+     END TEXTBOX
+
+     DEFINE TEXTBOX Text_18
+            ROW    440
+            COL    10
+            WIDTH  390
+            HEIGHT 24
+            READONLY .T.
+            FONTBOLD .T.
+     END TEXTBOX
+
+      DEFINE TEXTBOX Text_19
+            ROW    440
+            COL    410
+            WIDTH  180
+            HEIGHT 24
+            READONLY .T.
+            FONTBOLD .T.
+     END TEXTBOX
+
+     DEFINE TEXTBOX Text_17
+            ROW    485
+            COL    10
+            WIDTH  280
+            HEIGHT 24
+            READONLY .T.
+            FONTBOLD .T.
+     END TEXTBOX
+
+     DEFINE TEXTBOX Text_20
+            ROW    485
+            COL    300
+            WIDTH  290
+            HEIGHT 24
+            READONLY .T.
+            FONTBOLD .T.
+     END TEXTBOX
+
+     DEFINE TEXTBOX Text_21
+            ROW    530
+            COL    10
+            WIDTH  390
+            HEIGHT 24
+            READONLY .T.
+            FONTBOLD .T.
+     END TEXTBOX
+
+     DEFINE TEXTBOX Text_22
+            ROW    530
+            COL    410
+            WIDTH  180
+            HEIGHT 24
+            READONLY .T.
+            FONTBOLD .T.
+     END TEXTBOX
+
+    DEFINE TAB Tab_1 AT 560,10 WIDTH 580 HEIGHT 130 VALUE 1 FONT 'Arial' SIZE 9
+
+    PAGE 'Atividade Principal'
+
+        DEFINE EDITBOX Edit_1
+               ROW    30
+               COL    10
+               WIDTH  560
+               HEIGHT 90
+               READONLY .T.
+               FONTBOLD .T.
+        END EDITBOX
+
+    END PAGE
+
+    PAGE 'Atividades Secundárias'
+
+        DEFINE EDITBOX Edit_2
+               ROW    30
+               COL    10
+               WIDTH  560
+               HEIGHT 90
+               READONLY .T.
+               FONTBOLD .T.
+        END EDITBOX
+
+    END PAGE
+
+    PAGE 'Natureza Jurídica'
+
+        DEFINE EDITBOX Edit_3
+               ROW    30
+               COL    10
+               WIDTH  560
+               HEIGHT 90
+               READONLY .T.
+               FONTBOLD .T.
+        END EDITBOX
+
+    END PAGE
+
+    PAGE 'Capital Social'
+
+        DEFINE EDITBOX Edit_4
+               ROW    30
+               COL    10
+               WIDTH  560
+               HEIGHT 90
+               READONLY .T.
+               FONTBOLD .T.
+        END EDITBOX
+
+    END PAGE
+
+    PAGE 'Qsa'
+
+        DEFINE EDITBOX Edit_5
+               ROW    30
+               COL    10
+               WIDTH  560
+               HEIGHT 90
+               READONLY .T.
+               FONTBOLD .T.
+        END EDITBOX
+
+    END PAGE
+
+    END TAB
+
+   END WINDOW
+
+   On Key ESCAPE of fConsultaCnpj ACTION {|| ThisWindow.Release()}
+
+   fConsultaCnpj.Center()
+   fConsultaCnpj.Activate()
+   HB_SETCODEPAGE([PT850])
+Return (Nil)
+
+Static Function fConsultarCnpjClasse(cCnpj)
+   Local oNfe:= Malc_GeraXml():New(), cRet:= oNfe:fConsultaCNPJ(cCnpj)
+
+   If cRet == [OK]
+      _SetValue([Text_3] , [fConsultaCnpj], oNfe:cCnpj_Cnpj)
+      _SetValue([Text_4] , [fConsultaCnpj], oNfe:cCnpj_tipo)
+      _SetValue([Text_5] , [fConsultaCnpj], oNfe:cCnpj_abertura)
+      _SetValue([Text_55], [fConsultaCnpj], oNfe:cCnpj_porte)
+      _SetValue([Text_6] , [fConsultaCnpj], oNfe:cCnpj_RazaoSocial)
+      _SetValue([Text_7] , [fConsultaCnpj], oNfe:cCnpj_NomeFantasia)
+      _SetValue([Text_8] , [fConsultaCnpj], oNfe:cCnpj_logradouro)
+      _SetValue([Text_9] , [fConsultaCnpj], oNfe:cCnpj_numero)
+      _SetValue([Text_10], [fConsultaCnpj], oNfe:cCnpj_complemento)
+      _SetValue([Text_11], [fConsultaCnpj], oNfe:cCnpj_cep)
+      _SetValue([Text_12], [fConsultaCnpj], oNfe:cCnpj_bairro)
+      _SetValue([Text_13], [fConsultaCnpj], oNfe:cCnpj_municipio)
+      _SetValue([Text_14], [fConsultaCnpj], oNfe:cCnpj_uf)
+      _SetValue([Text_15], [fConsultaCnpj], oNfe:cCnpj_email)
+      _SetValue([Text_16], [fConsultaCnpj], oNfe:cCnpj_telefone)
+      _SetValue([Text_17], [fConsultaCnpj], oNfe:cCnpj_efr)
+      _SetValue([Text_18], [fConsultaCnpj], oNfe:cCnpj_situacao)
+      _SetValue([Text_19], [fConsultaCnpj], oNfe:cCnpj_DataSituacao)
+      _SetValue([Text_20], [fConsultaCnpj], oNfe:cCnpj_MotivoSituacao)
+      _SetValue([Text_21], [fConsultaCnpj], oNfe:cCnpj_SitEspecial)
+      _SetValue([Text_22], [fConsultaCnpj], oNfe:cCnpj_DataSitEspecial)
+      _SetValue([Edit_1] , [fConsultaCnpj], oNfe:cCnpj_CnaePrincipal)
+      _SetValue([Edit_2] , [fConsultaCnpj], oNfe:cCnpj_CnaeSecundario)
+      _SetValue([Edit_3] , [fConsultaCnpj], oNfe:cCnpj_NaturezaJuridica)
+      _SetValue([Edit_4] , [fConsultaCnpj], oNfe:cCnpj_CapitalSocial)
+      _SetValue([Edit_5] , [fConsultaCnpj], oNfe:cCnpj_QSA)
+
+      // Checagem de Simples
+      IF oNfe:lCnpj_OptanteSimples
+         MsgInfo("Esta empresa é optante pelo Simples Nacional!")
+      ENDIF
+
+
+   ELSE
+      MsgStop(cRet)
+   ENDIF
+Return
 
 Static Procedure fBuscarpfx()
    Local oXml:= Malc_GeraXml():New()  // Chamar a classe para gerar xml nfse no objeto oXml 
@@ -260,22 +796,20 @@ Static Procedure fGerarxml()
        * oXml:cCstipint   := [54]
        * oXml:cCstPisnt   := [08]
        * oXml:cCstCofinsnt:= [08]
-/*
+
        // Reforma Tributária  - RTC
-       oXml:cCstis       := [000]
-       oXml:cClasstribis := [000000]
+       oXml:cClasstribis := [000001]
        oXml:nVbcis       := 10
        oXml:nPisis       := 1
        oXml:cUtrib_is    := [UN]
        oXml:nQtrib_is    := 1
        oXml:nPredaliqgcbs:= 0.6
 
-       oXml:cCstibs      := [010]
-       oXml:cCclasstrib  := [00000001]
+       oXml:cCclasstrib  := [000001]
        oXml:nVbcibs      := 10
        oXml:cCredPresgibs:= [01]
        oXml:cCredPrescbs := [01]
-*/
+
        oXml:fCria_Produto() // criando a tag dos produtos
 
        ** alterar para poder incluir dentro da det prod
@@ -417,6 +951,169 @@ Static Procedure fGerarxml()
    // Grava Arquivo XML colocar qq nome de preferencia
    hb_MemoWrit(oXml:cId + [-01-SemAssinatura.xml], oXml:cXml)
    hb_MemoWrit(oXml:cId + [-nfe.xml], oXml:cXml)  // padrão para envio pelo monitor da unimake
+   WaitWindow()
+Return (Nil)
+
+Static Procedure fGerarjson()
+   Local cJsonText:= [], oJson, aNomenclaturas, nItem, oAnexos, nI, nj, cCdx, cNomArq := {}
+
+   If !Hb_FileExists(GetCurrentfolder() + [/tabela_ncm.json])
+      MsgExclamation([Não Existe Arquivo: tabela_ncm.json, Baixe em:] + hb_OsNewLine() + [https://www.unimake.com.br/downloads/tabela_ncm.json], [Atenção])
+      Return (Nil)
+   Endif
+
+   If !Hb_FileExists(GetCurrentfolder() + [/tabela_cest.json])
+      MsgExclamation([Não Existe Arquivo: tabela_cest.json. Baixe em:] + hb_OsNewLine() + [https://www.unimake.com.br/downloads/tabela_cest.json], [Atenção])
+      Return (Nil)
+   Endif
+
+   If !Hb_FileExists(GetCurrentfolder() + [/tabela_nbs.json])
+      MsgExclamation([Não Existe Arquivo: tabela_nbs.json, Baixe em] + hb_OsNewLine() + [https://www.unimake.com.br/downloads/tabela_nbs.json], [Atenção])
+      Return (Nil)
+   Endif
+
+   If !Hb_FileExists(GetCurrentfolder() + [/tabela_ncm.dbf])
+      Dbcreate([tabela_ncm], {{[CODIGO]    , [C], 010, 0},;
+                              {[DESCRICAO] , [C], 999, 0},;
+                              {[DT_INICIO] , [D], 008, 0},;
+                              {[DT_FIM]    , [D], 008, 0},;
+                              {[TIPO_ATO]  , [C], 030, 0},;
+                              {[NUM_ATO]   , [N], 004, 0},;
+                              {[ANO_ATO]   , [N], 004, 0},;
+                              {[REDUZIDA]  , [C], 050, 0},;  
+                              {[CST]       , [C], 003, 0},;
+                              {[CCLASSTRIB], [C], 006, 0},;
+                              {[ANEXOS]    , [C], 999, 0}})
+   Else      
+      use tabela_ncm exclusive
+      tabela_ncm->(__dbzap())
+   Endif
+
+   If !Hb_FileExists(GetCurrentfolder() + [/tabela_cest.dbf])
+      Dbcreate([tabela_cest], {{[CEST]     , [C], 009, 0},;
+                               {[NCM_SH]   , [C], 010, 0},;
+                               {[SEG_CEST] , [C], 300, 0},;
+                               {[ITEM]     , [C], 010, 0},;
+                               {[DESC_CEST], [C], 999, 0},;
+                               {[ANEXO]    , [C], 100, 0}})
+   Else      
+      use tabela_cest exclusive
+      tabela_cest->(__dbzap())
+   Endif
+
+   If !Hb_FileExists(GetCurrentfolder() + [/tabela_nbs.dbf])
+      Dbcreate([tabela_nbs], {{[ITEM]     , [C], 005, 0},;
+                              {[DESC_ITEM], [C], 300, 0},;
+                              {[NBS]      , [C], 012, 0},;
+                              {[DESC_NBS] , [C], 999, 0},;
+                              {[ONEROSA]  , [C], 001, 0},;
+                              {[EXTERIOR] , [C], 001, 0},;
+                              {[INDOP]    , [C], 006, 0},;
+                              {[LOCAL_INC], [C], 300, 0},;
+                              {[CLASSTRIB], [C], 006, 0},;
+                              {[DESC_CLAS], [C], 999, 0}})
+   Else      
+      use tabela_nbs exclusive
+      tabela_nbs->(__dbzap())
+   Endif
+
+   Dbcloseall()
+   HB_SETCODEPAGE([PTISO])
+
+   cFile:= GetCurrentfolder() + [/tabela_ncm.json]
+   If Hb_FileExists(cFile)
+      use tabela_ncm shared
+
+      cJsonText:= StrTran(Hb_MemoRead(cFile), '"; ', '"=> ' )
+
+      oJson := hb_jsonDecode( cJsonText )
+      aNomenclaturas := oJson["Nomenclaturas"]
+ 
+      For nI:= 1 To Len( aNomenclaturas )
+          oItem := aNomenclaturas[ nI ]
+
+          tabela_ncm->( DBAppend() )
+          tabela_ncm->Codigo   := oItem["Codigo"]
+          tabela_ncm->Descricao:= hb_utf8ToStr( oItem["Descricao"], "PTISO" )
+          tabela_ncm->Dt_inicio:= CToD( oItem["Data_Inicio"] )
+          tabela_ncm->Dt_fim   := CToD( oItem["Data_Fim"] )
+          tabela_ncm->tipo_ato := oItem["Tipo_Ato"]
+          tabela_ncm->num_ato  := Val(oItem["Numero_Ato"])
+          tabela_ncm->ano_ato  := Val(oItem["Ano_Ato"])
+          tabela_ncm->Reduzida := SubStr( tabela_ncm->Codigo, 1, 50 )
+      
+          If HB_HHasKey( oItem, "Anexos" ) .And. HB_ISARRAY( oItem["Anexos"] )
+             aAnexos := oItem["Anexos"]
+             For nJ:= 1 To Len( aAnexos )
+                 oAnexo := aAnexos[ nJ ]
+                 tabela_ncm->CST        := oAnexo["CST"]
+                 tabela_ncm->CclassTrib := oAnexo["cClassTrib"]
+             Next
+          Endif
+      Next
+
+      tabela_ncm->(DbcloseArea())
+   Endif
+
+   nItem:= 1
+   cFile:= GetCurrentfolder() + [/tabela_cest.json]
+   If Hb_FileExists(cFile)
+      use tabela_cest shared
+
+      If At(["CEST"], hb_Memoread(cFile)) # 0
+         For EACH nItem IN Hb_jsonDecode(hb_Memoread(cFile))
+             tabela_cest->(DBAppend())
+             tabela_cest->cest     := nItem["CEST"]
+             tabela_cest->ncm_sh   := nItem["NCM_SH"]
+             tabela_cest->seg_cest := hb_UTF8ToStr(nItem["Segmento_CEST"])
+             tabela_cest->item     := nItem["Item"]
+             tabela_cest->desc_cest:= hb_UTF8ToStr(nItem["Descricao_CEST"])
+             tabela_cest->anexo    := nItem["Anexo_XXVII"]
+         Next
+      Endif
+
+      tabela_cest->(DbcloseArea())
+   Endif
+
+   nItem:= 1
+   cFile:= GetCurrentfolder() + [/tabela_nbs.json]
+   If Hb_FileExists(cFile)
+      use tabela_nbs shared
+
+      If At(["Item_LC_116"], hb_Memoread(cFile)) # 0
+         For EACH nItem IN Hb_jsonDecode(hb_Memoread(cFile))
+             tabela_nbs->(DBAppend())
+             tabela_nbs->item     := nItem["Item_LC_116"]
+             tabela_nbs->desc_item:= hb_UTF8ToStr(nItem["Descricao_Item"])
+             tabela_nbs->nbs      := nItem["NBS"]
+             tabela_nbs->desc_nbs := hb_UTF8ToStr(nItem["Descricao_NBS"])
+             tabela_nbs->onerosa  := hb_UTF8ToStr(nItem["PS_Onerosa"])
+             tabela_nbs->exterior := nItem["ADQ_Exterior"]
+             tabela_nbs->indop    := nItem["IndOP"]
+             tabela_nbs->local_inc:= hb_UTF8ToStr(nItem["Local_Incidencia_IBS"])
+             tabela_nbs->classtrib:= nItem["cClassTrib"]
+             tabela_nbs->desc_clas:= hb_UTF8ToStr(nItem["Nome_cClassTrib"])
+         Next
+      Endif
+
+      tabela_nbs->(DbcloseArea())
+   Endif
+   HB_SETCODEPAGE([PT850])
+Return
+
+Static Procedure fConsultarGtin()
+   Local oXml:= Malc_GeraXml():New(), cChave:= cRetorno:= [] // Chamar a classe para gerar xml nfe/nfce no objeto oXml 
+
+   WaitWindow([*** Consultando Gtin. Aguarde término do processo... ***], .T.)
+
+*   fSelecionarCertificado()
+
+   cChave:= InputBox([Gtin: ], [Digite o Gtin], [7896045506934])
+
+   cRetorno:= oXml:fConsultaGTIN(cChave)
+
+   MsgInfo(cRetorno)
+
    WaitWindow()
 Return (Nil)
 
