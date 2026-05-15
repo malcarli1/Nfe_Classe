@@ -10,7 +10,7 @@
  *          : Maurílio Franchin Júnior                                       *
  *          : Jair Barreto                                                   *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 08.05.2026                                                     *
+ * ULT. ALT.: 15.05.2026                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 #IfNdef __XHARBOUR__
@@ -385,16 +385,16 @@ CLASS Malc_GeraXml
 
    // Configuração Básica de Indicadores da RTC para Classtrib
    VAR cTipoDeAliquota         AS Character INIT [1]                              // 1 - Padrão, 2 - Uniforme setorial, 3 - Uniforme nacional (referência), 4 - Fixa, 5 - Sem alíquota, 6 - Uniforme setorial
-   VAR cPredibs                AS Character INIT []                               // "", "30", "40", "50", "60", "70", "80", "100"
-   VAR cPredcbs                AS Character INIT []                               // "", "30", "40", "50", "60", "70", "80", "100"
-   VAR cInd_RedutorBC          AS Character INIT []                               // "", "S", "N"
-   VAR cInd_gTribRegular       AS Character INIT []                               // "", "0", "1"
-   VAR cInd_CredPres           AS Character INIT []                               // "", "1"
-   VAR cIndMono                AS Character INIT []                               // "", "0", "1"
-   VAR cIndMonoReten           AS Character INIT []                               // "", "0", "1"
-   VAR cIndMonoRet             AS Character INIT []                               // "", "0", "1"
-   VAR cIndMonoDif             AS Character INIT []                               // "", "0", "1"
-   VAR cCredito_para           AS Character INIT []                               // 1 - "", 2 - Fornecedor, 3 - Adquirente. Crédito Presumido de IBS\nArt. 447. Fica concedido ao contribuinte sujeito ao regime regular do IBS e habilitado nos termos do art. 442 desta Lei Complementar crédito presumido de IBS relativo à aquisição de bem material industrializado de origem nacional contemplado pela redução a zero da alíquota do IBS nos termos do art. 445 desta Lei Complementar,
+   VAR cPredibs                AS Character INIT []                               // [], "30", "40", "50", "60", "70", "80", "100"
+   VAR cPredcbs                AS Character INIT []                               // [], "30", "40", "50", "60", "70", "80", "100"
+   VAR cInd_RedutorBC          AS Character INIT []                               // [], "S", "N"
+   VAR cInd_gTribRegular       AS Character INIT []                               // [], "0", "1"
+   VAR cInd_CredPres           AS Character INIT []                               // [], "1"
+   VAR cIndMono                AS Character INIT []                               // [], "0", "1"
+   VAR cIndMonoReten           AS Character INIT []                               // [], "0", "1"
+   VAR cIndMonoRet             AS Character INIT []                               // [], "0", "1"
+   VAR cIndMonoDif             AS Character INIT []                               // [], "0", "1"
+   VAR cCredito_para           AS Character INIT []                               // 1 - [], 2 - Fornecedor, 3 - Adquirente. Crédito Presumido de IBS\nArt. 447. Fica concedido ao contribuinte sujeito ao regime regular do IBS e habilitado nos termos do art. 442 desta Lei Complementar crédito presumido de IBS relativo à aquisição de bem material industrializado de origem nacional contemplado pela redução a zero da alíquota do IBS nos termos do art. 445 desta Lei Complementar,
                                                                                   // 4 - Adquirente. Art. 168. Alíquota fixa por produto,
                                                                                   // 5 - Adquirente. UTILIZADO SOMENTE NA VENDA, É O ÚNICO CASO.  Art. 171. Fase de transição e após da transição,
                                                                                   // 6 - Adquirente. Art. 168.  cCredPres 1,
@@ -560,6 +560,7 @@ CLASS Malc_GeraXml
    METHOD fCertificadopfx()
    METHOD fConsultaGTIN()                                                         // cGtin
    METHOD ExtraiTag()                                                             // cXml, cTag
+   METHOD ExtraiTagsRepetidas()                                                   // cXml, cTag
 ENDCLASS
 
 * ---------------> Metodo para inicializar a criação da Classe <-------------- *
@@ -677,7 +678,7 @@ METHOD fCria_AddNfref()                                                         
       EndIf 
 
       If "</ide>" $ ::cXml
-         ::cXml:= StrTran(::cXml, "</ide>", "")
+         ::cXml:= StrTran(::cXml, "</ide>", [])
       EndIf 
 
       ::cXml+= "<NFref>"
@@ -1799,7 +1800,7 @@ METHOD fCria_TotaisRtc()
    If !Empty(::cCclasstrib)
 
       If "</total>" $ ::cXml
-         ::cXml:= StrTran(::cXml, "</total>", "")  
+         ::cXml:= StrTran(::cXml, "</total>", [])  
       EndIf  
 
       If !Empty(::nVis_t)
@@ -2312,7 +2313,7 @@ METHOD fConsultaGTIN(cGtin)
              ::ExtraiTag(cRetorno, [tpGTIN]) + [|] + ;
              ::ExtraiTag(cRetorno, [xProd]) + [|] + ;
              ::ExtraiTag(cRetorno, [NCM]) + [|] + ;
-             ::ExtraiTag(cRetorno, [CEST])   // até 3 ncm
+             ::ExtraiTagsRepetidas(cRetorno, [CEST])
    Else
       cRet:= [ERRO|] + cCStat + [ | ] + cXMotivo
    Endif
@@ -2328,6 +2329,29 @@ METHOD ExtraiTag(cXml, cTag)
 
    nIni+= Len(cTag) + 2
 Return (SubStr(cXml, nIni, nFim - nIni))
+
+* ---------------------> Metodo para extrair múltiplas ocorrências da mesma tag e retornar separadas por vírgula ou barra <--------------- *
+METHOD ExtraiTagsRepetidas(cXml, cTag)
+   Local cResult:= [], nIni:= 1, cBuscaOpen:= [<] + cTag + [>], cBuscaClose:= [</] + cTag + [>], nPosOpen, nPosClose
+
+   Do While .T.
+      nPosOpen:= At(cBuscaOpen, cXml, nIni)
+      If nPosOpen == 0
+         Exit
+      Endif
+      
+      nPosOpen += Len(cBuscaOpen)
+      nPosClose:= At(cBuscaClose, cXml, nPosOpen)
+      
+      If nPosClose > 0
+         // Adiciona ao resultado com um separador se já houver conteúdo
+         cResult+= iif(Empty(cResult), [], [|]) + SubStr(cXml, nPosOpen, nPosClose - nPosOpen)
+         nIni   := nPosClose + Len(cBuscaClose)
+      Else
+         Exit
+      Endif
+   EndDo
+Return (cResult)
 
 * ----> Metodo para Retirar Caracteres/Sinais de uma String <----------------- *
 METHOD fRetiraSinal(cStr, cEliminar)
@@ -2414,7 +2438,7 @@ METHOD DateTimeXml(dDate, cTime, cUF, lUTC, cUserTimeZone)
 
    Do Case
       Case !Empty(cUserTimeZone) ; cText += cUserTimeZone
-      Case !lUTC ; cText += ""
+      Case !lUTC ; cText += []
       Case cUF $ "AC" ; cText += "-05:00"
       Case cUF $ "MT,MS" .and. lHorarioVerao ; cText += "-03:00"
       Case cUF $ "DF,ES,GO,MG,PR,RJ,RS,SC" .and. lHorarioVerao ; cText += "-02:00"
@@ -2509,7 +2533,7 @@ Return (Str(nResto, 1))
 
 * -------------> Metodo Retorna somente números de uma string <--------------- *
 METHOD SoNumero(cTxt)
-   Local cSoNumeros:= "", cChar
+   Local cSoNumeros:= [], cChar
 
    For EACH cChar IN cTxt
        If cChar $ "0123456789"
@@ -2520,7 +2544,7 @@ Return (cSoNumeros)
 
 * -------------> Metodo Retorna somente números e letras (CNPJ) <------------- *
 METHOD SoNumeroCnpj(cTxt)
-   Local cSoNumeros:= "", cChar
+   Local cSoNumeros:= [], cChar
 
    For EACH cChar IN cTxt
        If (cChar >= "0" .and. cChar <= "9") .or. (cChar >= "A" .and. cChar <= "Z")
