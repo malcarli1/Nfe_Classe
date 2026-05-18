@@ -10,7 +10,7 @@
  *          : Maurílio Franchin Júnior                                       *
  *          : Jair Barreto                                                   *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 15.05.2026                                                     *
+ * ULT. ALT.: 18.05.2026                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 #IfNdef __XHARBOUR__
@@ -591,7 +591,8 @@ CLASS Malc_GeraXml
    METHOD fConsultaGTIN()                                                         // cGtin
    METHOD ExtraiTag()                                                             // cXml, cTag
    METHOD ExtraiTagsRepetidas()                                                   // cXml, cTag
-   METHOD fConsultaCNPJ()                                                          // cCnpj
+   METHOD fConsultaCNPJ()                                                         // cCnpj
+   METHOD fEnviaRequisicao()                                                    // cMetodo, cUrl, cDados, lUsaCertificado
 ENDCLASS
 
 * ---------------> Metodo para inicializar a criação da Classe <-------------- *
@@ -2236,10 +2237,10 @@ METHOD fCertificadopfx(cCertificadoArquivo, cCertificadoSenha)
    Local oCertificado, oStore, oErro
 
    Try
-      oCertificado      := win_oleCreateObject( 'CAPICOM.Certificate' )
+      oCertificado      := Win_OleCreateObject( 'CAPICOM.Certificate' )
       oCertificado:Load( cCertificadoArquivo , cCertificadoSenha, 1, 0 )
         
-      oStore := win_OleCreateObject( 'CAPICOM.Store' )
+      oStore := Win_OleCreateObject( 'CAPICOM.Store' )
       oStore:open( 2, 'My', 1 ) 
       oStore:Add( oCertificado )
 
@@ -2284,56 +2285,14 @@ METHOD fConsultaGTIN(cGtin)
              [</soap12:Body>] + ;
            [</soap12:Envelope>]
 
-   BEGIN SEQUENCE WITH __BreakBlock()
-      oServer:= Win_OleCreateObject([MSXML2.ServerXMLHTTP.6.0])
-      lOk:= .T.
-   ENDSEQUENCE
+   // Invoca o metodo comum de conexao (Passando POST e indicando que usa Certificado)
+   cRetorno:= ::fEnviaRequisicao([POST], [https://dfe-servico.svrs.rs.gov.br/ws/ccgConsGTIN/ccgConsGTIN.asmx], cSoap, .T.)
 
-   If !lOk
-      Return ([<xml>*ERRO* Erro: No uso do objeto MSXML2.ServerXmlHTTP.6.0</xml>])
+   If Left(cRetorno, 5) == [ERRO|]
+      Return (cRetorno)
    Endif
 
-   If ::cCertNomecer # Nil .and. ::cCertNomecer # [NENHUM]
-      oServer:setOption(3, [CURRENT_USER\MY\] + ::cCertNomecer)
-   Else
-      Return ([<xml>*ERRO* Certificado não encontrado ou senha inválida</xml>])
-   Endif
-
-   oServer:SetTimeOuts(15000, 15000, 15000, 15000)
-   lOk:= .F.
-
-   BEGIN SEQUENCE WITH __BreakBlock()
-      oServer:Open([POST], [https://dfe-servico.svrs.rs.gov.br/ws/ccgConsGTIN/ccgConsGTIN.asmx], .F.)
-      lOk:= .T.
-   ENDSEQUENCE
-
-   If !lOk
-      Return ([<xml>*ERRO* Erro: No Open() do endereço https://dfe-servico.svrs.rs.gov.br/ws/ccgConsGTIN/ccgConsGTIN.asmx</xml>])
-   Endif
-
-   oServer:SetRequestHeader([Content-Type], [application/soap+xml; charset=utf-8])
-   lOk:= .F.
-
-   BEGIN SEQUENCE WITH __BreakBlock()
-      oServer:Send(cSoap)
-      lOk:= .T.
-   ENDSEQUENCE
-
-   If !lOk
-      Return ([<xml>*ERRO* Erro: Send falhou https://dfe-servico.svrs.rs.gov.br/ws/ccgConsGTIN/ccgConsGTIN.asmx</xml>])
-   Endif 
-
-   // Pega o retorno
-   cRetorno:= oServer:ResponseBody // sempre usar para UTF-8
-
-   If Empty(cRetorno)
-      cRetorno:= oServer:ResponseBody
-      If Empty(cRetorno)
-         cRetorno:= oServer:ResponseText  /// aqui que deu certo
-      Endif
-   Endif
-
-   hb_MemoWrit(getcurrentfolder() + [\meu_retorno.xml], cRetorno)
+   hb_MemoWrit(GetCurrentFolder() + [\meu_retorno.xml], cRetorno)
 
    // Tratamento do Retorno usando ::ExtraiTag
    cCStat  := ::ExtraiTag(cRetorno, [cStat])
@@ -2386,7 +2345,7 @@ Return (cResult)
 
 * -------------------------> Metodo para Consultar Cnpj <--------------------- *
 METHOD fConsultaCNPJ(cCnpj)
-   Local oHttp, cResponse, oErr, hResponse:= Hash(), nItem
+   Local oHttp, cRetorno, oErr, hResponse:= Hash(), nItem
    
    ::cCnpj_RazaoSocial:= ::cCnpj_NomeFantasia:= ::cCnpj_Situacao:= ::cCnpj_CnaePrincipal:= ::cCnpj_CnaeSecundario:= ::cCnpj_QSA:= []
    
@@ -2396,22 +2355,15 @@ METHOD fConsultaCNPJ(cCnpj)
       Return ([ERRO|CNPJ deve conter 14 dígitos])
    Endif
 
-   TRY
-      oHttp:= CreateObject([WinHttp.WinHttpRequest.5.1])
-      oHttp:Open([GET], [https://www.receitaws.com.br/v1/cnpj/] + cCnpj, .F.)
-      oHttp:Send()
-      cResponse:= oHttp:ResponseText
-   CATCH oErr
-      Return ([ERRO|Falha na conexão: ] + oErr:Description)
-   END
+   cRetorno:= ::fEnviaRequisicao([GET], [https://www.receitaws.com.br/v1/cnpj/] + cCnpj)
 
-   hb_MemoWrit([retorno.txt], cResponse)  
-
-   If Empty(cResponse)
-      Return ([ERRO|Resposta vazia do servidor])
+   If Left(cRetorno, 5) == [ERRO|]
+      Return (cRetorno)
    Endif
 
-   hb_jsonDecode(cResponse, @hResponse)
+   hb_MemoWrit(GetCurrentFolder() + [\retorno.txt], cRetorno)  
+
+   hb_jsonDecode(cRetorno, @hResponse)
 
    If ValType(hResponse) # [H]
       Return ([ERRO|O servidor retornou um formato inválido (Não é JSON)])
@@ -2487,6 +2439,67 @@ METHOD fConsultaCNPJ(cCnpj)
       ::lCnpj_OptanteSimei:= hb_defaultValue(hResponse["simei"]["optante"], .F.)
    Endif
 Return ([OK])
+
+* ---------------> Metodo Interno de Conexao Web Centralizado <--------------- *
+METHOD fEnviaRequisicao(cMetodo, cUrl, cDados, lUsaCertificado)
+   Local oServer, oErr, lOk:= .F., cRetorno:= []
+
+   hb_Default(@cDados         , [])
+   hb_Default(@cMetodo        , [POST])
+   hb_Default(@lUsaCertificado, .F.)
+
+   BEGIN SEQUENCE WITH __BreakBlock()
+      oServer:= Win_OleCreateObject([MSXML2.ServerXMLHTTP.6.0])
+      lOk:= .T.
+   ENDSEQUENCE
+
+   If !lOk
+      Return ([ERRO|Falha ao criar objeto MSXML2.ServerXmlHTTP.6.0])
+   Endif
+
+   If lUsaCertificado
+      If ::cCertNomecer # Nil .and. !Empty(::cCertNomecer) .and. ::cCertNomecer # [NENHUM]
+         oServer:setOption(3, [CURRENT_USER\MY\] + ::cCertNomecer)
+      Else
+         Return ([ERRO|Certificado nao encontrado ou configuracao invalida])
+      Endif
+   Endif
+
+   oServer:SetTimeOuts(15000, 15000, 15000, 15000)
+
+   lOk:= .F.
+   BEGIN SEQUENCE WITH __BreakBlock()
+      oServer:Open(cMetodo, cUrl, .F.)
+      lOk:= .T.
+   ENDSEQUENCE
+
+   If !lOk
+      Return ([ERRO|Falha no Open() para a URL: ] + cUrl)
+   Endif
+
+   If cMetodo == [POST]
+      oServer:SetRequestHeader([Content-Type], [application/soap+xml; charset=utf-8])
+   Endif
+
+   lOk:= .F.
+   BEGIN SEQUENCE WITH __BreakBlock()
+      If Empty(cDados)
+         oServer:Send()
+      Else
+         oServer:Send(cDados)
+      Endif
+      lOk:= .T.
+   ENDSEQUENCE
+
+   If !lOk
+      Return ([RRO|Falha no envio (Send) para a URL: ] + cUrl)
+   Endif 
+
+   cRetorno:= oServer:ResponseBody
+   If Empty(cRetorno)
+      cRetorno:= oServer:ResponseText
+   Endif
+Return (cRetorno)
 
 * ----> Metodo para Retirar Caracteres/Sinais de uma String <----------------- *
 METHOD fRetiraSinal(cStr, cEliminar)
