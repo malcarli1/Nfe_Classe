@@ -10,7 +10,7 @@
  *          : Maurílio Franchin Júnior                                       *
  *          : Jair Barreto                                                   *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 18.05.2026                                                     *
+ * ULT. ALT.: 28.05.2026                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 #IfNdef __XHARBOUR__
@@ -1314,7 +1314,7 @@ METHOD fCria_ProdutoIcms()
                             ::nVbc_t  += ::nVbc                                                                                  // já acumula o valor da base de cálculo para os totais
                             ::nVicms_t+= ::nVicms                                                                                // já acumula o valor do icms para os totais
                      ::cXml+= "</ICMS90>"
-                Case ::cCsticms == [101] .and. (::cCrt == [1] .or. ::cCrt == [4])
+                Case ::cCsticms == [101] .and. ::cCrt == [1]
                      ::cXml+= "<ICMSSN101>"
                             ::cXml    += ::XmlTag( "orig"        , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
                             ::cXml    += ::XmlTag( "CSOSN"       , Left(::cCsticms, 3))
@@ -1326,19 +1326,19 @@ METHOD fCria_ProdutoIcms()
                             ::cXml    += ::XmlTag( "orig"  , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
                             ::cXml    += ::XmlTag( "CSOSN" , Left(::cCsticms, 3))
                      ::cXml+= "</ICMSSN102>"
-                Case ::cCsticms == [201] .and. (::cCrt == [1] .or. ::cCrt == [4])
+                Case ::cCsticms == [201] .and. ::cCrt == [1]
                      ::cXml+= "<ICMSSN201>"
                             ::cXml    += ::XmlTag( "orig"     , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
                             ::cXml    += ::XmlTag( "CSOSN"    , Left(::cCsticms, 3))
                             ::cXml    += ::XmlTag( "modBCST"  , Iif(!(::cModbcst $ [0_1_2_3_4_5]), [3], Left(::cModbcst, 1)))    // Modalidade de determinação da BC do ICMS ST. 0=Preço tabelado ou máximo sugerido, 1=Lista Negativa (valor), 2=Lista Positiva (valor);3=Lista Neutra (valor), 4=Margem Valor Agregado (%), 5=Pauta (valor) // Só até o 5 aqui
                      ::cXml+= "</ICMSSN201>"
-                Case ::cCsticms $ [202_203] .and. (::cCrt == [1] .or. ::cCrt == [4])
+                Case ::cCsticms $ [202_203] .and. ::cCrt == [1]
                      ::cXml+= "<ICMSSN202>"
                             ::cXml    += ::XmlTag( "orig"     , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
                             ::cXml    += ::XmlTag( "CSOSN"    , Left(::cCsticms, 3))
                             ::cXml    += ::XmlTag( "modBCST"  , Iif(!(::cModbcst $ [0_1_2_3_4_5]), [3], Left(::cModbcst, 1)))    // Modalidade de determinação da BC do ICMS ST. 0=Preço tabelado ou máximo sugerido, 1=Lista Negativa (valor), 2=Lista Positiva (valor);3=Lista Neutra (valor), 4=Margem Valor Agregado (%), 5=Pauta (valor) // Só até o 5 aqui
                      ::cXml+= "</ICMSSN202>"
-                Case ::cCsticms == [500] .and. (::cCrt == [1] .or. ::cCrt == [4])
+                Case ::cCsticms == [500] .and. ::cCrt == [1]
                      ::cXml+= "<ICMSSN500>"
                             ::cXml    += ::XmlTag( "orig"           , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
                             ::cXml    += ::XmlTag( "CSOSN"          , Left(::cCsticms, 3))
@@ -2292,7 +2292,7 @@ METHOD fConsultaGTIN(cGtin)
       Return (cRetorno)
    Endif
 
-   hb_MemoWrit(GetCurrentFolder() + [\meu_retorno.xml], cRetorno)
+   hb_MemoWrit(GetCurrentFolder() + [\retorno_gtin.xml], cRetorno)
 
    // Tratamento do Retorno usando ::ExtraiTag
    cCStat  := ::ExtraiTag(cRetorno, [cStat])
@@ -2361,7 +2361,7 @@ METHOD fConsultaCNPJ(cCnpj)
       Return (cRetorno)
    Endif
 
-   hb_MemoWrit(GetCurrentFolder() + [\retorno.txt], cRetorno)  
+   hb_MemoWrit(GetCurrentFolder() + [\retorno_cnpj.txt], cRetorno)  
 
    hb_jsonDecode(cRetorno, @hResponse)
 
