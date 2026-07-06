@@ -1,4 +1,3 @@
-Markdown
 # Malc_GeraXml
 
 **Classe para Geração de XML de DF-e (NF-e Modelo 55 e NFC-e Modelo 65) em Harbour**
