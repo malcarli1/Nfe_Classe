@@ -24,6 +24,10 @@ Esta classe foi totalmente atualizada e já contempla as novas tags da **Reforma
 * **Pronta para a Reforma Tributária (RTC):** Suporte nativo para os novos grupos de tributação do IBS (Imposto sobre Bens e Serviços) e CBS (Contribuição sobre Bens e Serviços).
 * **Segurança e Manipulação Limpa:** Métodos estruturados que automatizam a validação, formatação de tags vazias e tratamento de caracteres especiais inerentes ao formato XML.
 * **Transição CNPJ Alfanumérico:** Totalmente preparada para o novo padrão nacional de identificação, gerando e validando corretamente as tags e chaves de acesso tanto para os novos CNPJs alfanuméricos quanto mantendo a compatibilidade integral com os CNPJs atuais (100% numéricos).
+* ---
+
+### 🆔 Compatibilidade de Identificação (CNPJ Atual & Alfanumérico)
+O motor de geração de chaves e validação de tags da classe foi desenhado pensando no futuro. Ela garante compatibilidade total com os layouts atuais de **CNPJ (100% numéricos)** e já está homologada para gerar os identificadores e nós estruturais aceitando o novo padrão de **CNPJ Alfanumérico**, evitando paradas no ecossistema do seu ERP durante a transição nacional.
 ---
 
 ## 🛠️ Principais Métodos Disponíveis
