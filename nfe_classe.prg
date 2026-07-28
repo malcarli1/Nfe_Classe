@@ -12,7 +12,7 @@
  *          : Jair Barreto                                                   *
  *          : Franklin Brasil                                                *         
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 06.07.2026                                                     *
+ * ULT. ALT.: 27.07.2026                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 #pragma -w0
@@ -1473,7 +1473,7 @@ Return (Nil)
 
 * --------------------> Metodo para gerar a tag do IPI <---------------------- *
 METHOD fCria_ProdutoIpi()
-   If ( ::nVipi > 0 .or. !Empty(::cCstipint) ) .and. ::cModelo == [55]
+   If ( ::nVbcipi > 0 .or. !Empty(::cCstipint) ) .and. ::cModelo == [55]
       ::cXml+= "<IPI>"
              ::cXml+= ::XmlTag( "cEnq" , Left(::cCenq, 3))
 
