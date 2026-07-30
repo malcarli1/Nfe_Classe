@@ -12,7 +12,7 @@
  *          : Jair Barreto                                                   *
  *          : Franklin Brasil                                                *         
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 27.07.2026                                                     *
+ * ULT. ALT.: 29.07.2026                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 #pragma -w0
@@ -1548,7 +1548,7 @@ METHOD fCria_ProdutoIbscbs()  // Reforma tributária
 Return (Nil)
 
 * ----------------------> Metodo para gerar a tag IBSUF <--------------------- *
-METHOD fCria_IBSUF() // Alterado por : Jair Barreto  data : 23/01/2026
+METHOD fCria_IBSUF() // Alterado por : Eduardo  data : 29/07/2026
    ::cXml+= "<gIBSUF>"
           ::cXml+= ::XmlTag( "pIBSUF" , ::nPibsuf, 4)
 
@@ -1557,14 +1557,16 @@ METHOD fCria_IBSUF() // Alterado por : Jair Barreto  data : 23/01/2026
           ::fTrata_TributoDevolvido([UF])
 
           ::fTrata_Reducao([UF])
-                                      
-          ::cXml+= ::XmlTag( "vIBSUF" , ::nVibsuf:= Round(::nVbcibs * (::nPibsuf/100), 2) )
+
+          // EDUARDO
+          ::cXml+= ::XmlTag( "vIBSUF" , ::nVibsuf:= Round(::nVbcibs * (::nPibsuf/(100 - ::nPredaliqgibuf)), 2) )
+*         ::cXml+= ::XmlTag( "vIBSUF" , ::nVibsuf:= Round(::nVbcibs * (::nPibsuf/100), 2) )
           ::nVibsufgibsuf_t += ::nVibsuf
    ::cXml+= "</gIBSUF>"
 Return (Nil)
 
 * ----------------------> Metodo para gerar a tag IBSMUN <-------------------- *
-METHOD fCria_IBSMun() // Alterado por : Jair Barreto  data : 23/01/2026
+METHOD fCria_IBSMun() // Alterado por : Eduardo  data : 29/07/2026
    ::cXml+= "<gIBSMun>"
           ::cXml+= ::XmlTag( "pIBSMun" , ::nPibsmun, 4)
       
@@ -1574,7 +1576,9 @@ METHOD fCria_IBSMun() // Alterado por : Jair Barreto  data : 23/01/2026
       
           ::fTrata_Reducao([MUN])
 
-          ::cXml+= ::XmlTag( "vIBSMun" , ::nVibsmun:= Round(::nVbcibs * (::nPibsmun/100), 2) )
+	  // EDUARDO
+          ::cXml+= ::XmlTag( "vIBSMun" , ::nVibsmun:= Round(::nVbcibs * (::nPibsmun/(100 - ::nPredaliqibsmun)), 2) - Round(::nVbcibs * (::nPibsmun/100), 2) )
+*         ::cXml+= ::XmlTag( "vIBSMun" , ::nVibsmun:= Round(::nVbcibs * (::nPibsmun/100), 2) )
           ::nVibsmungibsmun_t+= ::nVibsmun                                                                    // já acumula o valor para os totais
     ::cXml+= "</gIBSMun>"
     ::cXml+= ::XmlTag( "vIBS" , ::nVibsuf + ::nVibsmun )
@@ -1583,7 +1587,7 @@ METHOD fCria_IBSMun() // Alterado por : Jair Barreto  data : 23/01/2026
 Return (Nil)
 
 * ----------------------> Metodo para gerar a tag CBS <----------------------- *
-METHOD fCria_CBS()   // Alterado por : Jair Barreto  data : 23/01/2026
+METHOD fCria_CBS()   // Alterado por : Eduardo  data : 29/07/2026
    ::cXml+= "<gCBS>"
           ::cXml+= ::XmlTag( "pCBS" , ::nPcbs, 4)
       
@@ -1593,7 +1597,9 @@ METHOD fCria_CBS()   // Alterado por : Jair Barreto  data : 23/01/2026
      
           ::fTrata_Reducao([CBS])
      
-          ::cXml       += ::XmlTag( "vCBS" , ::nVcbs:= Round(::nVbcibs * (::nPcbs/100), 2) )
+          // EDUARDO
+          ::cXml       += ::XmlTag( "vCBS" , ::nVcbs:= Round(::nVbcibs * (::nPcbs/(100 - ::nPredaliqgcbs)), 2) - Round(::nVbcibs * (::nPcbs/100), 2) )
+*         ::cXml       += ::XmlTag( "vCBS" , ::nVcbs:= Round(::nVbcibs * (::nPcbs/100), 2) )
           ::nVcbsgcbs_t+= ::nVcbs                                                                             // já acumula o valor para os totais
    ::cXml+= "</gCBS>"
 Return (Nil)
@@ -1959,10 +1965,12 @@ METHOD fCria_TotaisRtc()
                 EndIf
          ::cXml+= "</IBSCBSTot>"
       EndIf   
+
       If !Empty(::nVitemRtc_t)
          ::nvNftot:= ::nVitemRtc_t
          ::cXml+= ::XmlTag( "vNFTot" , ::nvNftot)  // Valor total da NF-e considerando IBS / CBS / IS
       EndIf   
+
       ::cXml+= "</total>"
    EndIf
 Return (Nil)
