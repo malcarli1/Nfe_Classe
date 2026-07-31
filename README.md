@@ -6,12 +6,16 @@ Uma biblioteca nativa, profissional e de alta performance desenvolvida em Harbou
 
 Esta classe foi totalmente atualizada e já contempla as novas tags da **Reforma Tributária do Consumo (RTC)**, além de manter compatibilidade com os padrões atuais das Notas Fiscais estruturadas no padrão **NF-e 4.00** e **NFC-e 4.00**.
 
-Marcelo A. L. Carli
-Malc Informática — Gestão em Saúde Ocupacional
-📍 Marília/SP — Capital Nacional do Alimento ®
-🌐 https://malc-informatica.ueniweb.com
-📧 marceloalcarli@gmail.com
-📱 Instagram: @malcarli25
+<div align="center">
+
+<b>Marcelo A. L. Carli</b><br>
+Malc Informática — Gestão em Saúde Ocupacional<br>
+📍 Marília/SP — Capital Nacional do Alimento ®<br>
+🌐 <a href="https://malc-informatica.ueniweb.com" target="_blank">malc-informatica.ueniweb.com</a><br>
+📧 <a href="mailto:marceloalcarli@gmail.com">marceloalcarli@gmail.com</a><br>
+📱 Instagram: <a href="https://instagram.com/malcarli25" target="_blank">@malcarli25</a>
+
+</div>
 
 ---
 
