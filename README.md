@@ -403,6 +403,7 @@ Static Procedure fGerarxml()
    hb_MemoWrit(oXml:cId + [-nfe.xml], oXml:cXml)  // padrão para envio pelo monitor da unimake
    WaitWindow()
 Return (Nil)
+```
 
 <div align="center">
 
