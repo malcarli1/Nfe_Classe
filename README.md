@@ -10,7 +10,7 @@ Marcelo A. L. Carli
 Malc Informática — Gestão em Saúde Ocupacional
 📍 Marília/SP — Capital Nacional do Alimento ®
 🌐 https://malc-informatica.ueniweb.com
-📧 marceloalcarli@gmail.com 
+📧 marceloalcarli@gmail.com
 📱 Instagram: @malcarli25
 
 ---
