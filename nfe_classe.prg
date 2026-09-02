@@ -12,7 +12,7 @@
  *          : Jair Barreto                                                   *
  *          : Franklin Brasil                                                *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 30.07.2026                                                     *
+ * ULT. ALT.: 02.09.2026                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 #pragma -w0
@@ -628,14 +628,15 @@ Return (Nil)
 
 * --------------> Metodo para gerar a chave de acesso da NFe <---------------- *
 METHOD fCria_ChaveAcesso()
-   Local cKey:= Alltrim(::cUf)
-         cKey+= SubStr(Dtoc(Date()), 9, 2) + SubStr(Dtoc(Date()), 4, 2)
-         cKey+= ::SoNumeroCnpj(::cCnpj)
-         cKey+= Iif(!(::cModelo $ [55_65]), [55], Left(::cModelo, 2) + Padl(::cSerie, 3, [0]))
-         cKey+= Padl(::cNf, 9, [0])
-         cKey+= [1]
-         cKey+= Padl(::cNrdoc, 8, [0])
-Return (::cId:= cKey + ::CalculaDigito(cKey, [11]))
+   Local dEmi:= Iif( Empty( ::dDatae ), Date(), ::dDatae ), cKey:= PadL( AllTrim( ::cUf ), 2, [0] )
+
+   cKey+= SubStr( DToS( dEmi ), 3, 4 )                                    // AAMM da EMISSAO
+   cKey+= ::SoNumeroCnpj( ::cCnpj )
+   cKey+= Iif( !( ::cModelo $ [55_65] ), [55], Left( ::cModelo, 2 ) ) + PadL( ::cSerie, 3, [0] )
+   cKey+= PadL( ::cNf, 9, [0] )
+   cKey+= Iif( !( ::cTpemis $ [1_2_3_4_5_6_7_9] ), [1], Left( ::cTpemis, 1 ) )
+   cKey+= PadL( ::cNrdoc, 8, [0] )
+Return ( ::cId:= cKey + ::CalculaDigito( cKey, [11] ) )
 
 * ------------> Metodo para gerar a tag de identificação da NFe <------------- *
 METHOD fCria_Ide()
@@ -2399,7 +2400,7 @@ METHOD fConsultaGTIN(cGtin)
       Return (cRetorno)
    Endif
 
-   hb_MemoWrit(Malc_GetCurrentFolder() + [\retorno_gtin.xml], cRetorno)
+   hb_MemoWrit([retorno_gtin.xml], cRetorno)
 
    // Tratamento do Retorno usando ::ExtraiTag
    cCStat  := ::ExtraiTag(cRetorno, [cStat])
@@ -2468,7 +2469,7 @@ METHOD fConsultaCNPJ(cCnpj)
       Return (cRetorno)
    Endif
 
-   hb_MemoWrit(Malc_GetCurrentFolder() + [\retorno_cnpj.txt], cRetorno)  
+   hb_MemoWrit([retorno_cnpj.txt], cRetorno)  
 
    hb_jsonDecode(cRetorno, @hResponse)
 
@@ -2825,10 +2826,6 @@ Static Function Malc_At( cSearch, cText, nStart )
 
    nPos := At( cSearch, SubStr( cText, nStart ) )
 Return (IIf( nPos == 0, 0, nPos + nStart - 1 ))
-
-Static Function Malc_GetCurrentFolder()
-   Local cDir := CurDir()
-Return (IIf( Empty( cDir ), ".", cDir ))
 
 Static Function Malc_Hash()
 Return (hb_Hash())
