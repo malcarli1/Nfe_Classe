@@ -12,7 +12,7 @@
  *          : Jair Barreto                                                   *
  *          : Franklin Brasil                                                *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 02.09.2026                                                     *
+ * ULT. ALT.: 15.09.2026                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 #pragma -w0
@@ -83,7 +83,7 @@ CLASS Malc_GeraXml
    VAR cTimeE                  AS Character INIT Time()
    VAR dDataS                  AS Date      INIT Date()
    VAR cTimeS                  AS Character INIT Time()
-   VAR cTpnf                   AS Character INIT [1]                              // 0 - entrada, 1 - saída
+   VAR cTpNf                   AS Character INIT [1]                              // 0 - entrada, 1 - saída
    VAR cIdest                  AS Character INIT [1]                              // 1 - Interna, 2 - Interestadual, 3 - Exterior
    VAR cTpImp                  AS Character INIT [1]                              // Tipo de Impressão    1 - Retrato / 2 - Paisagem
    VAR cTpEmis                 AS Character INIT [1]                              // Tipo de Emissão      1 - Normal  / 2 - Contingência FS-IA / 3 - (DESATIVADO) / 4 - Contingência EPEC / 5 - Contingência FS-DA / 6 - Contingência SVC-AN / 7 - Contingência SVC-RS / 9 - Contingência off-line da NFC-e 
@@ -96,8 +96,8 @@ CLASS Malc_GeraXml
    VAR dDhCont                 AS Character INIT []                               // Data-hora contingência       FSDA - tpEmis = 5
    VAR cxJust                  AS Character INIT []                               // Justificativa contingência   FSDA - tpEmis = 5
    VAR cRefnfe                 AS Character INIT []                               // Grupo BA
-   VAR cTpnfdebito             AS Character INIT []                               // Reforma tributária
-   VAR cTpnfcredito            AS Character INIT []                               // Reforma tributária
+   VAR cTpNfdebito             AS Character INIT []                               // Reforma tributária
+   VAR cTpNfcredito            AS Character INIT []                               // Reforma tributária
    VAR cTpcompragov            AS Character INIT []                               // Reforma tributária
    VAR nPredutor               AS Num       INIT 0                                // Reforma tributária 
  
@@ -540,6 +540,92 @@ CLASS Malc_GeraXml
    VAR nVtotibsmonoItem        AS Num       INIT 0
    VAR nVtotcbsmonoItem        AS Num       INIT 0
 
+   // ---- ide ------------------------------------------------------------
+   VAR cAbiVersao              AS Character INIT [1.00]      // TVerNFeABI
+   VAR cAbiModOper             AS Character INIT [01]        // gModNat/modOper
+   VAR cAbiNatOper             AS Character INIT [01]        // gModNat/natOper
+   VAR cAbiDetOper             AS Character INIT []          // gModNat/detOper (opcional)
+   VAR cAbiNSiteAutoriz        AS Character INIT [0]         // nSiteAutoriz
+   VAR aAbiNFref               AS Array     INIT {}          // NFref (0-500)
+
+   // ---- emit -----------------------------------------------------------
+   VAR aAbiEnderEmit           AS Array     INIT {}
+   VAR cAbiTpEmit              AS Character INIT [01]        // 01..10 ou 99
+
+   // ---- transmit / adquirente / autXML ---------------------------------
+   VAR aAbiTransmit            AS Array     INIT {}          // 1-99
+   VAR aAbiAdquirente          AS Array     INIT {}          // 1-99
+   VAR aAbiAutXml              AS Array     INIT {}          // 0-10
+
+   // ---- imovel ---------------------------------------------------------
+   VAR cAbiImovTipo            AS Character INIT [1]         // 1=urbano 2=rural
+   VAR cAbiImovCib             AS Character INIT []
+   VAR cAbiImovIndIptu         AS Character INIT []
+   VAR cAbiImovNIptu           AS Character INIT []
+   VAR cAbiImovIndIncra        AS Character INIT []
+   VAR cAbiImovNIncra          AS Character INIT []
+   VAR cAbiImovEspecie         AS Character INIT []          // 2 digitos
+   VAR cAbiImovXOutrasEsp      AS Character INIT []
+   VAR cAbiImovEnquadr         AS Character INIT []          // XSD: 2 digitos, nao 1
+   VAR aAbiEnderImovel         AS Array     INIT {}
+   VAR cAbiImovObsLocal        AS Character INIT []
+   VAR nAbiImovAreaTotal       AS Num       INIT 0
+   VAR cAbiImovUArea           AS Character INIT []          // m2 ou ha
+   VAR cAbiImovCartorio        AS Character INIT []
+   VAR cAbiImovMatricula       AS Character INIT []
+
+   // ---- infOper --------------------------------------------------------
+   VAR nAbiPTransImovel        AS Num       INIT 0
+   VAR nAbiVTotalOperacao      AS Num       INIT 0
+   VAR cAbiIndTorna            AS Character INIT []
+   VAR nAbiVTorna              AS Num       INIT 0
+   VAR aAbiImovelTorna         AS Array     INIT {}          // XSD: imovelTorna 1-30
+   VAR cAbiIndIncorpLote       AS Character INIT []          // XSD: gIncorpLote e 0-1
+   VAR cAbiCnpjEmpImob         AS Character INIT []
+   VAR cAbiCibObra             AS Character INIT []          // XSD: cCIBObra
+   VAR lAbiRedAjuste           AS Logical   INIT .F.
+   VAR nAbiVInicial            AS Num       INIT 0
+   VAR nAbiVItbi               AS Num       INIT 0
+   VAR nAbiVLaudemio           AS Num       INIT 0
+   VAR nAbiVContrap            AS Num       INIT 0           // XSD: vContrap (campo unico)
+   VAR nAbiVRedAjusteImovel    AS Num       INIT 0
+   VAR cAbiIndRedSocial        AS Character INIT []
+   VAR nAbiVRedSocial          AS Num       INIT 0           // XSD: vRedSocial do imovel
+   VAR nAbiTetoRedSocial       AS Num       INIT 100000
+   VAR cAbiTpInstrumento       AS Character INIT []
+   VAR cAbiXOutrosInst         AS Character INIT []
+   VAR dAbiDtInstrumento       AS Date      INIT CToD( [] )
+   VAR cAbiIndIntermed         AS Character INIT []
+   VAR aAbiCorretagem          AS Array     INIT {}          // 0-99
+
+   // ---- gInfTrib -------------------------------------------------------
+   VAR cAbiTpEnteGov           AS Character INIT []
+   VAR nAbiPRedutorGov         AS Num       INIT 0
+   VAR cAbiTpOperGov           AS Character INIT []
+   VAR lAbiGIbsCbs             AS Logical   INIT .T.
+   VAR nAbiVOperacIndiv        AS Num       INIT 0
+   VAR nAbiVTornaIndiv         AS Num       INIT 0
+   VAR nAbiVRedAjusteIndiv     AS Num       INIT 0
+   VAR nAbiVRedSocialIndiv     AS Num       INIT 0
+   VAR nAbiPIbsUf              AS Num       INIT 0
+   VAR nAbiPRedAliqUf          AS Num       INIT 0
+   VAR nAbiPRedAliqMun         AS Num       INIT 0
+   VAR nAbiPCbs                AS Num       INIT 0
+   VAR nAbiPRedAliqCbs         AS Num       INIT 0
+   VAR nAbiVIbsUf              AS Num       INIT 0
+   VAR nAbiVIbsMun             AS Num       INIT 0
+   VAR nAbiVCbs                AS Num       INIT 0
+   VAR lAbiEstornoCred         AS Logical   INIT .F.
+   VAR nAbiVIbsEstCred         AS Num       INIT 0
+   VAR nAbiVCbsEstCred         AS Num       INIT 0
+
+   // ---- pag / total / infAdic / infRespTec / infNFeSupl ----------------
+   VAR aAbiPagImovel           AS Array     INIT {}          // detPagImovel (0-99)
+   VAR aAbiPagIncorpLote       AS Array     INIT {}          // detPagIncorpLote (0-99)
+   VAR aAbiObsCont             AS Array     INIT {}          // 0-10
+   VAR aAbiObsFisco            AS Array     INIT {}          // 0-10
+   VAR cAbiUrlChave            AS Character INIT 'https://www.nfeabi.fazenda.pr.gov.br/nfeabi/consulta'
+
    METHOD New()                CONSTRUCTOR
    METHOD fCria_Xml()          
    METHOD fCria_ChaveAcesso()
@@ -589,6 +675,33 @@ CLASS Malc_GeraXml
    METHOD fCria_Informacoes() 
    METHOD fCria_Responsavel()
    METHOD fCria_Fechamento()
+   METHOD fCria_XmlAbi()
+   METHOD fCria_ChaveAcessoAbi()
+   METHOD fCria_IdeAbi()
+   METHOD fCria_NFrefAbi()
+   METHOD fCria_EmitenteAbi()
+   METHOD AddTransmitenteAbi()                                                    // cDoc, cNome, nProp, cIndDecl, cIndContrib, aEnder
+   METHOD fCria_TransmitentesAbi()
+   METHOD AddAdquirenteAbi()                                                      // cDoc, cNome, nPerc, cIndDecl, cIndContrib, aEnder
+   METHOD fCria_AdquirentesAbi()
+   METHOD fCria_EnderecoAbiAux()                                                  // cTag, aEnder
+   METHOD AddAutXmlAbi()                                                          // cDoc
+   METHOD fCria_AutXmlAbi()
+   METHOD fCria_ImovelAbi()                                                       // cTagGrupo, aImovel
+   METHOD AddImovelTornaAbi()                                                     // aImovel
+   METHOD AddCorretagemAbi()                                                      // cDoc, cNome, nValor
+   METHOD fCria_OperacaoAbi()
+   METHOD fCria_GrupoAliqAbi()                                                    // cTag, cTagAliq, nAliq, nRed, cTagValor, nValor
+   METHOD fCria_TributacaoAbi()
+   METHOD AddPagImovelAbi()                                                       // cTPag, nValor, cDesc
+   METHOD AddPagIncorpLoteAbi()                                                   // cTParcela, nParcela, cXParcela
+   METHOD fCria_PagamentoAbi()
+   METHOD fCria_TotaisAbi()
+   METHOD fCria_InformacoesAbi()
+   METHOD fCria_SuplementaresAbi()
+   METHOD fCria_FechamentoAbi()
+   METHOD fCalcula_Abi()
+   METHOD fCria_EventoPagParcelaAbi()                                             // nOriginal, nAcrescimos, dPagto
 
    METHOD fRetiraSinal()                                                          // cStr , cEliminar
    METHOD fRetiraAcento()                                                         // cStr 
@@ -628,7 +741,7 @@ Return (Nil)
 
 * --------------> Metodo para gerar a chave de acesso da NFe <---------------- *
 METHOD fCria_ChaveAcesso()
-   Local dEmi:= Iif( Empty( ::dDatae ), Date(), ::dDatae ), cKey:= PadL( AllTrim( ::cUf ), 2, [0] )
+   Local dEmi:= Iif( Empty( ::dDataE ), Date(), ::dDataE ), cKey:= PadL( AllTrim( ::cUf ), 2, [0] )
 
    cKey+= SubStr( DToS( dEmi ), 3, 4 )                                    // AAMM da EMISSAO
    cKey+= ::SoNumeroCnpj( ::cCnpj )
@@ -636,6 +749,11 @@ METHOD fCria_ChaveAcesso()
    cKey+= PadL( ::cNf, 9, [0] )
    cKey+= Iif( !( ::cTpemis $ [1_2_3_4_5_6_7_9] ), [1], Left( ::cTpemis, 1 ) )
    cKey+= PadL( ::cNrdoc, 8, [0] )
+
+   If Len(cKey) # 43
+      ::cId:= []
+      Return (::cId)
+   EndIf
 Return ( ::cId:= cKey + ::CalculaDigito( cKey, [11] ) )
 
 * ------------> Metodo para gerar a tag de identificação da NFe <------------- *
@@ -643,7 +761,7 @@ METHOD fCria_Ide()
    ::cXml+= "<ide>"                                                                                                              // Início da TAG (ide)
           ::cXml+= ::XmlTag( "cUF"    , Left(::cUf, 2))                                                                          // UF do Emitente no caso SP = 35
           ::cXml+= ::XmlTag( "cNF"    , Padl(Alltrim(::cNrdoc), 8, [0]))                                                         // Controle da Nota ou número do pedido
-          ::cXml+= ::XmlTag( "natOp"  , Left(::fRetiraAcento(::cNatop), 60))                                                     // Natureza da Operação
+          ::cXml+= ::XmlTag( "natOp"  , Left(::cNatop, 60))                                                     // Natureza da Operação
           ::cXml+= ::XmlTag( "mod"    , Iif(!(::cModelo $ [55_65]), [55], Left(::cModelo, 2)))                                   // Modelo do Documento 55 - Nfe ou 65 Nfce
           ::cXml+= ::XmlTag( "serie"  , Iif(Empty(::cSerie), [1], Left(::cSerie, 3)))                                            // Série 
           ::cXml+= ::XmlTag( "nNF"    , Left(::cNf, 9))                                                                          // Número da Nota Fiscal
@@ -655,7 +773,7 @@ METHOD fCria_Ide()
              EndIf 
           EndIf  
  
-          ::cXml+= ::XmlTag( "tpNF"     , Iif(!(::cTpnf $ [0_1]), [0], Left(::cTpnf, 1)))                                        // Tipo de Emissão da NF  0 - Entrada, 1 - Saída, 2 - Saída-Devolução, 3 - Saída-Garantia
+          ::cXml+= ::XmlTag( "tpNF"     , Iif(!(::cTpNf $ [0_1]), [0], Left(::cTpNf, 1)))                                        // Tipo de Emissão da NF  0 - Entrada, 1 - Saída, 2 - Saída-Devolução, 3 - Saída-Garantia
           ::cXml+= ::XmlTag( "idDest"   , Iif(!(::cIdest $ [1_2_3]), [1], Left(::cIdest, 1)))                                    // Identificador de Local de destino da operação (1 - Interna, 2 - Interestadual, 3 - Exterior)
           ::cXml+= ::XmlTag( "cMunFG"   , Left(::cMunfg, 7))                                                                     // IBGE do Emitente
 
@@ -680,9 +798,9 @@ METHOD fCria_Ide()
           EndIf 
 
           If ::cFinnfe == [6]                                                                                                    // Nota de Débito
-             ::cXml+= ::XmlTag( "tpNFDebito"  , Iif(!(::cTpnfdebito $ [01_02_03_04_05_06_07_08]), [01], Left(::cTpnfdebito, 2)))    // 01=Transferência de créditos para Cooperativas; 02=Anulação de Crédito por Saídas Imunes/Isentas; 03=Débitos de notas fiscais não processadas na apuração; 04=Multa e juros; 05=Transferência de crédito de sucessão; 06=Pagamento antecipado; 07=Perda em estoque                                                      
+             ::cXml+= ::XmlTag( "tpNFDebito"  , Iif(!(::cTpNfdebito $ [01_02_03_04_05_06_07_08]), [01], Left(::cTpNfdebito, 2)))    // 01=Transferência de créditos para Cooperativas; 02=Anulação de Crédito por Saídas Imunes/Isentas; 03=Débitos de notas fiscais não processadas na apuração; 04=Multa e juros; 05=Transferência de crédito de sucessão; 06=Pagamento antecipado; 07=Perda em estoque                                                      
           Elseif ::cFinnfe == [5]                                                                                                // Nota de Crédito
-             ::cXml+= ::XmlTag( "tpNFCredito" , Iif(!(::cTpnfcredito $ [01_02_03_04_05_06]), [01]     , Left(::cTpnfcredito, 2)))   // 01 = Multa e juros; 02 = Apropriação de crédito presumido de IBS sobre o saldo devedor na ZFM (art. 450, § 1º, LC 214/25); 03 = Retorno 
+             ::cXml+= ::XmlTag( "tpNFCredito" , Iif(!(::cTpNfcredito $ [01_02_03_04_05_06]), [01]     , Left(::cTpNfcredito, 2)))   // 01 = Multa e juros; 02 = Apropriação de crédito presumido de IBS sobre o saldo devedor na ZFM (art. 450, § 1º, LC 214/25); 03 = Retorno 
           EndIf 
 
           If ::cAmbiente == [2] .and. ::cModelo == [65]
@@ -723,7 +841,7 @@ METHOD fCria_Ide()
    ::cXml+= "</ide>"
 Return (Nil)
 
-* -----------------> Metodo para gerar   AS referências da NF <----------------- *
+* -----------------> Metodo para gerar         AS referências da NF <----------------- *
 METHOD fCria_AddNfref()                                                                                                          // Marcelo Brigatti
    If !Empty(::cRefnfe) .and. ::cModelo == [55] .and. (::cFinnfe == [2] .or. ::cFinnfe == [4])
       If "</ide><NFref>" $ ::cXml
@@ -795,28 +913,28 @@ Return (Self)
 * -----------------> Metodo para gerar a tag do emitente <-------------------- *
 METHOD fCria_Emitente()
    ::cXml+= "<emit>"                                                                                                             // Início da TAG (emit)
-          ::cXml+= ::XmlTag( "CNPJ" , Left(::SoNumeroCnpj(::cCnpj), 14))                                                         // CNPJ do Emitente
-          ::cXml+= ::XmlTag( "xNome" , Left(::fRetiraAcento(::cXnomee), 60))                                                     // Razão Social emitente
+          ::cXml+= ::XmlTag( "CNPJ"  , Left(::SoNumeroCnpj(::cCnpj), 14))                                                        // CNPJ do Emitente
+          ::cXml+= ::XmlTag( "xNome" , Left(::cXnomee, 60))                                                                      // Razão Social emitente
 
           If !Empty(::cXfant)
-             ::cXml+= ::XmlTag( "xFant" , Left(::fRetiraAcento(::cXfant), 60))                                                   // Nome Fantasia Emitente
+             ::cXml+= ::XmlTag( "xFant" , Left(::cXfant, 60))                                                                    // Nome Fantasia Emitente
           EndIf 
 
           ::cXml+= "<enderEmit>"
-                 ::cXml+= ::XmlTag( "xLgr"    , Left(::fRetiraAcento(::cXlgre), 60))                                             // Endereço Emitente
+                 ::cXml+= ::XmlTag( "xLgr"    , Left(::cXlgre, 60))                                                              // Endereço Emitente
                  ::cXml+= ::XmlTag( "nro"     , Left(::cNroe, 60))                                                               // Número do Endereço do Emitente
 
                  If !Empty(::cXcple)
-                    ::cXml+= ::XmlTag( "xCpl" , Left(::fRetiraAcento(::cXcple), 60))
+                    ::cXml+= ::XmlTag( "xCpl" , Left(::cXcple, 60))
                  EndIf 
 
-                 ::cXml+= ::XmlTag( "xBairro" , Left(::fRetiraAcento(::cXBairroe), 60))                                          // Bairro do Emitente
+                 ::cXml+= ::XmlTag( "xBairro" , Left(::cXBairroe, 60))                                                           // Bairro do Emitente
                  ::cXml+= ::XmlTag( "cMun"    , Left(::SoNumero(::cMunfg), 7))                                                   // Código IBGE do emitente
-                 ::cXml+= ::XmlTag( "xMun"    , Left(::fRetiraAcento(::cXmune), 60))                                             // Cidade do Emitente
+                 ::cXml+= ::XmlTag( "xMun"    , Left(::cXmune, 60))                                                              // Cidade do Emitente
       	         ::cXml+= ::XmlTag( "UF"      , Left(::cUfe, 2))                                                                 // UF do Emitente
      	         ::cXml+= ::XmlTag( "CEP"     , Left(::SoNumero(::cCepe), 8))                                                    // CEP do Emitente
     	         ::cXml+= ::XmlTag( "cPais"   , Left(::cPais, 4))                                                                // Código do País emitente
-    	         ::cXml+= ::XmlTag( "xPais"   , Left(::fRetiraAcento(::cXpaise), 60))                                            // País Emitente da NF
+    	         ::cXml+= ::XmlTag( "xPais"   , Left(::cXpaise, 60))                                                             // País Emitente da NF
 
                  If !Empty(::SoNumero(::cFonee))
 	            ::cXml+= ::XmlTag( "fone" , Left(::SoNumero(::cFonee), 14))                                               // Telefone do Emitente
@@ -842,7 +960,7 @@ Return (Nil)
 
 * -----------------> Metodo para gerar a tag do destinatário <---------------- *
 METHOD fCria_Destinatario()
-   Local lGerarDest:= lGerarEnder:= .F.
+   Local lGerarDest:= .F., lGerarEnder:= .F.
 
    // Decidir se deve gerar <dest>
    lGerarDest:= (::cModelo == [55]) .or. (::cModelo == [65] .and. (!Empty(::cXnomed) .or. !Empty(::cCnpjd)))
@@ -868,7 +986,7 @@ METHOD fCria_Destinatario()
       If ::cAmbiente == [2]                                                                                                      // Homologação
          ::cXml+= ::XmlTag("xNome", "NF-E EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL")
       Elseif !Empty(::cXnomed)                                                                                                   // Produção: só se tiver nome
-         ::cXml+= ::XmlTag("xNome", Left(::fRetiraAcento(::cXnomed), 60))
+         ::cXml+= ::XmlTag("xNome", Left(::cXnomed, 60))
       EndIf
 
       // a partir de 03/08/2026 obrigatório para ::cIndpres # 1
@@ -877,14 +995,14 @@ METHOD fCria_Destinatario()
 
       If lGerarEnder
          ::cXml+= "<enderDest>"
-         ::cXml+= ::XmlTag("xLgr", Left(::fRetiraAcento(::cXlgrd), 60))
+         ::cXml+= ::XmlTag("xLgr", Left(::cXlgrd, 60))
          ::cXml+= ::XmlTag("nro", Left(::cNrod, 60))
 
          If !Empty(::cXcpld)
             ::cXml+= ::XmlTag("xCpl", Left(::cXcpld, 60))
          EndIf
 
-         ::cXml+= ::XmlTag("xBairro", Left(::fRetiraAcento(::cXBairrod), 60))
+         ::cXml+= ::XmlTag("xBairro", Left(::cXBairrod, 60))
 
          If ::cUfd == "EX"
             ::cXml+= ::XmlTag("cMun", "9999999")
@@ -892,7 +1010,7 @@ METHOD fCria_Destinatario()
             ::cXml+= ::XmlTag("UF"  , ::cUfd)
          Else
             ::cXml+= ::XmlTag("cMun", Left(::cCmund, 7))
-            ::cXml+= ::XmlTag("xMun", Left(::fRetiraAcento(::cXmund), 60))
+            ::cXml+= ::XmlTag("xMun", Left(::cXmund, 60))
             ::cXml+= ::XmlTag("UF"  , Left(::cUfd, 2))
             ::cXml+= ::XmlTag("CEP" , Left(::SoNumero(::cCepd), 8))
          EndIf
@@ -994,26 +1112,26 @@ METHOD fCria_Endereco(cTipo)
             ::cXml+= ::XmlTag("CNPJ" , Left(cCnpj, 14))
          EndIf
 
-         ::cXml+= ::XmlTag("xNome"   , Left(::fRetiraAcento(cXNome), 60))
+         ::cXml+= ::XmlTag("xNome"   , Left(cXNome, 60))
 
          If !Empty(cXFant)
-            ::cXml+= ::XmlTag("xFant", Left(::fRetiraAcento(cXFant), 60))
+            ::cXml+= ::XmlTag("xFant", Left(cXFant, 60))
          EndIf
 
-         ::cXml+= ::XmlTag("xLgr"    , Left(::fRetiraAcento(cXlgr), 60))
+         ::cXml+= ::XmlTag("xLgr"    , Left(cXlgr, 60))
          ::cXml+= ::XmlTag("nro"     , Left(cNro, 60))
 
          If !Empty(cXcpl)
-            ::cXml+= ::XmlTag("xCpl" , Left(::fRetiraAcento(cXcpl), 60))
+            ::cXml+= ::XmlTag("xCpl" , Left(cXcpl, 60))
          EndIf
 
-         ::cXml+= ::XmlTag("xBairro" , Left(::fRetiraAcento(cXBairro), 60))
+         ::cXml+= ::XmlTag("xBairro" , Left(cXBairro, 60))
          ::cXml+= ::XmlTag("cMun"    , Left(cMun, 7))
-         ::cXml+= ::XmlTag("xMun"    , Left(::fRetiraAcento(cXMun), 60))
+         ::cXml+= ::XmlTag("xMun"    , Left(cXMun, 60))
          ::cXml+= ::XmlTag("UF"      , Left(cUf, 2))
          ::cXml+= ::XmlTag("CEP"     , Left(cCep, 8))
          ::cXml+= ::XmlTag("cPais"   , Left(cPais, 4))
-         ::cXml+= ::XmlTag("xPais"   , Left(::fRetiraAcento(cXPais), 60))
+         ::cXml+= ::XmlTag("xPais"   , Left(cXPais, 60))
 
          If !Empty(cFone)
             ::cXml+= ::XmlTag("fone" , Left(cFone, 14))
@@ -1051,7 +1169,7 @@ METHOD fCria_Produto()
                  If ::cAmbiente == [2] .and. ::cModelo == [65] .and. ::nItem == 1
                     ::cXml += ::XmlTag( "xProd" , [NOTA FISCAL EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL])
                  Else
-                    ::cXml += ::XmlTag( "xProd" , Left(::fRetiraAcento(::cXprod), 120))
+                    ::cXml += ::XmlTag( "xProd" , Left(::cXprod, 120))
                  EndIf 
 
                  ::cXml    += ::XmlTag( "NCM"      , Iif(Empty(::cNcm), [00], Left(::cNcm, 8)))                                  // Obrigatória informação do NCM completo (8 dígitos). Nota: Em caso de item de serviço ou item que não tenham produto (ex. transferência de crédito, crédito do ativo imobilizado, etc.), informar o valor 00 (dois zeros). (NT 2014/004)
@@ -1202,7 +1320,7 @@ Return (Nil)
 
 * ----------------> Metodo para gerar a Tag arma <---------------------------- *
 METHOD fCria_ProdArmamento()  // Tag arma - Grupo L. Detalhamento Específico de Armamentos
-   Local cTexto:= cTexto1:= [], nPosIni, nPosFim
+   Local cTexto:= [], cTexto1:= [], nPosIni, nPosFim
 
    If !Empty(::cNserie_a)
       If [<det nItem="] + Left(NumberXml(::nItem, 0 ), 3) + [">] $ ::cXml
@@ -1212,7 +1330,7 @@ METHOD fCria_ProdArmamento()  // Tag arma - Grupo L. Detalhamento Específico de 
                 cTexto1+= ::XmlTag( "tpArma" , Iif(!(::cTparma $ [0_1]), [0], Left(::cTparma, 1)))                               // Indicador do tipo de arma de fogo 0=Uso permitido; 1=Uso restrito
                 cTexto1+= ::XmlTag( "nSerie" , Left(::cNserie_a, 15))                                                            // Número de série da arma
                 cTexto1+= ::XmlTag( "nCano"  , Left(::cNcano, 15))                                                               // Número de série do cano
-                cTexto1+= ::XmlTag( "descr"  , Left(::fRetiraAcento(::cDescr_a), 256))                                           // Descrição completa da arma, compreendendo: calibre, marca, capacidade, tipo de funcionamento, comprimento e demais elementos que permitam a sua perfeita identificação.
+                cTexto1+= ::XmlTag( "descr"  , Left(::cDescr_a, 256))                                           // Descrição completa da arma, compreendendo: calibre, marca, capacidade, tipo de funcionamento, comprimento e demais elementos que permitam a sua perfeita identificação.
          cTexto1+= "</arma>"
 
          cTexto := StrTran(cTexto, "</prod>", cTexto1 + "</prod>")
@@ -1985,22 +2103,22 @@ METHOD fCria_Transportadora()
                              ::cXml+= ::XmlTag( "CNPJ" , Left(::SoNumeroCnpj(::cCnpjt), 14))
                           EndIf 
 
-                          ::cXml+= ::XmlTag( "xNome" , Left(::fRetiraAcento(::cXnomet), 60))
+                          ::cXml+= ::XmlTag( "xNome" , Left(::cXnomet, 60))
 
                           If !Empty(::cIet)
                              ::cXml+= ::XmlTag( "IE" , Left(::SoNumero(::cIet), 14))
                           EndIf 
 
                           If !Empty(::cXEndert)
-                             ::cXml+= ::XmlTag( "xEnder" , Left(::fRetiraAcento(::cXEndert), 60))
+                             ::cXml+= ::XmlTag( "xEnder" , Left(::cXEndert, 60))
                           EndIf 
 
                           If !Empty(::cXmunt)
-                             ::cXml+= ::XmlTag( "xMun" , Left(::fRetiraAcento(::cXmunt), 60))
+                             ::cXml+= ::XmlTag( "xMun" , Left(::cXmunt, 60))
                           EndIf 
 
                           If !Empty(::cUft)
-                             ::cXml+= ::XmlTag( "UF" , Left(::fRetiraAcento(::cUft), 2))
+                             ::cXml+= ::XmlTag( "UF" , Left(::cUft, 2))
                           EndIf 
                        Else   
                           ::cXml+= ::XmlTag( "xNome" , [o Proprio])
@@ -2010,10 +2128,10 @@ METHOD fCria_Transportadora()
                 If !Empty(::fRetiraSinal(::cPlaca))
                    ::cXml+= "<veicTransp>"
                           ::cXml+= ::XmlTag( "placa" , Left(::fRetiraSinal(::cPlaca), 7))
-                          ::cXml+= ::XmlTag( "UF"    , Left(::fRetiraAcento(::cUfplacat), 2))
+                          ::cXml+= ::XmlTag( "UF"    , Left(::cUfplacat, 2))
 
                           If !Empty(::cRntc)
-                             ::cXml+= ::XmlTag( "RNTC" , Left(::fRetiraAcento(::cRntc), 20))
+                             ::cXml+= ::XmlTag( "RNTC" , Left(::cRntc, 20))
                           EndIf 
                    ::cXml+= "</veicTransp>"
                 EndIf 
@@ -2027,15 +2145,15 @@ METHOD fCria_Transportadora()
                        EndIf 
                
                        If !Empty(::cEsp)
-                          ::cXml+= ::XmlTag( "esp" , Left(::fRetiraAcento(::cEsp), 60))
+                          ::cXml+= ::XmlTag( "esp" , Left(::cEsp, 60))
                        EndIf 
 
                        If !Empty(::cMarca)
-                          ::cXml+= ::XmlTag( "marca" , Left(::fRetiraAcento(::cMarca), 60))
+                          ::cXml+= ::XmlTag( "marca" , Left(::cMarca, 60))
                        EndIf 
 
                        If !Empty(::cNvol)
-                          ::cXml+= ::XmlTag( "nVol" , Left(::fRetiraAcento(::cNvol), 60))
+                          ::cXml+= ::XmlTag( "nVol" , Left(::cNvol, 60))
                        EndIf 
 
                        If !Empty(::nPesol)
@@ -2179,11 +2297,11 @@ METHOD fCria_Informacoes()
           EndIf 
 
           If !Empty(AllTrim(::cInfFisc))
-             ::cXml+= ::XmlTag( "infAdFisco" , Left(::fRetiraAcento(StrTran(::cInfFisc, Hb_Eol(), "; ")), 2000))
+             ::cXml+= ::XmlTag( "infAdFisco" , Left(StrTran(::cInfFisc, Hb_Eol(), "; "), 2000))
           EndIf 
 
           If !Empty(AllTrim(::cInfcpl))
-             ::cXml+= ::XmlTag( "infCpl" , Left(::fRetiraAcento(StrTran(::cInfcpl, Hb_Eol(), '; ')), 5000))
+             ::cXml+= ::XmlTag( "infCpl" , Left(StrTran(::cInfcpl, Hb_Eol(), '; '), 5000))
           EndIf 
    ::cXml+= "</infAdic>"
 
@@ -2196,7 +2314,7 @@ METHOD fCria_ProdImporta()                                                      
       ::cXml+= "<DI>"
              ::cXml+= ::XmlTag( "nDI" , Left(::cNdi, 12))                                                                        // número do docto de importação DI/DSI/DA - 1-10 C  
              ::cXml+= ::XmlTag( "dDI" , ::DateXml(::dDdi))                                                                       // Data do documento de importação - AAAA-MM-DD
-             ::cXml+= ::XmlTag( "xLocDesemb" , Left(::fRetiraAcento(::cXlocdesemb), 60))                                         // Local do Desembarque da importação  
+             ::cXml+= ::XmlTag( "xLocDesemb" , Left(::cXlocdesemb, 60))                                                          // Local do Desembarque da importação  
              ::cXml+= ::XmlTag( "UFDesemb" , Left(::cUfdesemb, 2))                                                               // sigla da UF onde ocorreu o desembaraço aduaneiro - 2 C 
              ::cXml+= ::XmlTag( "dDesemb" , ::DateXml(::dDdesemb))                                                               // Data do desembaraço aduaneiro - AAAA-MM-DD
              ::cXml+= ::XmlTag( "tpViaTransp" , Iif(!(Hb_Ntos(::nTpviatransp) $ [1_2_3_4_5_6_7]), [1], Hb_Ntos(::nTpviatransp))) // Via de transporte internacional informada na Declaração de Importação (DI)
@@ -2213,7 +2331,7 @@ METHOD fCria_ProdImporta()                                                      
                 ::cXml+= ::XmlTag( "UFTerceiro" , Left(::cUfterceiro, 2))                                                        // Obrigatória a informação no caso de importação por conta e ordem ou por encomenda. Não aceita o valor "EX".
              EndIf 
  
-             ::cXml+= ::XmlTag( "cExportador" , Left(::fRetiraAcento(::cCexportador), 60))                                       // código do exportador 1-60 c  
+             ::cXml+= ::XmlTag( "cExportador" , Left(::cCexportador, 60))                                                        // código do exportador 1-60 c  
 
              // For i:= 1 to 100
              If !Empty(::nNadicao)
@@ -2265,9 +2383,9 @@ METHOD fCria_Responsavel()
    If !Empty(::cRespNome) .and. !Empty(::cRespcnpj) .and. !Empty(::cRespemail)
       ::cXml+= "<infRespTec>" 
              ::cXml+= ::XmlTag( "CNPJ"     , Left(::SoNumeroCnpj(::cRespcnpj), 14))                                              // CNPJ do Responsável Técnico
-             ::cXml+= ::XmlTag( "xContato" , Left(::fRetiraAcento(::cRespNome), 60))                                             // Contato do Responsável Técnico
-             ::cXml+= ::XmlTag( "email"    , Left(::fRetiraAcento(::cRespemail), 60))                                            // E-mail do Responsável Técnico
-             ::cXml+= ::XmlTag( "fone"     , Left(::fRetiraSinal(::cRespfone), 14))                                              // Telefone do Responsável Técnico
+             ::cXml+= ::XmlTag( "xContato" , Left(::cRespNome, 60))                                                              // Contato do Responsável Técnico
+             ::cXml+= ::XmlTag( "email"    , Left(::cRespemail, 60))                                                             // E-mail do Responsável Técnico
+             ::cXml+= ::XmlTag( "fone"     , Left(::Sonumero(::cRespfone), 14))                                                  // Telefone do Responsável Técnico
       ::cXml+= "</infRespTec>" 
    EndIf 
 Return (Nil)
@@ -2377,7 +2495,7 @@ Return (Nil)
 
 * --------------------------> Metodo para Consultar Gtin <-------------------- *
 METHOD fConsultaGTIN(cGtin)
-   Local cSoap:= cRetorno:= cCStat:= cXMotivo:= cRet:= [], oServer:= Nil, lOk:= .F. 
+   Local cSoap:= [], cRetorno:= [], cCStat:= [], cXMotivo:= [], cRet:= [], oServer:= Nil, lOk:= .F. 
    
    // Envelopamento SOAP 1.2
    cSoap:= [<?xml version="1.0" encoding="utf-8"?>] + ;
@@ -2548,6 +2666,904 @@ METHOD fConsultaCNPJ(cCnpj)
    Endif
 Return ([OK])
 
+/*
+ * Abre <NFeABI> e <infNFeABI>.
+ * XSD: o namespace da ABI e .../nfeabi, NAO o .../nfe da NF-e. Namespace
+ * errado derruba o documento na validacao de schema.
+ * A <ds:Signature> nao e montada aqui - entra pela rotina de assinatura,
+ * como irma de <infNFeABI> dentro de <NFeABI> (TNFeABI).
+ */
+METHOD fCria_XmlAbi()
+   ::fCria_ChaveAcessoAbi()
+
+   ::cXml+= '<NFeABI xmlns="http://www.portalfiscal.inf.br/nfeabi">'
+   ::cXml+= '<infNFeABI versao="' + ::cAbiVersao + '" Id="NFeABI' + ::cId + '">'
+Return (Nil)
+
+/*
+ * Chave de acesso de 44 posicoes.
+ *
+ * Composicao CONFIRMADA por dois pontos do schema:
+ *   1) TChNFeABI  -> (UF)[0-9]{4}[A-Z0-9]{12}[0-9]{26} = 2+4+12+26 = 44
+ *   2) o elemento <cNF> tem pattern [0-9]{7} - SETE digitos, nao seis
+ *      como diz o Anexo I nem oito como na NF-e
+ *
+ * Com cNF de 7 as 44 posicoes so fecham incluindo o nSiteAutoriz:
+ *    cUF(2) + AAMM(4) + CNPJ(14) + mod(2) + serie(3) + nNF(9) +
+ *    tpEmis(1) + nSiteAutoriz(1) + cNF(7) + cDV(1) = 44
+ *
+ * Conferindo pelo outro lado: os 12 caracteres ALFANUMERICOS sao a base do
+ * CNPJ novo, e os 26 numericos seguintes sao
+ *    DVcnpj(2)+mod(2)+serie(3)+nNF(9)+tpEmis(1)+nSiteAutoriz(1)+cNF(7)+cDV(1)
+ * que somam exatamente 26.
+ *
+ * O ::CalculaDigito() ja trata CNPJ alfanumerico: usa Asc(c) - 48, que e
+ * exatamente o peso previsto para letras no modulo 11.
+ */
+METHOD fCria_ChaveAcessoAbi()
+   Local dEmi:= Iif( Empty( ::dDataE ), Date(), ::dDataE ), cKey:= []
+
+   cKey+= PadL( AllTrim( ::cUf ), 2, [0] )
+   cKey+= SubStr( DToS( dEmi ), 3, 4 )                                        // AAMM da emissao
+   cKey+= PadL( ::SoNumeroCnpj( ::cCnpj ), 14, [0] )
+   cKey+= [77]                                                                // TModNFeABI = 77
+   cKey+= PadL( AllTrim( ::cSerie ), 3, [0] )
+   cKey+= PadL( AllTrim( ::cNf ), 9, [0] )
+   cKey+= Iif( !( ::cTpemis $ [1_3_9] ), [1], Left( ::cTpemis, 1 ) )
+   cKey+= Iif( Empty( ::cAbiNSiteAutoriz ), [0], Left( ::cAbiNSiteAutoriz, 1 ) )
+   cKey+= PadL( AllTrim( ::cNrdoc ), 7, [0] )
+
+   If Len( cKey ) # 43
+      ::cId:= []
+      Return ( ::cId )
+   EndIf
+Return ( ::cId:= cKey + ::CalculaDigito( cKey, [11] ) )
+
+/* ==========================================================================
+ *  ide  /  NFref
+ * ========================================================================== 
+ * Grupo <ide>.
+ * XSD: a sequencia inclui <tpNF> entre dhEmi e tpImp, campo que o Anexo I
+ * nao lista e que e obrigatorio.
+ */
+METHOD fCria_IdeAbi()
+   ::cXml+= [<ide>]
+      ::cXml+= ::XmlTag( [cUF]   , PadL( AllTrim( ::cUf ), 2, [0] ) )
+      ::cXml+= ::XmlTag( [cNF]   , PadL( AllTrim( ::cNrdoc ), 7, [0] ) )   // XSD: pattern [0-9]{7}
+      ::cXml+= ::XmlTag( [mod]   , [77] )
+      ::cXml+= ::XmlTag( [serie] , AllTrim( ::cSerie ) )
+      ::cXml+= ::XmlTag( [nNF]   , AllTrim( ::cNf ) )
+      ::cXml+= ::XmlTag( [dhEmi] , ::DateTimeXml( ::dDataE, ::cTimeE ) )
+      ::cXml+= ::XmlTag( [tpNF]  , Iif( !( ::cTpNf $ [0_1] ), [0], Left( ::cTpNf, 1 ) ) )
+      ::cXml+= ::XmlTag( [tpImp] , Iif( !( ::cTpimp $ [0_1_2] ), [1], Left( ::cTpimp, 1 ) ) )
+
+      ::cXml+= [<gModNat>]
+         ::cXml+= ::XmlTag( [modOper], PadL( AllTrim( ::cAbiModOper ), 2, [0] ) )
+         ::cXml+= ::XmlTag( [natOper], PadL( AllTrim( ::cAbiNatOper ), 2, [0] ) )
+         If !Empty( ::cAbiDetOper )
+            ::cXml+= ::XmlTag( [detOper], PadL( AllTrim( ::cAbiDetOper ), 2, [0] ) )
+         EndIf
+      ::cXml+= [</gModNat>]
+
+      ::cXml+= ::XmlTag( [tpEmis]      , Iif( !( ::cTpemis $ [1_3_9] ), [1], Left( ::cTpemis, 1 ) ) )
+      ::cXml+= ::XmlTag( [nSiteAutoriz], Iif( Empty( ::cAbiNSiteAutoriz ), [0], Left( ::cAbiNSiteAutoriz, 1 ) ) )
+      ::cXml+= ::XmlTag( [cDV]         , Right( ::cId, 1 ) )
+      ::cXml+= ::XmlTag( [tpAmb]       , Iif( !( ::cAmbiente $ [1_2] ), [2], Left( ::cAmbiente, 1 ) ) )
+      ::cXml+= ::XmlTag( [finNFe]      , Iif( !( ::cFinnfe $ [1_2] ), [1], Left( ::cFinnfe, 1 ) ) )
+      ::cXml+= ::XmlTag( [procEmi]     , Iif( !( ::cProcemi $ [0_1] ), [0], Left( ::cProcemi, 1 ) ) )
+      ::cXml+= ::XmlTag( [verProc]     , Left( ::cVerProc, 20 ) )
+
+      If ::cTpemis == [9]
+         ::cXml+= [<gCont>]
+            ::cXml+= ::XmlTag( [dhCont], ::DateTimeXml( ::dDhcont, ::cTimeE ) )
+            ::cXml+= ::XmlTag( [xJust] , Left( ::cXjust, 256 ) )
+         ::cXml+= [</gCont>]
+      EndIf
+   ::cXml+= [</ide>]
+Return (Nil)
+
+/*
+ * Grupo <NFref> (0-500).
+ * XSD: e IRMAO de <ide>, dentro de infNFeABI. O Anexo I coloca BA01 com
+ * Pai = B01 (ide), o que nao valida contra o schema.
+ * Chamar logo depois de fCria_IdeAbi().
+ */
+METHOD fCria_NFrefAbi()
+   Local i, cRef, aVistos:= {}
+
+   For i:= 1 To Min( Len( ::aAbiNFref ), 500 )
+       cRef:= ::SoNumero( ::aAbiNFref[ i ] )
+       If Len( cRef ) == 44 .and. cRef # ::cId .and. ;
+          AScan( aVistos, { | e | e == cRef } ) == 0
+          AAdd( aVistos, cRef )
+          ::cXml+= [<NFref>]
+             ::cXml+= ::XmlTag( [refNFeABI], cRef )
+          ::cXml+= [</NFref>]
+       EndIf
+   Next
+Return (Nil)
+
+/*==========================================================================
+ *  emit
+ * ========================================================================== 
+ * Grupo <emit>.
+ * XSD: a sequencia e CNPJ|CPF, xNome, xFant, enderEmit, tpEmit.
+ * NAO existe <tpIMF> - o campo C19 do Anexo I nao tem contrapartida no
+ * schema e provocaria falha de validacao se fosse gravado.
+ */
+METHOD fCria_EmitenteAbi()
+   Local cDoc:= ::SoNumeroCnpj( ::cCnpj ), cNome:= ::cXnomee
+
+   If ::cAmbiente == [2]
+      cNome:= [NF-E EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL]
+   EndIf
+
+   ::cXml+= [<emit>]
+      If Len( cDoc ) == 11
+         ::cXml+= ::XmlTag( [CPF] , cDoc )
+      Else
+         ::cXml+= ::XmlTag( [CNPJ], PadL( cDoc, 14, [0] ) )
+      EndIf
+
+      ::cXml+= ::XmlTag( [xNome], Left( cNome, 60 ) )
+
+      If !Empty( ::cXfant )
+         ::cXml+= ::XmlTag( [xFant], Left( ::cXfant, 60 ) )
+      EndIf
+
+      ::fCria_EnderecoAbiAux( [enderEmit], ::aAbiEnderEmit )
+
+      ::cXml+= ::XmlTag( [tpEmit], PadL( AllTrim( ::cAbiTpEmit ), 2, [0] ) )
+   ::cXml+= [</emit>]
+Return (Nil)
+
+/* ==========================================================================
+ *  transmit / adquirente / endereco
+ * ==========================================================================
+ * Acumula um transmitente. Chamar de 1 a 99 vezes.
+ *   aEnder = { xLgr, nro, xCpl, xBairro, cMun, xMun, UF, CEP, cPais, xPais, fone }
+ * O endereco do transmitente e opcional no schema (0-1); informe quando o
+ * transmitente for o declarante.
+ */
+METHOD AddTransmitenteAbi( cDoc, cNome, nProp, cIndDecl, cIndContrib, aEnder )
+   hb_Default( @cIndDecl   , [0] )
+   hb_Default( @cIndContrib, [0] )
+   hb_Default( @nProp      , 0 )
+   hb_Default( @aEnder     , {} )
+
+   AAdd( ::aAbiTransmit, { ::SoNumeroCnpj( cDoc ), cNome, nProp, cIndDecl, cIndContrib, aEnder } )
+Return ( Len( ::aAbiTransmit ) )
+
+/*
+ * Grupo <transmit> (1-99), atributo nTransmit sequencial.
+ * O declarante e movido para nTransmit = 1, exigencia da regra E02 do
+ * Anexo I. Na modalidade 02 o indDeclarante fica com o adquirente.
+ */
+METHOD fCria_TransmitentesAbi()
+   Local i, nPos, aItem, lArremat:= ( AllTrim( ::cAbiModOper ) == [02] )
+
+   If !lArremat
+      nPos:= AScan( ::aAbiTransmit, { | e | e[ 4 ] == [1] } )
+      If nPos > 1
+         aItem:= ::aAbiTransmit[ nPos ]
+         ADel( ::aAbiTransmit, nPos )
+         ASize( ::aAbiTransmit, Len( ::aAbiTransmit ) - 1 )
+         AIns( ::aAbiTransmit, 1 )
+         ::aAbiTransmit[ 1 ]:= aItem
+      EndIf
+   EndIf
+
+   For i:= 1 To Len( ::aAbiTransmit )
+       aItem:= ::aAbiTransmit[ i ]
+
+       ::cXml+= [<transmit nTransmit="] + hb_NtoS( i ) + [">]
+
+          If !lArremat
+             ::cXml+= ::XmlTag( [indDeclarante], Iif( aItem[ 4 ] == [1], [1], [0] ) )
+          EndIf
+
+          If Len( aItem[ 1 ] ) == 11
+             ::cXml+= ::XmlTag( [CPF] , aItem[ 1 ] )
+          Else
+             ::cXml+= ::XmlTag( [CNPJ], PadL( aItem[ 1 ], 14, [0] ) )
+          EndIf
+
+          ::cXml+= ::XmlTag( [xNome], Left( Iif( ::cAmbiente == [2], [NF-E EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL], aItem[ 2 ] ), 60 ) )
+
+          If ValType( aItem[ 6 ] ) == [A] .and. Len( aItem[ 6 ] ) >= 7
+             ::fCria_EnderecoAbiAux( [enderTransmit], aItem[ 6 ] )
+          EndIf
+
+          If aItem[ 3 ] > 0
+             ::cXml+= ::XmlTag( [pTransIndiv], aItem[ 3 ], 4 )
+          EndIf
+          If !Empty( aItem[ 5 ] )
+             ::cXml+= ::XmlTag( [indContrib], Left( aItem[ 5 ], 1 ) )
+          EndIf
+
+       ::cXml+= [</transmit>]
+   Next
+Return (Nil)
+
+METHOD AddAdquirenteAbi( cDoc, cNome, nPerc, cIndDecl, cIndContrib, aEnder )
+   hb_Default( @cIndDecl   , [0] )
+   hb_Default( @cIndContrib, [0] )
+   hb_Default( @nPerc      , 0 )
+   hb_Default( @aEnder     , {} )
+
+   AAdd( ::aAbiAdquirente, { ::SoNumeroCnpj( cDoc ), cNome, nPerc, cIndDecl, cIndContrib, aEnder } )
+Return ( Len( ::aAbiAdquirente ) )
+
+/*
+ * Grupo <adquirente> (1-99), atributo nAdquir sequencial.
+ * XSD: o endereco e OBRIGATORIO (1-1) e NAO existe <gCredIndiv> - os campos
+ * F20/F21/F22 do Anexo I nao tem contrapartida no schema, entao o credito
+ * individual de IBS/CBS nao entra no XML.
+ */
+METHOD fCria_AdquirentesAbi()
+   Local i, aItem, lArremat:= ( AllTrim( ::cAbiModOper ) == [02] )
+
+   For i:= 1 To Len( ::aAbiAdquirente )
+       aItem:= ::aAbiAdquirente[ i ]
+
+       ::cXml+= [<adquirente nAdquir="] + hb_NtoS( i ) + [">]
+
+          If lArremat
+             ::cXml+= ::XmlTag( [indDeclarante], Iif( aItem[ 4 ] == [1], [1], [0] ) )
+          EndIf
+
+          If Len( aItem[ 1 ] ) == 11
+             ::cXml+= ::XmlTag( [CPF] , aItem[ 1 ] )
+          Else
+             ::cXml+= ::XmlTag( [CNPJ], PadL( aItem[ 1 ], 14, [0] ) )
+          EndIf
+
+          ::cXml+= ::XmlTag( [xNome], Left( Iif( ::cAmbiente == [2], [NF-E EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL], aItem[ 2 ] ), 60 ) )
+
+          ::fCria_EnderecoAbiAux( [enderAdquirente], aItem[ 6 ] )
+
+          If aItem[ 3 ] > 0
+             ::cXml+= ::XmlTag( [pAquisicao], aItem[ 3 ], 4 )
+          EndIf
+          If !Empty( aItem[ 5 ] )
+             ::cXml+= ::XmlTag( [indContrib], Left( aItem[ 5 ], 1 ) )
+          EndIf
+
+       ::cXml+= [</adquirente>]
+   Next
+Return (Nil)
+
+/*
+ * TEndereco do schema, usado por enderEmit, enderTransmit, enderAdquirente
+ * e enderImovel. Recebe o nome da tag porque so muda o rotulo.
+ *   aEnder = { xLgr, nro, xCpl, xBairro, cMun, xMun, UF, CEP, cPais, xPais, fone }
+ */
+METHOD fCria_EnderecoAbiAux( cTag, aEnder )
+   If ValType( aEnder ) # [A] .or. Len( aEnder ) < 7
+      Return (Nil)
+   EndIf
+
+   ::cXml+= [<] + cTag + [>]
+      ::cXml+= ::XmlTag( [xLgr], Left( aEnder[ 1 ], 60 ) )
+      ::cXml+= ::XmlTag( [nro] , Left( aEnder[ 2 ], 60 ) )
+
+      If !Empty( aEnder[ 3 ] )
+         ::cXml+= ::XmlTag( [xCpl], Left( aEnder[ 3 ], 60 ) )
+      EndIf
+      If !Empty( aEnder[ 4 ] )
+         ::cXml+= ::XmlTag( [xBairro], Left( aEnder[ 4 ], 60 ) )
+      EndIf
+
+      ::cXml+= ::XmlTag( [cMun], Left( ::SoNumero( aEnder[ 5 ] ), 7 ) )
+      ::cXml+= ::XmlTag( [xMun], Left( aEnder[ 6 ], 60 ) )
+      ::cXml+= ::XmlTag( [UF]  , Left( Upper( aEnder[ 7 ] ), 2 ) )
+
+      If Len( aEnder ) >= 8 .and. !Empty( aEnder[ 8 ] )
+         ::cXml+= ::XmlTag( [CEP], PadL( ::SoNumero( aEnder[ 8 ] ), 8, [0] ) )
+      EndIf
+      If Len( aEnder ) >= 10 .and. !Empty( aEnder[ 9 ] )
+         ::cXml+= ::XmlTag( [cPais], Left( ::SoNumero( aEnder[ 9 ] ), 4 ) )
+         ::cXml+= ::XmlTag( [xPais], Left( aEnder[ 10 ], 60 ) )
+      EndIf
+      If Len( aEnder ) >= 11 .and. !Empty( aEnder[ 11 ] )
+         ::cXml+= ::XmlTag( [fone], Left( ::SoNumero( aEnder[ 11 ] ), 14 ) )
+      EndIf
+   ::cXml+= [</] + cTag + [>]
+Return (Nil)
+
+/* ==========================================================================
+ *  autXML / imovel
+ * ========================================================================== */
+METHOD AddAutXmlAbi( cDoc )
+   If Len( ::aAbiAutXml ) < 10
+      AAdd( ::aAbiAutXml, ::SoNumeroCnpj( cDoc ) )
+   EndIf
+Return ( Len( ::aAbiAutXml ) )
+
+/* XSD: TAutXML tem atributo nAutXML obrigatorio. */
+METHOD fCria_AutXmlAbi()
+   Local i
+
+   For i:= 1 To Len( ::aAbiAutXml )
+       ::cXml+= [<autXML nAutXML="] + hb_NtoS( i ) + [">]
+          If Len( ::SoNumeroCnpj( ::aAbiAutXml[ i ] ) ) == 11
+             ::cXml+= ::XmlTag( [CPF] , Left( ::SoNumero( ::aAbiAutXml[ i ] ), 11) )
+          Else
+             ::cXml+= ::XmlTag( [CNPJ], Left( ::SoNumeroCnpj( ::aAbiAutXml[ i ] ), 14) )
+          EndIf
+       ::cXml+= [</autXML>]
+   Next
+Return (Nil)
+
+/*
+ * Acumula um imovel adicional para o grupo <gTorna>.
+ * XSD: imovelTorna e 1-30, nao 1-1 como no Anexo I.
+ *   aImovel = { tipo, cCIB, indIPTU, nIptu, indIncra, nIncra, espImovel,
+ *               xOutrosEspecies, enquadramento, aEnder, obsLocalImovel,
+ *               areaTotal, uAreaTotal, cartorioRegistro, matricTransc }
+ */
+METHOD AddImovelTornaAbi( aImovel )
+   If Len( ::aAbiImovelTorna ) < 30
+      AAdd( ::aAbiImovelTorna, aImovel )
+   EndIf
+Return ( Len( ::aAbiImovelTorna ) )
+
+/*
+ * TImovel do schema. Serve para <imovel> e para <imovelTorna>.
+ * Sem o segundo parametro usa as propriedades ::cAbiImov*; com array usa os
+ * valores dele, o que permite montar os imoveis da torna.
+ * XSD: <cadastro> e OPCIONAL (0-1) e <enquadramento> tem 2 digitos.
+ */
+METHOD fCria_ImovelAbi( cTagGrupo, aImovel )
+   Local aI
+
+   hb_Default( @cTagGrupo, [imovel] )
+
+   If ValType( aImovel ) == [A] .and. Len( aImovel ) >= 15
+      aI:= aImovel
+   Else
+      aI:= { ::cAbiImovTipo, ::cAbiImovCib, ::cAbiImovIndIptu, ::cAbiImovNIptu, ;
+             ::cAbiImovIndIncra, ::cAbiImovNIncra, ::cAbiImovEspecie, ;
+             ::cAbiImovXOutrasEsp, ::cAbiImovEnquadr, ::aAbiEnderImovel, ;
+             ::cAbiImovObsLocal, ::nAbiImovAreaTotal, ::cAbiImovUArea, ;
+             ::cAbiImovCartorio, ::cAbiImovMatricula }
+   EndIf
+
+   ::cXml+= [<] + cTagGrupo + [>]
+      ::cXml+= ::XmlTag( [tipo], Iif( !( aI[ 1 ] $ [1_2] ), [1], Left( aI[ 1 ], 1 ) ) )
+
+      If !Empty( aI[ 2 ] ) .or. !Empty( aI[ 3 ] ) .or. !Empty( aI[ 5 ] )
+         ::cXml+= [<cadastro>]
+            If !Empty( aI[ 2 ] )
+               ::cXml+= ::XmlTag( [cCIB], Left( aI[ 2 ], 60 ) )
+            EndIf
+            If !Empty( aI[ 3 ] )
+               ::cXml+= ::XmlTag( [indIPTU], Left( aI[ 3 ], 1 ) )
+               If aI[ 3 ] == [1]
+                  ::cXml+= ::XmlTag( [nIptu], Left( aI[ 4 ], 60 ) )
+               EndIf
+            EndIf
+            If !Empty( aI[ 5 ] )
+               ::cXml+= ::XmlTag( [indIncra], Left( aI[ 5 ], 1 ) )
+               If aI[ 5 ] == [1]
+                  ::cXml+= ::XmlTag( [nIncra], Left( aI[ 6 ], 60 ) )
+               EndIf
+            EndIf
+         ::cXml+= [</cadastro>]
+      EndIf
+
+      ::cXml+= ::XmlTag( [espImovel], PadL( AllTrim( aI[ 7 ] ), 2, [0] ) )
+
+      If AllTrim( aI[ 7 ] ) == [99]
+         ::cXml+= ::XmlTag( [xOutrosEspecies], Left( aI[ 8 ], 60 ) )
+      EndIf
+      If !Empty( aI[ 9 ] )
+         ::cXml+= ::XmlTag( [enquadramento], PadL( AllTrim( aI[ 9 ] ), 2, [0] ) )
+      EndIf
+
+      ::fCria_EnderecoAbiAux( [enderImovel], aI[ 10 ] )
+
+      If !Empty( aI[ 11 ] )
+         ::cXml+= ::XmlTag( [obsLocalImovel], Left( aI[ 11 ], 200 ) )
+      EndIf
+      If aI[ 12 ] > 0
+         ::cXml+= ::XmlTag( [areaTotal] , aI[ 12 ], 2 )
+         ::cXml+= ::XmlTag( [uAreaTotal], Iif( !( aI[ 13 ] $ [m2_ha] ), [m2], aI[ 13 ] ) )
+      EndIf
+      If !Empty( aI[ 14 ] )
+         ::cXml+= ::XmlTag( [cartorioRegistro], Left( aI[ 14 ], 60 ) )
+      EndIf
+      If !Empty( aI[ 15 ] )
+         ::cXml+= ::XmlTag( [matricTransc], Left( aI[ 15 ], 60 ) )
+      EndIf
+   ::cXml+= [</] + cTagGrupo + [>]
+Return (Nil)
+
+/* ==========================================================================
+ *  infOper
+ * ========================================================================== */
+METHOD AddCorretagemAbi( cDoc, cNome, nValor )
+   hb_Default( @nValor, 0 )
+   AAdd( ::aAbiCorretagem, { ::SoNumeroCnpj( cDoc ), cNome, nValor } )
+Return ( Len( ::aAbiCorretagem ) )
+
+/*
+ * Grupo <infOper>.
+ *
+ * XSD - ordem obrigatoria da sequencia, diferente do Anexo I:
+ *   pTransImovel, vTotalOperacao, indTorna, gTorna, gIncorpLote,
+ *   gRedAjusteImovel, indRedSocial, vRedSocial, instrumento,
+ *   indIntermedCorret, gIntermedCorret
+ *
+ * Outras diferencas:
+ *   - gIncorpLote e 0-1 (nao 0-99) e tem <cCIBObra>
+ *   - gRedAjusteImovel tem <vContrap>, nao vOutorgaOnerosa + vDemaisContrap
+ *   - existe <vRedSocial> no nivel do imovel, alem do vRedSocialIndiv
+ */
+METHOD fCria_OperacaoAbi()
+   Local i, aItem, cMod:= PadL( AllTrim( ::cAbiModOper ), 2, [0] ), lTorna:= ( ::cAbiIndTorna == [1] )
+
+   ::cXml+= [<infOper>]
+
+      If ::nAbiPTransImovel > 0
+         ::cXml+= ::XmlTag( [pTransImovel], ::nAbiPTransImovel, 4 )
+      EndIf
+      ::cXml+= ::XmlTag( [vTotalOperacao], ::nAbiVTotalOperacao, 2 )
+
+      If !Empty( ::cAbiIndTorna )
+         ::cXml+= ::XmlTag( [indTorna], Left( ::cAbiIndTorna, 1 ) )
+      EndIf
+
+      If lTorna
+         ::cXml+= [<gTorna>]
+            ::cXml+= ::XmlTag( [vTorna], ::nAbiVTorna, 2 )
+            For i:= 1 To Min( Len( ::aAbiImovelTorna ), 30 )
+                ::fCria_ImovelAbi( [imovelTorna], ::aAbiImovelTorna[ i ] )
+            Next
+         ::cXml+= [</gTorna>]
+      EndIf
+
+      // XSD: gIncorpLote vem ANTES do gRedAjusteImovel
+      If !Empty( ::cAbiIndIncorpLote )
+         ::cXml+= [<gIncorpLote>]
+            ::cXml+= ::XmlTag( [indIncorpLote], Left( ::cAbiIndIncorpLote, 1 ) )
+            If ::cAbiIndIncorpLote == [1]
+               If !Empty( ::cAbiCnpjEmpImob )
+                  ::cXml+= ::XmlTag( [CNPJempImob], PadL( ::SoNumeroCnpj( ::cAbiCnpjEmpImob ), 14, [0] ) )
+               EndIf
+               If !Empty( ::cAbiCibObra )
+                  ::cXml+= ::XmlTag( [cCIBObra], Left( ::cAbiCibObra, 60 ) )
+               EndIf
+            EndIf
+         ::cXml+= [</gIncorpLote>]
+      EndIf
+
+      If ::lAbiRedAjuste .and. cMod # [03] .and. !lTorna
+         ::cXml+= [<gRedAjusteImovel>]
+            If ::nAbiVInicial > 0
+               ::cXml+= ::XmlTag( [vInicial], ::nAbiVInicial, 2 )
+            EndIf
+            If ::nAbiVItbi > 0
+               ::cXml+= ::XmlTag( [vITBI], ::nAbiVItbi, 2 )
+            EndIf
+            If ::nAbiVLaudemio > 0
+               ::cXml+= ::XmlTag( [vLaudemio], ::nAbiVLaudemio, 2 )
+            EndIf
+            If ::nAbiVContrap > 0
+               ::cXml+= ::XmlTag( [vContrap], ::nAbiVContrap, 2 )
+            EndIf
+            ::cXml+= ::XmlTag( [vRedAjusteImovel], ::nAbiVRedAjusteImovel, 2 )
+         ::cXml+= [</gRedAjusteImovel>]
+      EndIf
+
+      If !Empty( ::cAbiIndRedSocial ) .and. cMod # [03] .and. !lTorna .and. !( PadL( AllTrim( ::cAbiImovEnquadr ), 2, [0] ) $ [02_04] )
+         ::cXml+= ::XmlTag( [indRedSocial], Left( ::cAbiIndRedSocial, 1 ) )
+         If ::cAbiIndRedSocial == [1] .and. ::nAbiVRedSocial > 0
+            ::cXml+= ::XmlTag( [vRedSocial], ::nAbiVRedSocial, 2 )
+         EndIf
+      EndIf
+
+      ::cXml+= [<instrumento>]
+         ::cXml+= ::XmlTag( [tpInstrumento], PadL( AllTrim( ::cAbiTpInstrumento ), 2, [0] ) )
+         If AllTrim( ::cAbiTpInstrumento ) == [99]
+            ::cXml+= ::XmlTag( [xOutrosInst], Left( ::cAbiXOutrosInst, 60 ) )
+         EndIf
+         ::cXml+= ::XmlTag( [dtInstrumento], ::DateXml( ::dAbiDtInstrumento ) )
+      ::cXml+= [</instrumento>]
+
+      If !Empty( ::cAbiIndIntermed )
+         ::cXml+= ::XmlTag( [indIntermedCorret], Left( ::cAbiIndIntermed, 1 ) )
+
+         If ::cAbiIndIntermed == [1]
+            For i:= 1 To Min( Len( ::aAbiCorretagem ), 99 )
+                aItem:= ::aAbiCorretagem[ i ]
+                ::cXml+= [<gIntermedCorret nCorretagem="] + hb_NtoS( i ) + [">]
+                   If Len( aItem[ 1 ] ) == 11
+                      ::cXml+= ::XmlTag( [CPF] , aItem[ 1 ] )
+                   Else
+                      ::cXml+= ::XmlTag( [CNPJ], PadL( aItem[ 1 ], 14, [0] ) )
+                   EndIf
+                   ::cXml+= ::XmlTag( [xNome]      , Left( aItem[ 2 ], 60 ) )
+                   ::cXml+= ::XmlTag( [vCorretagem], aItem[ 3 ], 2 )
+                ::cXml+= [</gIntermedCorret>]
+            Next
+         EndIf
+      EndIf
+   ::cXml+= [</infOper>]
+Return (Nil)
+
+/* ==========================================================================
+ *  gInfTrib
+ * ==========================================================================
+   gIBSUF, gIBSMun e gCBS tem a mesma forma: aliquota, gRed, valor. */
+METHOD fCria_GrupoAliqAbi( cTag, cTagAliq, nAliq, nRed, cTagValor, nValor )
+
+   hb_Default( @nAliq , 0 )
+   hb_Default( @nRed  , 0 )
+   hb_Default( @nValor, 0 )
+
+   ::cXml+= [<] + cTag + [>]
+      ::cXml+= ::XmlTag( cTagAliq, nAliq, 4 )
+
+      ::cXml+= [<gRed>]
+         ::cXml+= ::XmlTag( [pRedAliq] , nRed, 4 )
+         ::cXml+= ::XmlTag( [pAliqEfet], ( nAliq / 100 ) * ( 1 - ( nRed / 100 ) ), 4 )
+      ::cXml+= [</gRed>]
+
+      ::cXml+= ::XmlTag( cTagValor, nValor, 2 )
+   ::cXml+= [</] + cTag + [>]
+Return (Nil)
+
+
+/*
+ * Grupo <gInfTrib>.
+ * XSD: gCompraGov, depois IBSCBS { CST, cClassTrib, gIBSCBS, gEstornoCred }.
+ * Dentro de gIBSCBS: vOperacIndiv, vTornaIndiv, vRedAjusteIndiv,
+ * vRedSocialIndiv, vBC, gIBSUF, gIBSMun, gCBS, gTribCompraGov.
+ */
+METHOD fCria_TributacaoAbi()
+   Local cMod  := PadL( AllTrim( ::cAbiModOper ), 2, [0] ), lTorna:= ( ::cAbiIndTorna == [1] )
+
+   ::cXml+= [<gInfTrib>]
+
+      If !Empty( ::cAbiTpEnteGov )
+         ::cXml+= [<gCompraGov>]
+            ::cXml+= ::XmlTag( [tpEnteGov], Left( ::cAbiTpEnteGov, 1 ) )
+            ::cXml+= ::XmlTag( [pRedutor] , ::nAbiPRedutorGov, 4 )
+            ::cXml+= ::XmlTag( [tpOperGov], Iif( !( ::cAbiTpOperGov $ [1_2] ), [1], Left( ::cAbiTpOperGov, 1 ) ) )
+         ::cXml+= [</gCompraGov>]
+      EndIf
+
+      ::cXml+= [<IBSCBS>]
+         ::cXml+= ::XmlTag( "CST"       , Left(::cCclasstrib, 3))
+         ::cXml+= ::XmlTag( "cClassTrib", Left(::cCclasstrib, 6))
+
+         If ::lAbiGIbsCbs
+            ::cXml+= [<gIBSCBS>]
+               ::cXml+= ::XmlTag( [vOperacIndiv], ::nAbiVOperacIndiv, 2 )
+
+               If lTorna
+                  ::cXml+= ::XmlTag( [vTornaIndiv], ::nAbiVTornaIndiv, 2 )
+               EndIf
+               If cMod # [03] .and. !lTorna
+                  ::cXml+= ::XmlTag( [vRedAjusteIndiv], ::nAbiVRedAjusteIndiv, 2 )
+               EndIf
+               If ::cAbiIndRedSocial == [1] .and. cMod # [03] .and. !lTorna
+                  ::cXml+= ::XmlTag( [vRedSocialIndiv], ::nAbiVRedSocialIndiv, 2 )
+               EndIf
+
+               ::cXml+= ::XmlTag( [vBC], ::nVbcibs )
+
+               ::fCria_GrupoAliqAbi( [gIBSUF] , [pIBSUF] , ::nAbiPIbsUf , ::nAbiPRedAliqUf , [vIBSUF] , ::nAbiVIbsUf  )
+               ::fCria_GrupoAliqAbi( [gIBSMun], [pIBSMun], ::nPibsmun, ::nAbiPRedAliqMun, [vIBSMun], ::nAbiVIbsMun )
+               ::fCria_GrupoAliqAbi( [gCBS]   , [pCBS]   , ::nAbiPCbs   , ::nAbiPRedAliqCbs, [vCBS]   , ::nAbiVCbs    )
+
+               If !Empty( ::cAbiTpEnteGov )
+                  ::cXml+= [<gTribCompraGov>]
+                     ::cXml+= ::XmlTag( [pAliqIBSUF] , ::nAbiPIbsUf, 4 )
+                     ::cXml+= ::XmlTag( [vTribIBSUF] , Round( ::nVbcibs * ( ::nAbiPIbsUf / 100 ), 2 ) )
+                     ::cXml+= ::XmlTag( [pAliqIBSMun], ::nPibsmun, 4 )
+                     ::cXml+= ::XmlTag( [vTribIBSMun], Round( ::nVbcibs * ( ::nPibsmun / 100 ), 2 ) )
+                     ::cXml+= ::XmlTag( [pAliqCBS]   , ::nAbiPCbs, 4 )
+                     ::cXml+= ::XmlTag( [vTribCBS]   , Round( ::nVbcibs * ( ::nAbiPCbs / 100 ), 2 ) )
+                  ::cXml+= [</gTribCompraGov>]
+               EndIf
+            ::cXml+= [</gIBSCBS>]
+         EndIf
+
+         If ::lAbiEstornoCred
+            ::cXml+= [<gEstornoCred>]
+               ::cXml+= ::XmlTag( [vIBSEstCred], ::nAbiVIbsEstCred, 2 )
+               ::cXml+= ::XmlTag( [vCBSEstCred], ::nAbiVCbsEstCred, 2 )
+            ::cXml+= [</gEstornoCred>]
+         EndIf
+      ::cXml+= [</IBSCBS>]
+   ::cXml+= [</gInfTrib>]
+Return (Nil)
+
+/* ==========================================================================
+ *  pag - ATENCAO: nada a ver com o grupo Y do Anexo I
+ * ==========================================================================
+ * XSD: <pag> tem dois grupos, os dois 0-99:
+ *
+ *   detPagImovel     { tPag(2), xPag(opc), vPag }                 @nDetPag
+ *   detPagIncorpLote { tParcela(16), nParcela(1-3), xParcela }    @nDetPag
+ *
+ * Nao existem meioPag, periodParcelas, nParcelas, dtPag nem dtVenc - todos
+ * os campos Y03 a Y09 do Anexo I foram substituidos por esta estrutura.
+ */
+METHOD AddPagImovelAbi( cTPag, nValor, cDesc )
+   hb_Default( @nValor, 0 )
+   hb_Default( @cDesc , [] )
+   AAdd( ::aAbiPagImovel, { PadL( AllTrim( cTPag ), 2, [0] ), nValor, cDesc } )
+Return ( Len( ::aAbiPagImovel ) )
+
+METHOD AddPagIncorpLoteAbi( cTParcela, nParcela, cXParcela )
+   hb_Default( @nParcela , 1 )
+   hb_Default( @cXParcela, [] )
+   AAdd( ::aAbiPagIncorpLote, { cTParcela, nParcela, cXParcela } )
+Return ( Len( ::aAbiPagIncorpLote ) )
+
+/* XSD: <pag> e opcional (0-1); nao gera a tag vazia. */
+METHOD fCria_PagamentoAbi()
+   Local i, aItem
+
+   If Len( ::aAbiPagImovel ) == 0 .and. Len( ::aAbiPagIncorpLote ) == 0
+      Return (Nil)
+   EndIf
+
+   ::cXml+= [<pag>]
+      For i:= 1 To Min( Len( ::aAbiPagImovel ), 99 )
+          aItem:= ::aAbiPagImovel[ i ]
+          ::cXml+= [<detPagImovel nDetPag="] + hb_NtoS( i ) + [">]
+             ::cXml+= ::XmlTag( [tPag], aItem[ 1 ] )
+             If !Empty( aItem[ 3 ] )
+                ::cXml+= ::XmlTag( [xPag], Left( aItem[ 3 ], 120 ) )
+             EndIf
+             ::cXml+= ::XmlTag( [vPag], aItem[ 2 ], 2 )
+          ::cXml+= [</detPagImovel>]
+      Next
+
+      For i:= 1 To Min( Len( ::aAbiPagIncorpLote ), 99 )
+          aItem:= ::aAbiPagIncorpLote[ i ]
+          ::cXml+= [<detPagIncorpLote nDetPag="] + hb_NtoS( i ) + [">]
+             ::cXml+= ::XmlTag( [tParcela], Left( aItem[ 1 ], 16 ) )
+             ::cXml+= ::XmlTag( [nParcela], aItem[ 2 ], 0 )
+             If !Empty( aItem[ 3 ] )
+                ::cXml+= ::XmlTag( [xParcela], Left( aItem[ 3 ], 400 ) )
+             EndIf
+          ::cXml+= [</detPagIncorpLote>]
+      Next
+   ::cXml+= [</pag>]
+Return (Nil)
+
+/* ==========================================================================
+ *  total / infAdic / infRespTec / infNFeSupl / fechamento
+ * ==========================================================================
+ * XSD: <total> e opcional (0-1) e a sequencia e
+ *   vTotalOperacao, vOperacIndiv, tribTot{...}, vNF
+ * O tribTot NAO repete vTotalOperacao nem vOperacIndiv.
+ */
+METHOD fCria_TotaisAbi()
+   ::cXml+= [<total>]
+      ::cXml+= ::XmlTag( [vTotalOperacao], ::nAbiVTotalOperacao )
+      ::cXml+= ::XmlTag( [vOperacIndiv]  , ::nAbiVOperacIndiv )
+
+      ::cXml+= [<tribTot>]
+         ::cXml+= ::XmlTag( [vRedAjusteIndiv], ::nAbiVRedAjusteIndiv )
+         ::cXml+= ::XmlTag( [vRedSocialIndiv], ::nAbiVRedSocialIndiv )
+         ::cXml+= ::XmlTag( [vBC]            , ::nVbcibs )
+         ::cXml+= ::XmlTag( [vIBSUF]         , ::nAbiVIbsUf )
+         ::cXml+= ::XmlTag( [vIBSMun]        , ::nAbiVIbsMun )
+         ::cXml+= ::XmlTag( [vCBS]           , ::nAbiVCbs )
+      ::cXml+= [</tribTot>]
+
+      ::cXml+= ::XmlTag( [vNF], ::nVnf )
+   ::cXml+= [</total>]
+Return (Nil)
+
+METHOD fCria_InformacoesAbi()
+   Local i
+
+   If Empty( ::cInfFisc ) .and. Empty( ::cInfcpl ) .and. Len( ::aAbiObsCont ) == 0 .and. Len( ::aAbiObsFisco ) == 0
+      Return (Nil)
+   EndIf
+
+   ::cXml+= [<infAdic>]
+      If !Empty( ::cInfFisc )
+         ::cXml+= ::XmlTag( [infAdFisco] , Left(StrTran(::cInfFisc, Hb_Eol(), "; "), 5000))
+      EndIf
+      If !Empty( ::cInfcpl )
+         ::cXml+= ::XmlTag( [infCpl] , Left(StrTran(::cInfcpl, Hb_Eol(), '; '), 5000))
+      EndIf
+
+      For i:= 1 To Min( Len( ::aAbiObsCont ), 10 )
+          ::cXml+= [<obsCont xCampo="] + Left( ::fRetiraAcento( ::aAbiObsCont[ i, 1 ] ), 20 ) + [">]
+             ::cXml+= ::XmlTag( [xTexto], Left( ::aAbiObsCont[ i, 2 ], 60 ) )
+          ::cXml+= [</obsCont>]
+      Next
+
+      For i:= 1 To Min( Len( ::aAbiObsFisco ), 10 )
+          ::cXml+= [<obsFisco xCampo="] + Left( ::fRetiraAcento( ::aAbiObsFisco[ i, 1 ] ), 20 ) + [">]
+             ::cXml+= ::XmlTag( [xTexto], Left( ::aAbiObsFisco[ i, 2 ], 60 ) )
+          ::cXml+= [</obsFisco>]
+      Next
+   ::cXml+= [</infAdic>]
+Return (Nil)
+
+/*
+ * XSD: <infNFeSupl> e OBRIGATORIO e fica fora do <infNFeABI>, entre ele e a
+ * <ds:Signature>. O qrCode tem de 100 a 600 caracteres e a urlChave de 21 a 85.
+ */
+METHOD fCria_SuplementaresAbi()
+   Local cQr:= AllTrim( ::cAbiUrlChave )
+
+   If Empty( cQr )
+      Return (Nil)
+   EndIf
+
+   cQr+= [?] + ::cId + [|1|] + Left( ::cAmbiente, 1 )
+
+   If ::cTpemis == [9]
+      cQr+= [|] + SubStr( DToS( ::dDataE ), 7, 2 )
+      cQr+= [|] + AllTrim( Str( ::nVnf, 15, 2 ) )
+   EndIf
+
+   ::cXml+= [<infNFeSupl>]
+      ::cXml+= "<qrCode><![CDATA[" + cQr + "]]></qrCode>"                                                   // ZX02
+      ::cXml+= ::XmlTag( [urlChave], Left( ::cAbiUrlChave, 85 ) )
+   ::cXml+= [</infNFeSupl>]
+Return (Nil)
+
+METHOD fCria_FechamentoAbi()
+   ::cXml+= [</infNFeABI>]
+   ::fCria_SuplementaresAbi()
+   ::cXml+= [</NFeABI>]
+Return (Nil)
+
+/* ==========================================================================
+ *  CALCULOS DERIVADOS
+ * ==========================================================================
+ * Aplica as formulas que a Sefaz recalcula. Chamar DEPOIS de carregar os
+ * transmitentes / adquirentes e ANTES dos fCria_...
+ *
+ *   vRedAjusteImovel = vInicial + vITBI + vLaudemio + vContrap   (XSD)
+ *   vOperacIndiv     = vTotalOperacao * proporcao / pTransImovel
+ *   vTornaIndiv      = vTorna * proporcao / pTransImovel
+ *   vRedAjusteIndiv  = (proporcao/100) * vRedAjusteImovel
+ *   vRedSocialIndiv  = MIN( teto * proporcao ; vOperacIndiv - vRedAjusteIndiv )
+ *   vBC              = vOperacIndiv - vRedAjusteIndiv - vRedSocialIndiv
+ *   vIBSUF/vIBSMun/vCBS = vBC * aliquota efetiva / 100
+ *   vNF              = vOperacIndiv + vIBSUF + vIBSMun + vCBS
+ *
+ * As aliquotas sao percentuais; dai o "/ 100" que o manual omite ao escrever
+ * "vIBSUF = pAliqEfet * vBC".
+ */
+METHOD fCalcula_Abi()
+   Local nPart, nPos, cMod:= PadL( AllTrim( ::cAbiModOper ), 2, [0] ), lTorna:= ( ::cAbiIndTorna == [1] ), nProp:= Iif( ::nAbiPTransImovel == 0, 100, ::nAbiPTransImovel )
+
+   If cMod == [02]
+      nPos := AScan( ::aAbiAdquirente, { | e | e[ 4 ] == [1] } )
+      nPart:= Iif( nPos == 0, nProp, ::aAbiAdquirente[ nPos, 3 ] )
+   Else
+      nPos := AScan( ::aAbiTransmit, { | e | e[ 4 ] == [1] } )
+      nPart:= Iif( nPos == 0, nProp, ::aAbiTransmit[ nPos, 3 ] )
+   EndIf
+
+   ::nAbiVRedAjusteImovel:= Round( ::nAbiVInicial + ::nAbiVItbi + ::nAbiVLaudemio + ::nAbiVContrap, 2 )
+
+   ::nAbiVOperacIndiv:= Round( ::nAbiVTotalOperacao * nPart / nProp, 2 )
+   ::nAbiVTornaIndiv := Iif( lTorna, Round( ::nAbiVTorna * nPart / nProp, 2 ), 0 )
+
+   If cMod == [03] .or. lTorna
+      ::nAbiVRedAjusteIndiv:= 0
+   Else
+      ::nAbiVRedAjusteIndiv:= Round( ( nPart / 100 ) * ::nAbiVRedAjusteImovel, 2 )
+   EndIf
+
+   If ::cAbiIndRedSocial == [1] .and. cMod # [03] .and. !lTorna .and. !( PadL( AllTrim( ::cAbiImovEnquadr ), 2, [0] ) $ [02_04] )
+      ::nAbiVRedSocialIndiv:= Round( Min( ::nAbiTetoRedSocial * ( nPart / 100 ), ::nAbiVOperacIndiv - ::nAbiVRedAjusteIndiv ), 2 )
+      If ::nAbiVRedSocial == 0
+         ::nAbiVRedSocial:= ::nAbiVRedSocialIndiv
+      EndIf
+   Else
+      ::nAbiVRedSocialIndiv:= 0
+   EndIf
+
+   Do Case
+      Case cMod == [03]
+           ::nVbcibs:= ::nAbiVOperacIndiv
+      Case lTorna
+           ::nVbcibs:= ::nAbiVTornaIndiv
+      Case cMod == [02] .and. ::nAbiVRedAjusteImovel == 0
+           ::nVbcibs:= 0
+      Otherwise
+           ::nVbcibs:= Round( ::nAbiVOperacIndiv - ::nAbiVRedAjusteIndiv - ::nAbiVRedSocialIndiv, 2 )
+   EndCase
+
+   ::nAbiVIbsUf := Round( ::nVbcibs * ( ::nAbiPIbsUf  * ( 1 - ::nAbiPRedAliqUf  / 100 ) ) / 100, 2 )
+   ::nAbiVIbsMun:= Round( ::nVbcibs * ( ::nPibsmun * ( 1 - ::nAbiPRedAliqMun / 100 ) ) / 100, 2 )
+   ::nAbiVCbs   := Round( ::nVbcibs * ( ::nAbiPCbs    * ( 1 - ::nAbiPRedAliqCbs / 100 ) ) / 100, 2 )
+
+   ::nVnf:= Round( ::nAbiVOperacIndiv + ::nAbiVIbsUf + ::nAbiVIbsMun + ::nAbiVCbs, 2 )
+Return (Nil)
+
+/* ==========================================================================
+ *  EVENTO - PAGAMENTO DE PARCELA
+ * ========================================================================== 
+ * Devolve o <detEvento> do evento de Pagamento de Parcela.
+ *
+ * XSD (eventoNFeABI_v1.00.xsd): a raiz do pedido e <evento>, com
+ * infEvento{ cOrgao, tpAmb, CNPJ|CPF, chNFeABI, dhEvento, tpEvento,
+ * nSeqEvento, verEvento, detEvento@versaoEvento } + ds:Signature.
+ *
+ * Tres detalhes que diferem da NF-e:
+ *   - a tag e <chNFeABI>, nao <chNFe>
+ *   - nSeqEvento tem pattern [1-9][0-9]{0,2}: NAO completar com zero a
+ *     esquerda, ao contrario do StrZero(n,2) usado na NF-e
+ *   - o Id e ID + tpEvento(6) + chave(44) + nSeq sem zeros a esquerda
+ *
+ * Este metodo devolve apenas o miolo <detEvento>; o envelope <evento> e a
+ * assinatura ficam com a classe de transmissao.
+ */
+METHOD fCria_EventoPagParcelaAbi( nOriginal, nAcrescimos, dPagto )
+   Local cXml:= [], nTotalPago, nOper, nRedAj, nRedSoc, nBc, nTot:= Iif( ::nAbiVTotalOperacao == 0, 1, ::nAbiVTotalOperacao )
+
+   hb_Default( @nAcrescimos, 0 )
+   hb_Default( @dPagto     , Date() )
+
+   nTotalPago:= Round( nOriginal + nAcrescimos, 2 )
+
+   nOper  := Round( ::nAbiVOperacIndiv    * nTotalPago / nTot, 2 )
+   nRedAj := Round( ::nAbiVRedAjusteIndiv * nOriginal  / nTot, 2 )
+   nRedSoc:= Round( ::nAbiVRedSocialIndiv * nOriginal  / nTot, 2 )
+   nBc    := Round( nOper - nRedAj - nRedSoc, 2 )
+
+   cXml+= [<EventoPagParcela>]
+      cXml+= ::XmlTag( [vOriginalParcela] , nOriginal, 2 )
+      If nAcrescimos > 0
+         cXml+= ::XmlTag( [vAcrescimos]   , nAcrescimos, 2 )
+      EndIf
+      cXml+= ::XmlTag( [vTotalPagoParcela], nTotalPago, 2 )
+      cXml+= ::XmlTag( [dataPagParcela]   , ::DateXml( dPagto ) )
+
+      cXml+= [<gIBSCBS>]
+         cXml+= ::XmlTag( [vOperacIndiv]   , nOper, 2 )
+         cXml+= ::XmlTag( [vRedAjusteIndiv], nRedAj, 2 )
+         cXml+= ::XmlTag( [vRedSocialIndiv], nRedSoc, 2 )
+         cXml+= ::XmlTag( [vBC]            , nBc, 2 )
+
+         cXml+= [<gIBSUF>]
+            cXml+= ::XmlTag( [pIBSUF], ::nAbiPIbsUf, 4 )
+            cXml+= [<gRed>]
+               cXml+= ::XmlTag( [pRedAliq] , ::nAbiPRedAliqUf, 4 )
+               cXml+= ::XmlTag( [pAliqEfet], ::nAbiPIbsUf * ( 1 - ::nAbiPRedAliqUf / 100 ), 4 )
+            cXml+= [</gRed>]
+            cXml+= ::XmlTag( [vIBSUF], Round( nBc * ::nAbiPIbsUf * ( 1 - ::nAbiPRedAliqUf / 100 ) / 100, 2 ), 2 )
+         cXml+= [</gIBSUF>]
+
+         cXml+= [<gIBSMun>]
+            cXml+= ::XmlTag( [pIBSMun], ::nPibsmun, 4 )
+            cXml+= [<gRed>]
+               cXml+= ::XmlTag( [pRedAliq] , ::nAbiPRedAliqMun, 4 )
+               cXml+= ::XmlTag( [pAliqEfet], ::nPibsmun * ( 1 - ::nAbiPRedAliqMun / 100 ), 4 )
+            cXml+= [</gRed>]
+            cXml+= ::XmlTag( [vIBSMun], Round( nBc * ::nPibsmun * ( 1 - ::nAbiPRedAliqMun / 100 ) / 100, 2 ), 2 )
+         cXml+= [</gIBSMun>]
+
+         cXml+= [<gCBS>]
+            cXml+= ::XmlTag( [pCBS], ::nAbiPCbs, 4 )
+            cXml+= [<gRed>]
+               cXml+= ::XmlTag( [pRedAliq] , ::nAbiPRedAliqCbs, 4 )
+               cXml+= ::XmlTag( [pAliqEfet], ::nAbiPCbs * ( 1 - ::nAbiPRedAliqCbs / 100 ), 4 )
+            cXml+= [</gRed>]
+            cXml+= ::XmlTag( [vCBS], Round( nBc * ::nAbiPCbs * ( 1 - ::nAbiPRedAliqCbs / 100 ) / 100, 2 ), 2 )
+         cXml+= [</gCBS>]
+      cXml+= [</gIBSCBS>]
+   cXml+= [</EventoPagParcela>]
+Return ( cXml )
+
+
 * ---------------> Metodo Interno de Conexao Web Centralizado <--------------- *
 METHOD fEnviaRequisicao(cMetodo, cUrl, cDados, lUsaCertificado)
    Local oServer, oErr, lOk:= .F., cRetorno:= []
@@ -2639,7 +3655,7 @@ METHOD XmlTag(cTag, xValue, nDecimals, lConvert)
       Elseif ValType(xValue) == "N"
          xValue:= NumberXml(xValue, nDecimals)
       Else
-         xValue:= ::StringXML(xValue)
+         xValue:= ::fRetiraAcento(::StringXML(xValue))
       EndIf
    EndIf
 
@@ -2733,7 +3749,7 @@ METHOD HorarioVeraoInicio(nAno)
    If nAno == 2018
       dTerceiroDomingoDeOutubro:= Stod("20181104")
    Else
-      dPrimeiroDeOutubro:= Stod(StrZero(nAno, 4) + "1001")
+      dPrimeiroDeOutubro       := Stod(StrZero(nAno, 4) + "1001")
       dPrimeiroDomingoDeOutubro:= dPrimeiroDeOutubro + IIF(Dow(dPrimeiroDeOutubro) == 1, 0, 7 - Dow(dPrimeiroDeOutubro) + 1)
       dTerceiroDomingoDeOutubro:= dPrimeiroDomingoDeOutubro + 14
    EndIf
@@ -2743,7 +3759,7 @@ Return (dTerceiroDomingoDeOutubro)
 METHOD HorarioVeraoTermino(nAno)
    Local dPrimeiroDeFevereiro, dPrimeiroDomingoDeFevereiro, dTerceiroDomingoDeFevereiro
 
-   dPrimeiroDeFevereiro:= Stod(StrZero(nAno + 1, 4) + "0201")
+   dPrimeiroDeFevereiro       := Stod(StrZero(nAno + 1, 4) + "0201")
    dPrimeiroDomingoDeFevereiro:= dPrimeiroDeFevereiro + IIF(Dow(dPrimeiroDeFevereiro) == 1, 0, 7 - Dow(dPrimeiroDeFevereiro) + 1)
    dTerceiroDomingoDeFevereiro:= dPrimeiroDomingoDeFevereiro + 14
 
@@ -2754,7 +3770,7 @@ Return (dTerceiroDomingoDeFevereiro)
 
 * -------------> Metodo Cálculo de dígito módulo 11 <------------------------- *
 METHOD CalculaDigito(cNumero, cModulo)
-   Local nFator:= 2, nPos:= nSoma:= nResto:= nModulo:= 0, cCalculo
+   Local nFator:= 2, nPos:= 0, nSoma:= 0, nResto:= 0, nModulo:= 0, cCalculo
  
    hb_Default(@cModulo, [11])
 
