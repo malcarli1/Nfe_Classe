@@ -12,7 +12,7 @@
  *          : Jair Barreto                                                   *
  *          : Franklin Brasil                                                *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 15.09.2026                                                     *
+ * ULT. ALT.: 20.10.2026                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 #pragma -w0
@@ -193,6 +193,8 @@ CLASS Malc_GeraXml
    VAR nVdesc                  AS Num       INIT 0                                                                    
    VAR nVoutro                 AS Num       INIT 0
    VAR cIndtot                 AS Character INIT [1]                                                  
+   VAR vUnComLiq               AS Num       INIT 0                                // Valor unitário de comercialização do produto ou serviço, sem a inclusão de tributos. // Nota Técnica 2026.008 - Versão 1.00
+   VAR vProdLiq                AS Num       INIT 0                                // Valor líquido do produto ou serviço, sem a inclusão de tributos.                     // Nota Técnica 2026.008 - Versão 1.00  
    VAR cInfadprod              AS Character INIT []                               // Grupo V
    VAR cXped                   AS Character INIT []                               // Grupo I05
    VAR nNitemped               AS Int       INIT 0                                // Grupo I05
@@ -358,6 +360,11 @@ CLASS Malc_GeraXml
    VAR nVtottrib               AS Num       INIT 0                                // Grupo M
    VAR nVtottribt              AS Num       INIT 0                                // Grupo Totais
    VAR lVtottrib               AS Logical   INIT .T.                              // Variável para permitir ou não informar os valores dos tributos na informação adicional dos itens 
+   VAR vProdLiqTot             AS Num       INIT 0                                // Soma dos valores líquidos dos produtos ou serviços, sem a inclusão de tributos.  // Nota Técnica 2026.008 - Versão 1.00  
+   VAR vProdLiqTot_t           AS Num       INIT 0                                // Nota Técnica 2026.008 - Versão 1.00  
+
+   // Tag Grupo NB. ICMS Previsto no Pagamento Antecipado                         // Grupo utilizado exclusivamente em cenários específicos de pagamento antecipado para auxiliar na correta tributação do IBS e da CBS: - tpNFDebito = 06-Pagamento antecipado; - tpOperGov = 4-Recebimento do pagamento com fornecimento posterior.  
+   VAR vICMSPrevisto           AS Num       INIT 0                                // Valor do ICMS que incidirá no momento do fornecimento futuro. Observação 1: Em cenários onde não haverá valor de ICMS devido no fornecimento, informar 0. // Nota Técnica 2026.008 - Versão 1.00   
 
    // Tag transp - Grupo X
    VAR cModFrete               AS Character INIT [] 
@@ -1197,6 +1204,17 @@ METHOD fCria_Produto()
                  ::cXml    += ::XmlTag( "vProd" , ::nVprod:= Round(::nQcom * ::nVuncom, 2))
                  ::nVprod_t+= ::nVprod                                                                                           // já acumula o valor dos produtos para os totais
 
+                 // --- NOVO: NT 2026.008 - Valor Líquido do Produto ---
+                 If !Empty(::vUnComLiq)
+                    ::cXml += ::XmlTag( "vUnComLiq", ::vUnComLiq, 10)
+                 EndIf 
+
+                 If !Empty(::vProdLiq)
+                    ::cXml += ::XmlTag( "vProdLiq", ::vProdLiq, 2)
+                    ::vProdLiqTot_t += ::vProdLiq
+                 EndIf 
+                 // ----------------------------------------------------
+
                  If !Empty(::cEantrib)
                     ::cXml+= ::XmlTag( "cEANTrib" , Left(::cEantrib, 14))
                  Else
@@ -1565,6 +1583,14 @@ METHOD fCria_ProdutoIcms()
                             EndIf 
                      ::cXml+= "</ICMSSN900>"
              Endcase
+
+             // --- NOVO: NT 2026.008 - Valor Total Líquido ---
+             If !Empty(::vProdLiqTot)
+                ::cXml+= ::XmlTag( "vProdLiqTot", ::vProdLiqTot)
+             Elseif !Empty(::vProdLiqTot_t)
+                ::cXml+= ::XmlTag( "vProdLiqTot", ::vProdLiqTot_t)
+             EndIf
+             // -----------------------------------------------
       ::cXml+= "</ICMS>"
    EndIf
 Return (Nil)
@@ -1993,6 +2019,15 @@ METHOD fCria_Totais()
                  ::cXml+= ::XmlTag( "vFrete"       , ::nVFrete_t)
                  ::cXml+= ::XmlTag( "vSeg"         , ::nVSeg_t)
                  ::cXml+= ::XmlTag( "vDesc"        , ::nVDesc_t)
+
+                 // --- NOVO: NT 2026.008 - Valor Total Líquido ---
+                 If !Empty(::vProdLiqTot)
+                    ::cXml+= ::XmlTag( "vProdLiqTot", ::vProdLiqTot)
+                 Elseif !Empty(::vProdLiqTot_t)
+                    ::cXml+= ::XmlTag( "vProdLiqTot", ::vProdLiqTot_t)
+                 EndIf
+                 // -----------------------------------------------
+
                  ::cXml+= ::XmlTag( "vII"          , ::nVii_t)
                  ::cXml+= ::XmlTag( "vIPI"         , ::nVipi_t)
                  ::cXml+= ::XmlTag( "vIPIDevol"    , ::nVipidevol_t)        
@@ -2415,6 +2450,12 @@ METHOD LimpaPropriedadesImposto()
    ::nBcPis      := ::nAlPis       := ::nBcCofins      := ::nAlCofins    := 0
    ::nVbcufdest  := ::nPfcpufdest  := ::nPicmsufdest   := ::nPicmsinter  := ::nPicmsinterpart := 0
    ::nVfcpufdest := ::nVicmsufdest := ::nVicmsufremet  := 0
+   // --- NOVO: Limpar propriedades da NT 2026.008 por item ---
+   ::vUnComLiq    := 0
+   ::vProdLiq     := 0
+   ::vProdLiqTot  := 0  
+   ::vProdLiqTot_t:= 0
+   ::vICMSPrevisto:= 0
 Return (Nil)
 
 * -----------------------> Metodo para fechar o XML <------------------------- *
