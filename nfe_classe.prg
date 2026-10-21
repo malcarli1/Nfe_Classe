@@ -1588,7 +1588,7 @@ METHOD fCria_ProdutoIcms()
                    // NT 2026.008 - Grupo NB: ICMS previsto no pagamento antecipado.
                    // Somente NF-e modelo 55 nos cenários previstos na Nota Técnica.
                    If ::cModelo == [55] .and. ;
-                      ( ( ::cFinnfe == [6] .and. ::cTpNfdebito == [06] ) .or. ;
+                      ( ::cTpNfdebito == [06] .or. ;
                         Left( AllTrim( ::cAbiTpOperGov ), 1 ) == [4] )
                       ::cXml+= "<ICMSPrevistoPagtoAntecip>"
                       ::cXml+= ::XmlTag( "vICMSPrevisto", ::vICMSPrevisto, 2 )
@@ -2457,8 +2457,6 @@ METHOD LimpaPropriedadesImposto()
    // --- NOVO: Limpar propriedades da NT 2026.008 por item ---
    ::vUnComLiq    := 0
    ::vProdLiq     := 0
-   ::vProdLiqTot  := 0  
-   ::vProdLiqTot_t:= 0
    ::vICMSPrevisto:= 0
 Return (Nil)
 
