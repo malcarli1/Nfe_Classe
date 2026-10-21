@@ -1205,12 +1205,13 @@ METHOD fCria_Produto()
                  ::nVprod_t+= ::nVprod                                                                                           // já acumula o valor dos produtos para os totais
 
                  // --- NOVO: NT 2026.008 - Valor Líquido do Produto ---
-                 If !Empty(::vUnComLiq)
-                    ::cXml += ::XmlTag( "vUnComLiq", ::vUnComLiq, 10)
-                 EndIf 
-
-                 If !Empty(::vProdLiq)
-                    ::cXml += ::XmlTag( "vProdLiq", ::vProdLiq, 2)
+                 // NT 2026.008: campos opcionais; emitir ambos se houver valor informado.
+                 If ::vUnComLiq != 0 .or. ::vProdLiq != 0
+                    ::cXml += ::XmlTag( "vUnComLiq", ::vUnComLiq, 10 )
+                    If ::vProdLiq == 0 .and. ::nQcom != 0
+                       ::vProdLiq := Round( ::vUnComLiq * ::nQcom, 2 )
+                    EndIf
+                    ::cXml += ::XmlTag( "vProdLiq", ::vProdLiq, 2 )
                     ::vProdLiqTot_t += ::vProdLiq
                  EndIf 
                  // ----------------------------------------------------
@@ -1584,14 +1585,17 @@ METHOD fCria_ProdutoIcms()
                      ::cXml+= "</ICMSSN900>"
              Endcase
 
-             // --- NOVO: NT 2026.008 - Valor Total Líquido ---
-             If !Empty(::vProdLiqTot)
-                ::cXml+= ::XmlTag( "vProdLiqTot", ::vProdLiqTot)
-             Elseif !Empty(::vProdLiqTot_t)
-                ::cXml+= ::XmlTag( "vProdLiqTot", ::vProdLiqTot_t)
-             EndIf
-             // -----------------------------------------------
-      ::cXml+= "</ICMS>"
+                   // NT 2026.008 - Grupo NB: ICMS previsto no pagamento antecipado.
+                   // Somente NF-e modelo 55 nos cenários previstos na Nota Técnica.
+                   If ::cModelo == [55] .and. ;
+                      ( ( ::cFinnfe == [6] .and. ::cTpNfdebito == [06] ) .or. ;
+                        Left( AllTrim( ::cAbiTpOperGov ), 1 ) == [4] )
+                      ::cXml+= "<ICMSPrevistoPagtoAntecip>"
+                      ::cXml+= ::XmlTag( "vICMSPrevisto", ::vICMSPrevisto, 2 )
+                      ::cXml+= "</ICMSPrevistoPagtoAntecip>"
+                   EndIf
+
+                   ::cXml+= "</ICMS>"
    EndIf
 Return (Nil)
 
