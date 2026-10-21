@@ -12,7 +12,7 @@
  *          : Jair Barreto                                                   *
  *          : Franklin Brasil                                                *
  * DATA     : 10.06.2025                                                     *
- * ULT. ALT.: 20.10.2026                                                     *
+ * ULT. ALT.: 21.10.2026                                                     *
  *****************************************************************************/
 #include <hbclass.ch>
 #pragma -w0
@@ -83,6 +83,7 @@ CLASS Malc_GeraXml
    VAR cTimeE                  AS Character INIT Time()
    VAR dDataS                  AS Date      INIT Date()
    VAR cTimeS                  AS Character INIT Time()
+   VAR dDPrevEntrega           AS Date      INIT Ctod([//])
    VAR cTpNf                   AS Character INIT [1]                              // 0 - entrada, 1 - saída
    VAR cIdest                  AS Character INIT [1]                              // 1 - Interna, 2 - Interestadual, 3 - Exterior
    VAR cTpImp                  AS Character INIT [1]                              // Tipo de Impressão    1 - Retrato / 2 - Paisagem
@@ -91,6 +92,7 @@ CLASS Malc_GeraXml
    VAR cIndfinal               AS Character INIT [1]                              // Indica operação com consumidor final (0 - Não ; 1 - Consumidor Final)
    VAR cIndpres                AS Character INIT [1]                              // Indicador de Presença do comprador no estabelecimento comercial no momento da operação. Opções na Tag fCria_Ide()
    VAR cIndintermed            AS Character INIT [0]
+   VAR cIndop                  AS Character INIT []                               // 6 digitos
    VAR cProcemi                AS Character INIT [0]                              // 0 - emissão de NF-e com aplicativo do contribuinte
    VAR cVerproc                AS Character INIT [4.00_B30]
    VAR dDhCont                 AS Character INIT []                               // Data-hora contingência       FSDA - tpEmis = 5
@@ -100,7 +102,7 @@ CLASS Malc_GeraXml
    VAR cTpNfcredito            AS Character INIT []                               // Reforma tributária
    VAR cTpcompragov            AS Character INIT []                               // Reforma tributária
    VAR nPredutor               AS Num       INIT 0                                // Reforma tributária 
- 
+
    // Tag emit - Grupo C
    VAR cXnomee                 AS Character INIT []
    VAR cXfant                  AS Character INIT []
@@ -351,6 +353,18 @@ CLASS Malc_GeraXml
    VAR nVCofins_t              AS Num       INIT 0
    VAR nMonoBas                AS Num       INIT 0
    VAR nMonoAliq               AS Num       INIT 0
+                                                                                  // ICMS Monofasico proprio - CST 02/15/71 (NT 2024.001) ***
+   VAR nQbcmono                AS Num       INIT 0                                // por item: qBCMono
+   VAR nAdremicms              AS Num       INIT 0                                // por item: adRemICMS (R$/unid)
+   VAR nVicmsmono              AS Num       INIT 0                                // por item: vICMSMono
+   VAR nQbcmono_t              AS Num       INIT 0                                // totalizador ICMSTot: qBCMono
+   VAR nVicmsmono_t            AS Num       INIT 0                                // totalizador ICMSTot: vICMSMono
+                                                                                  // ICMS Monofasico com retencao - CST 15 ***
+   VAR nQbcmonoreten           AS Num       INIT 0                                // por item: qBCMonoReten
+   VAR nAdremicmsreten         AS Num       INIT 0                                // por item: adRemICMSReten (R$/unid)
+   VAR nVicmsmonoreten         AS Num       INIT 0                                // por item: vICMSMonoReten
+   VAR nQbcmonoreten_t         AS Num       INIT 0                                // totalizador ICMSTot: qBCMonoReten
+   VAR nVicmsmonoreten_t       AS Num       INIT 0                                // totalizador ICMSTot: vICMSMonoReten
    VAR nVprod_t                AS Num       INIT 0
    VAR nVFrete_t               AS Num       INIT 0
    VAR nVDesc_t                AS Num       INIT 0
@@ -496,6 +510,8 @@ CLASS Malc_GeraXml
    VAR nVissqn                 AS Num       INIT 0                                                                      //   
    VAR nVServs                 AS Num       INIT 0                                                                      //   
    VAR nVfcp                   AS Num       INIT 0                                                                      // 
+   VAR cIndAlcZfmCbs           AS Character INIT []                                                                     // indicador ZFM/ALC
+   VAR nVcredPresZfm           AS Num       INIT 0 
 
    // Tag ISTot - Reforma tributária
    VAR nVis_t                  AS Num       INIT 0
@@ -779,6 +795,10 @@ METHOD fCria_Ide()
                 ::cXml+= ::XmlTag( "dhSaiEnt" , ::DateTimeXml(::dDataS, ::cTimeS))                                                // Data da Saída da mercadoria
              EndIf 
           EndIf  
+
+          If !Empty(::dDPrevEntrega)
+             ::cXml+= ::XmlTag( 'dPrevEntrega', Dtos(::dDPrevEntrega)) // YYYY-MM-DD via XmlTag
+          EndIf
  
           ::cXml+= ::XmlTag( "tpNF"     , Iif(!(::cTpNf $ [0_1]), [0], Left(::cTpNf, 1)))                                        // Tipo de Emissão da NF  0 - Entrada, 1 - Saída, 2 - Saída-Devolução, 3 - Saída-Garantia
           ::cXml+= ::XmlTag( "idDest"   , Iif(!(::cIdest $ [1_2_3]), [1], Left(::cIdest, 1)))                                    // Identificador de Local de destino da operação (1 - Interna, 2 - Interestadual, 3 - Exterior)
@@ -827,10 +847,15 @@ METHOD fCria_Ide()
              ::cXml+= ::XmlTag( "indIntermed" , Iif(!(::cIndintermed $ [0_1]), [0], Left(::cIndintermed, 1)))                    // Indicador de intermediador/marketplace, 0 - Operação sem intermediador (em site ou plataforma própria), 1 - Operação em site ou plataforma de terceiros (intermediadores/marketplace)
           EndIf 
 
-          ::cXml+= ::XmlTag( "procEmi"   , Iif(!(::cProcemi $ [0_1_2_3]), [1], Left(::cProcemi, 1)))                             // 0 - emissão de NF-e com aplicativo do contribuinte;
+          If !Empty(::cIndop)
+             ::cXml+= ::XmlTag( 'cIndOp' , Left(::cIndop, 6))
+          EndIf
+
+          ::cXml+= ::XmlTag( "procEmi"   , Iif(!(::cProcemi $ [0_1_2_3_4]), [1], Left(::cProcemi, 1)))                           // 0 - emissão de NF-e com aplicativo do contribuinte;
                                                                                                                                  // 1 - emissão de NF-e avulsa pelo Fisco;
                                                                                                                                  // 2 - emissão de NF-e avulsa, pelo contribuinte com seu certificado digital, através do site do Fisco;
                                                                                                                                  // 3 - emissão NF-e pelo contribuinte com aplicativo fornecido pelo Fisco.
+                                                                                                                                 // 4 - PAA = Provedor de Assinatura e Autorização         
           ::cXml+= ::XmlTag( "verProc"   , Left(::cVerproc, 20))                                                                 // Informar a versão do aplicativo emissor de NF-e.
 
           If ::cTpemis # [1]                                                                                                     // 1 - Emissão normal (não em contingência
@@ -1206,9 +1231,9 @@ METHOD fCria_Produto()
 
                  // --- NOVO: NT 2026.008 - Valor Líquido do Produto ---
                  // NT 2026.008: campos opcionais; emitir ambos se houver valor informado.
-                 If ::vUnComLiq != 0 .or. ::vProdLiq != 0
+                 If ::vUnComLiq # 0 .or. ::vProdLiq # 0
                     ::cXml += ::XmlTag( "vUnComLiq", ::vUnComLiq, 10 )
-                    If ::vProdLiq == 0 .and. ::nQcom != 0
+                    If ::vProdLiq == 0 .and. ::nQcom # 0
                        ::vProdLiq := Round( ::vUnComLiq * ::nQcom, 2 )
                     EndIf
                     ::cXml += ::XmlTag( "vProdLiq", ::vProdLiq, 2 )
@@ -1403,9 +1428,9 @@ METHOD fCria_ProdCombustivel()                                                  
 
              If ::nQbcprod  > 0
                 ::cXml+= "<CIDE>"
-                       ::cXml+= ::XmlTag( "qBCProd"    , ::nQbcprod, 4)                                                      // Informar a BC da CIDE em quantidade
-                       ::cXml+= ::XmlTag( "vAliqProd"  , ::nValiqprod, 4)                                                    // Informar o valor da alíquota em reais da CIDE
-                       ::cXml+= ::XmlTag( "vCIDE"      , ::nVcide)                                                           // Informar o valor da CIDE
+                       ::cXml+= ::XmlTag( "qBCProd"    , ::nQbcprod, 4)                                                          // Informar a BC da CIDE em quantidade
+                       ::cXml+= ::XmlTag( "vAliqProd"  , ::nValiqprod, 4)                                                        // Informar o valor da alíquota em reais da CIDE
+                       ::cXml+= ::XmlTag( "vCIDE"      , ::nVcide)                                                               // Informar o valor da CIDE
                 ::cXml+= "</CIDE>"
              EndIf 
       ::cXml+= "</comb>"
@@ -1414,7 +1439,7 @@ Return (Nil)
 
 * --------------------> Metodo para gerar a tag do ICMS <--------------------- *
 METHOD fCria_ProdutoIcms()
-   If ::cCsticms  $ [000_010_020_030_040_041_050_051_060_070_090_101_102_103_201_202_203_300_400_500_900]
+   If ::cCsticms  $ [000_002_010_015_020_030_040_041_050_051_060_070_071_090_101_102_103_201_202_203_300_400_500_900]
       ::cXml+= "<ICMS>"                                                                                                          // BLOCO N - ICMS NORMAL E ST
              Do Case
                 Case ::cCsticms == [000]
@@ -1525,6 +1550,45 @@ METHOD fCria_ProdutoIcms()
                             ::nVbc_t  += ::nVbc                                                                                  // já acumula o valor da base de cálculo para os totais
                             ::nVicms_t+= ::nVicms                                                                                // já acumula o valor do icms para os totais
                      ::cXml+= "</ICMS90>"
+                // *** INFO-11: ICMS Monofasico (NT 2024.001) ***
+                Case ::cCsticms == [002]           // ICMS02 - Tributacao monofasica propria
+                     ::cXml+= "<ICMS02>"
+                            ::cXml    += ::XmlTag( "orig"      , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
+                            ::cXml    += ::XmlTag( "CST"       , SubStr(::cCsticms, 2, 2))
+                            ::cXml    += ::XmlTag( "qBCMono"   , ::nQbcmono)
+                            ::cXml    += ::XmlTag( "adRemICMS" , ::nAdremicms, 4)   // aliq. ad rem em R$/unid - TDec_1104
+                            ::cXml    += ::XmlTag( "vICMSMono" , ::nVicmsmono:= Round(::nQbcmono * ::nAdremicms, 2))
+                            ::nQbcmono_t   += ::nQbcmono
+                            ::nVicmsmono_t += ::nVicmsmono
+                     ::cXml+= "</ICMS02>"
+
+                Case ::cCsticms == [015]           // ICMS15 - Monofasico proprio + responsabilidade de retencao
+                     ::cXml+= "<ICMS15>"
+                            ::cXml    += ::XmlTag( "orig"           , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
+                            ::cXml    += ::XmlTag( "CST"            , SubStr(::cCsticms, 2, 2))
+                            ::cXml    += ::XmlTag( "qBCMono"        , ::nQbcmono)
+                            ::cXml    += ::XmlTag( "adRemICMS"      , ::nAdremicms, 4)      // TDec_1104
+                            ::cXml    += ::XmlTag( "vICMSMono"      , ::nVicmsmono:= Round(::nQbcmono * ::nAdremicms, 2))
+                            ::cXml    += ::XmlTag( "qBCMonoReten"   , ::nQbcmonoreten)
+                            ::cXml    += ::XmlTag( "adRemICMSReten" , ::nAdremicmsreten, 4) // TDec_1104
+                            ::cXml    += ::XmlTag( "vICMSMonoReten" , ::nVicmsmonoreten:= Round(::nQbcmonoreten * ::nAdremicmsreten, 2))
+                            ::nQbcmono_t        += ::nQbcmono
+                            ::nVicmsmono_t      += ::nVicmsmono
+                            ::nQbcmonoreten_t   += ::nQbcmonoreten
+                            ::nVicmsmonoreten_t += ::nVicmsmonoreten
+                     ::cXml+= "</ICMS15>"
+
+                Case ::cCsticms == [071]           // ICMS71 - Monofasico proprio com diferimento
+                     ::cXml+= "<ICMS71>"
+                            ::cXml    += ::XmlTag( "orig"      , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
+                            ::cXml    += ::XmlTag( "CST"       , SubStr(::cCsticms, 2, 2))
+                            ::cXml    += ::XmlTag( "qBCMono"   , ::nQbcmono)
+                            ::cXml    += ::XmlTag( "adRemICMS" , ::nAdremicms, 4)   // TDec_1104
+                            ::cXml    += ::XmlTag( "vICMSMono" , ::nVicmsmono:= Round(::nQbcmono * ::nAdremicms, 2))
+                            ::nQbcmono_t   += ::nQbcmono
+                            ::nVicmsmono_t += ::nVicmsmono
+                     ::cXml+= "</ICMS71>"
+
                 Case ::cCsticms == [101] .and. ::cCrt == [1]
                      ::cXml+= "<ICMSSN101>"
                             ::cXml    += ::XmlTag( "orig"        , Iif(!(::cOrig $ [0_1_2_3_4_5_6_7_8]), [0], Left(::cOrig, 1)))
@@ -1728,11 +1792,19 @@ METHOD fCria_IBSMun() // Alterado por : Alterado por : Jair Barreto  data : 23/0
     ::cXml+= "</gIBSMun>"
     ::cXml+= ::XmlTag( "vIBS" , ::nVibsuf + ::nVibsmun )
 
-    ::nVibsufgibsuf_t+= ::nVibsmun                                                                            // já acumula o valor para os totais
+ ***   ::nVibsufgibsuf_t+= ::nVibsmun                                                                            // já acumula o valor para os totais
 Return (Nil)
 
 * ----------------------> Metodo para gerar a tag CBS <----------------------- *
 METHOD fCria_CBS()   // Alterado por : Alterado por : Jair Barreto  data : 23/01/2026
+   If !Empty(::cIndAlcZfmCbs)
+      ::cXml+= ::XmlTag( 'indALCZFMCBS', Left(::cIndAlcZfmCbs, 1))
+
+      If ::nVcredPresZfm # 0
+         ::cXml+= ::XmlTag( 'vCredPresZFM', ::nVcredPresZfm)
+      EndIf
+   Endif
+
    ::cXml+= "<gCBS>"
           ::cXml+= ::XmlTag( "pCBS" , ::nPcbs, 4)
       
@@ -1744,6 +1816,7 @@ METHOD fCria_CBS()   // Alterado por : Alterado por : Jair Barreto  data : 23/01
      
           ::cXml       += ::XmlTag( "vCBS" , ::nVcbs:= Round(::nVbcibs * (::nPcbs/100), 2) )
           ::nVcbsgcbs_t+= ::nVcbs                                                                             // já acumula o valor para os totais
+
    ::cXml+= "</gCBS>"
 Return (Nil)
 
@@ -1763,7 +1836,7 @@ METHOD fTrata_TributoDevolvido(cTipo)
       Case cTipo == [CBS] .and. ::nVdevtribgcbs # 0
            ::cXml+= "<gDevTrib>"
                   ::cXml+= ::XmlTag( "vDevTrib" , ::nVdevtribgcbs)
-                  ::nVdevtribgcbs+= ::nVdevtribgcbs                                                         // já acumula o valor para os totais
+                  ::nVdevtribgcbs_t+= ::nVdevtribgcbs                                                         // já acumula o valor para os totais
            ::cXml+= "</gDevTrib>"
    Endcase
 Return (Nil)
@@ -1778,7 +1851,7 @@ METHOD fTrata_Diferimento(cTipo)       // Alterado por : Jair Barreto  data : 23
                      ::cXml         += ::XmlTag( "vDif" , Round(::nVbcibs * (::nPibsuf/100) * (::nPdifgibuf/100), 2) )
                      ::nVdifgibsuf_t+= Round(::nVbcibs * (::nPibsuf/100) * (::nPdifgibuf/100), 2)              // já acumula o valor para os totais
               ::cXml+= "</gDif>"
-         Case cTipo == [MUN] .and. ::nPifgibsmun # 0
+         Case cTipo == [MUN] .and. ::nPdifgibsmun # 0
               ::cXml+= "<gDif>"
                      ::cXml           += ::XmlTag( "pDif" , ::nPdifgibsmun, 4)
                      ::cXml           += ::XmlTag( "vDif" , Round(::nVbcibs * (::nPibsmun/100) * (::nPdifgibsmun/100), 2) ) 
@@ -1827,29 +1900,44 @@ METHOD fCria_Gtransfcredito()    // Alterado por : Jair Barreto  data : 23/01/20
 Return (Nil)
 
 * ----------------------> Metodo para gerar a tag Credito Presumido <--------- *
-METHOD fTrata_CreditoPresumido()    // Alterado por : Jair Barreto  data : 23/01/2026
+METHOD fTrata_CreditoPresumido()
    If ::cModelo == [55]
+      // --- IBS ---
       If !Empty(::cCredPresgibs) .and. ::cCredPresgibs $ [1_2_3_4_5]
          ::cXml+= "<gIBSCredPres>"
-                ::cXml                  += ::XmlTag( "cCredPres" , Left(::cCredPresgibs, 2))
-                ::cXml                  += ::XmlTag( "pCredPres" , ::nPcredpresgibs, 4)
-                ::cXml                  += ::XmlTag( "vCredPres" , ::nVcredpresgibs:= Round(::nVbcibs * (::nPcredpresgibs/100), 2) )
-                ::cXml                  += ::XmlTag( "vCredPresCondSus" , ::nVcredprescondsusibs)
-                ::nVcredprescondsusibs_t+= ::nVcredprescondsusibs                                                // já acumula o valor para os totais
-                ::nVcredpresgibs_t      += ::nVcredpresgibs                                                      // já acumula o valor para os totais
+                ::cXml += ::XmlTag( "cCredPres" , Left(::cCredPresgibs, 2))
+                ::cXml += ::XmlTag( "pCredPres" , ::nPcredpresgibs, 4)
+                // xs:choice: somente vCredPres OU vCredPresCondSus
+                If ::nVcredprescondsusibs # 0
+                   // Credito com suspensao condicional (ex.: exportacao pendente)
+                   ::cXml += ::XmlTag( "vCredPresCondSus" , ::nVcredprescondsusibs)
+                   ::nVcredprescondsusibs_t += ::nVcredprescondsusibs
+                Else
+                   // Credito presumido imediato
+                   ::cXml += ::XmlTag( "vCredPres" , ::nVcredpresgibs:= Round(::nVbcibs * (::nPcredpresgibs/100), 2))
+                   ::nVcredpresgibs_t += ::nVcredpresgibs
+                EndIf
          ::cXml+= "</gIBSCredPres>"
       EndIf
 
+      // --- CBS ---
       If !Empty(::cCredPrescbs) .and. ::cCredPrescbs $ [1_2_3_4_5]
          ::cXml+= "<gCBSCredPres>"
-                ::cXml                  += ::XmlTag( "cCredPres" , Left(::cCredPrescbs, 2))
-                ::cXml                  += ::XmlTag( "pCredPres" , ::nPcredprescbs, 4)
-                ::cXml                  += ::XmlTag( "vCredPres" , ::nVcredprescbs:= Round(::nVbcibs * (::nPcredprescbs/100), 2) )
-                ::cXml                  += ::XmlTag( "vCredPresCondSus" , ::nVcredprescondsuscbs)
-                ::nVcredprescbs_t       += ::nVcredprescbs                                                       // já acumula o valor para os totais
-                ::nVcredprescondsuscbs_t+= ::nVcredprescondsuscbs                                                // já acumula o valor para os totais
+                ::cXml += ::XmlTag( "cCredPres" , Left(::cCredPrescbs, 2))
+                ::cXml += ::XmlTag( "pCredPres" , ::nPcredprescbs, 4)
+                // xs:choice: somente vCredPres OU vCredPresCondSus
+                If ::nVcredprescondsuscbs # 0
+                   // Credito com suspensao condicional
+                   ::cXml += ::XmlTag( "vCredPresCondSus" , ::nVcredprescondsuscbs)
+                   ::nVcredprescondsuscbs_t += ::nVcredprescondsuscbs
+                Else
+                   // Credito presumido imediato
+                   ::cXml += ::XmlTag( "vCredPres" , ::nVcredprescbs:= Round(::nVbcibs * (::nPcredprescbs/100), 2))
+                   ::nVcredprescbs_t += ::nVcredprescbs
+                EndIf
          ::cXml+= "</gCBSCredPres>"
       EndIf
+
    EndIf
 Return (Nil)
 
@@ -1877,15 +1965,15 @@ METHOD fCria_Gibscbsmono()   // Reforma tributária
                 ::cXml       += ::XmlTag( "qBCMono"         , ::nQbcmono)
                 ::cXml       += ::XmlTag( "adRemIBS"        , ::nAdremibs, 4)
                 ::cXml       += ::XmlTag( "adRemCBS"        , ::nAdremcbs, 4)
-                ::cXml       += ::XmlTag( "vIBSMono"        , ::nVibsmono:= Round(nQbcmono * (::nAdremibs/100), 2) )
-                ::cXml       += ::XmlTag( "vCBSMono"        , ::nVcbsmono:= Round(nQbcmono * (::nAdremcbs/100), 2))
+                ::cXml       += ::XmlTag( "vIBSMono"        , ::nVibsmono:= Round(::nQbcmono * (::nAdremibs/100), 2) )
+                ::cXml       += ::XmlTag( "vCBSMono"        , ::nVcbsmono:= Round(::nQbcmono * (::nAdremcbs/100), 2))
                 ::nvIBSMono_t+= ::nVibsmono                                                                                         // já acumula o valor para os totais
                 ::nvCBSMono_t+= ::nVcbsmono                                                                                         // já acumula o valor para os totais
 
                 If ::cIndMonoReten == [1]
                    ::cXml            += ::XmlTag( "qBCMonoReten"    , ::nQbcmonoreten, 0)
                    ::cXml            += ::XmlTag( "adRemIBSReten"   , ::nAdremibsreten, 4)
-                   ::cXml            += ::XmlTag( "vIBSMonoReten"   , ::nIbsmonoreten:= Round(::nQbcmonoreten * (::nAdremibsreten/100), 2) )
+                   ::cXml            += ::XmlTag( "vIBSMonoReten"   , ::nVIbsmonoreten:= Round(::nQbcmonoreten * (::nAdremibsreten/100), 2) )
                    ::cXml            += ::XmlTag( "adRemCBSReten"   , ::nAdremcbsreten, 4)
                    ::cXml            += ::XmlTag( "vCBSMonoReten"   , ::nVcbsmonoreten:= Round(::nQbcmonoreten * (::nAdremcbsreten/100), 2) )
                    ::nvIBSMonoReten_t+= ::nVibsmonoreten                                                                            // já acumula o valor para os totais
@@ -2013,6 +2101,18 @@ METHOD fCria_Totais()
                  ::cXml+= ::XmlTag( "vST"          , ::nVst_t)
                  ::cXml+= ::XmlTag( "vFCPST"       , ::nVfcpst_t)                                                                // Campo referente a FCP Para versão 4.0
                  ::cXml+= ::XmlTag( "vFCPSTRet"    , ::nVfcpstret_t)                                                             // Campo referente a FCP Para versão 4.0
+
+                 // *** INFO-11: ICMS Monofasico - qBCMono/vICMSMono (CST 02/15/71) ***
+                 If ::nQbcmono_t # 0
+                    ::cXml+= ::XmlTag( "qBCMono"  , ::nQbcmono_t)
+                    ::cXml+= ::XmlTag( "vICMSMono", ::nVicmsmono_t)
+                 EndIf
+
+                 // *** INFO-11: ICMS Monofasico retido - qBCMonoReten/vICMSMonoReten (CST 15) ***
+                 If ::nQbcmonoreten_t # 0
+                    ::cXml+= ::XmlTag( "qBCMonoReten"  , ::nQbcmonoreten_t)
+                    ::cXml+= ::XmlTag( "vICMSMonoReten", ::nVicmsmonoreten_t)
+                 EndIf
 
                  If ::nMonoBas # 0
                     ::cXml+= ::XmlTag( "qBCMonoRet"   , ::nMonoBas)
@@ -2455,9 +2555,10 @@ METHOD LimpaPropriedadesImposto()
    ::nVbcufdest  := ::nPfcpufdest  := ::nPicmsufdest   := ::nPicmsinter  := ::nPicmsinterpart := 0
    ::nVfcpufdest := ::nVicmsufdest := ::nVicmsufremet  := 0
    // --- NOVO: Limpar propriedades da NT 2026.008 por item ---
-   ::vUnComLiq    := 0
-   ::vProdLiq     := 0
-   ::vICMSPrevisto:= 0
+   ::vUnComLiq   := ::vProdLiq     := ::vICMSPrevisto  := 0
+   // --- INFO-11: Limpar variaveis ICMS monofasico por item ---
+   ::nQbcmono     := ::nAdremicms     := ::nVicmsmono     := 0
+   ::nQbcmonoreten:= ::nAdremicmsreten:= ::nVicmsmonoreten:= 0
 Return (Nil)
 
 * -----------------------> Metodo para fechar o XML <------------------------- *
@@ -3730,7 +3831,7 @@ METHOD StringXML(cTexto)
       cTexto:= StrTran(cTexto, Space(2), Space(1))
    Enddo
 
-   cTexto:= StrTran(cTexto, "&", "E")
+   cTexto:= StrTran(cTexto, [&], "&amp;")
    cTexto:= StrTran(cTexto, ["], "&quot;")
    cTexto:= StrTran(cTexto, "'", "&#39;")
    cTexto:= StrTran(cTexto, "<", "&lt;")
@@ -4131,7 +4232,7 @@ HB_FUNC( LERCERTIFICADOPFXNATIVE )
    }
 
    fileData = ( BYTE * ) hb_xgrab( fileSize );
-   if( ! ReadFile( hFile, fileData, fileSize, &bytesRead, NULL ) || bytesRead != fileSize )
+   if( ! ReadFile( hFile, fileData, fileSize, &bytesRead, NULL ) || bytesRead # fileSize )
    {
       hb_xfree( fileData );
       CloseHandle( hFile );
@@ -4237,7 +4338,7 @@ HB_FUNC( ASSINARRPSSPNATIVE )
       return;
    }
 
-   while( ( pCert = CertEnumCertificatesInStore( hStore, pCert ) ) != NULL )
+   while( ( pCert = CertEnumCertificatesInStore( hStore, pCert ) ) # NULL )
    {
       DWORD cbSerial = pCert->pCertInfo->SerialNumber.cbData;
       char serialRev[ 256 ];
